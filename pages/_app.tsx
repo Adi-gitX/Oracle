@@ -1,4 +1,5 @@
 import '../styles/globals.css'
+import '../components/StaggeredMenu/StaggeredMenu.css'
 import type { AppProps } from 'next/app'
 // import Aurora from '../components/Aurora'
 

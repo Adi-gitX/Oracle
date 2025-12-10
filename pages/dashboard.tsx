@@ -3,6 +3,7 @@ import Head from 'next/head'
 import styles from '../styles/Dashboard.module.css'
 import ChatInput from '../components/ChatInput'
 import ResultMessage from '../components/ResultMessage'
+import StaggeredMenu from '../components/StaggeredMenu/StaggeredMenu'
 
 interface KeyResult {
     key: string
@@ -18,6 +19,19 @@ interface Message {
     results?: KeyResult[]
     id: string
 }
+
+const menuItems = [
+    { label: 'Home', link: '/' },
+    { label: 'Solutions', link: '#' },
+    { label: 'Pricing', link: '#' },
+    { label: 'Docs', link: '#' }
+];
+
+const socialItems = [
+    { label: 'LinkedIn', link: 'https://www.linkedin.com/in/kammatiaditya/' },
+    { label: 'GitHub', link: 'https://github.com/Adi-gitX' },
+    { label: 'X', link: 'https://x.com/AdiGitX' }
+];
 
 export default function Dashboard() {
     const [messages, setMessages] = useState<Message[]>([])
@@ -98,18 +112,24 @@ export default function Dashboard() {
         }])
         setLoading(false)
     }
+    return (
+        <div className={styles.dashboardContainer}>
+            <StaggeredMenu
+                items={menuItems}
+                socialItems={socialItems}
+                logo={null}
+                position="left"
+                isFixed={true}
+            // Colors handled by CSS for glassmorphism
+            />
+            <Head>
+                <title>{messages.length === 0 ? 'Start - Oracle' : 'Results - Oracle'}</title>
+            </Head>
 
-    // Centered "Empty State" View
-    if (messages.length === 0) {
-        return (
-            <div className={styles.dashboardContainer}>
-                <Head>
-                    <title>Start - Oracle</title>
-                </Head>
+            {/* Background */}
+            <div className={styles.backgroundGlow} style={messages.length > 0 ? { opacity: 0.5 } : undefined} />
 
-                {/* Background */}
-                <div className={styles.backgroundGlow} />
-
+            {messages.length === 0 ? (
                 <div className={styles.centeredContent}>
                     <div className={styles.pillBadge}>
                         <span>New</span> Oracle Analysis v2.0
@@ -127,55 +147,45 @@ export default function Dashboard() {
                         <ChatInput onSend={handleCheck} disabled={loading} isCentered={true} />
                     </div>
                 </div>
-            </div>
-        )
-    }
+            ) : (
+                <div className={styles.chatLayout}>
+                    <div className={styles.chatHeader}>
+                        Oracle Intelligent Check
+                    </div>
 
-    // Chat View (once verification starts)
-    return (
-        <div className={styles.dashboardContainer}>
-            <Head>
-                <title>Results - Oracle</title>
-            </Head>
-            <div className={styles.backgroundGlow} style={{ opacity: 0.5 }} />
-
-            <div className={styles.chatLayout}>
-                <div className={styles.chatHeader}>
-                    Oracle Intelligent Check
-                </div>
-
-                <div className={styles.chatScrollArea}>
-                    {messages.map((msg) => (
-                        <div key={msg.id} className={`${styles.messageRow} ${styles[msg.role]}`}>
-                            <div className={styles.messageBubble}>
-                                <div className={styles.senderName}>
-                                    {msg.role === 'user' ? 'You' : 'Oracle'}
+                    <div className={styles.chatScrollArea}>
+                        {messages.map((msg) => (
+                            <div key={msg.id} className={`${styles.messageRow} ${styles[msg.role]}`}>
+                                <div className={styles.messageBubble}>
+                                    <div className={styles.senderName}>
+                                        {msg.role === 'user' ? 'You' : 'Oracle'}
+                                    </div>
+                                    <div className={styles.messageText}>
+                                        {msg.content}
+                                    </div>
+                                    {msg.results && <ResultMessage results={msg.results} />}
                                 </div>
-                                <div className={styles.messageText}>
-                                    {msg.content}
+                            </div>
+                        ))}
+                        {loading && (
+                            <div className={`${styles.messageRow} ${styles.assistant}`}>
+                                <div className={styles.messageBubble}>
+                                    <div className={styles.senderName}>Oracle</div>
+                                    <div className={styles.messageText}>Verifying credentials...</div>
                                 </div>
-                                {msg.results && <ResultMessage results={msg.results} />}
                             </div>
-                        </div>
-                    ))}
-                    {loading && (
-                        <div className={`${styles.messageRow} ${styles.assistant}`}>
-                            <div className={styles.messageBubble}>
-                                <div className={styles.senderName}>Oracle</div>
-                                <div className={styles.messageText}>Verifying credentials...</div>
-                            </div>
-                        </div>
-                    )}
-                    <div ref={chatEndRef} />
-                </div>
+                        )}
+                        <div ref={chatEndRef} />
+                    </div>
 
-                {/* Floating Input at bottom */}
-                <div className={styles.floatingInput}>
-                    <div style={{ width: '100%', maxWidth: '800px' }}>
-                        <ChatInput onSend={handleCheck} disabled={loading} />
+                    {/* Floating Input at bottom */}
+                    <div className={styles.floatingInput}>
+                        <div style={{ width: '100%', maxWidth: '800px' }}>
+                            <ChatInput onSend={handleCheck} disabled={loading} />
+                        </div>
                     </div>
                 </div>
-            </div>
+            )}
         </div>
     )
 }
