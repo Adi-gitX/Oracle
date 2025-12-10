@@ -20,6 +20,8 @@ const socialItems = [
 export default function Suggestions() {
     const [subject, setSubject] = useState('')
     const [message, setMessage] = useState('')
+    const [type, setType] = useState('General')
+    const [contact, setContact] = useState('')
     const [status, setStatus] = useState<'idle' | 'loading' | 'success' | 'error'>('idle')
 
     const handleSubmit = async (e: React.FormEvent) => {
@@ -30,13 +32,15 @@ export default function Suggestions() {
             const res = await fetch('/api/contact', {
                 method: 'POST',
                 headers: { 'Content-Type': 'application/json' },
-                body: JSON.stringify({ subject, message })
+                body: JSON.stringify({ subject, message, type, contact })
             })
 
             if (res.ok) {
                 setStatus('success')
                 setSubject('')
                 setMessage('')
+                setContact('')
+                setType('General')
             } else {
                 setStatus('error')
             }
@@ -74,9 +78,30 @@ export default function Suggestions() {
                     </p>
 
                     <form onSubmit={handleSubmit} className={styles.feedbackForm}>
+                        <div style={{ display: 'grid', gridTemplateColumns: '1fr 2fr', gap: '1rem', marginBottom: '1rem' }}>
+                            <select
+                                value={type}
+                                onChange={e => setType(e.target.value)}
+                                className={styles.glassInput}
+                                style={{ appearance: 'none', cursor: 'pointer' }}
+                            >
+                                <option value="General">General</option>
+                                <option value="Feature">Feature Idea</option>
+                                <option value="Bug">Bug Report</option>
+                            </select>
+
+                            <input
+                                type="text"
+                                placeholder="Contact (Email/Discord) - Optional"
+                                value={contact}
+                                onChange={e => setContact(e.target.value)}
+                                className={styles.glassInput}
+                            />
+                        </div>
+
                         <input
                             type="text"
-                            placeholder="Subject (e.g. Feature Idea)"
+                            placeholder="Subject"
                             value={subject}
                             onChange={e => setSubject(e.target.value)}
                             required
@@ -112,6 +137,25 @@ export default function Suggestions() {
                             </div>
                         )}
                     </form>
+
+                    <div style={{ marginTop: '3rem', textAlign: 'center', opacity: 0.8 }}>
+                        <p style={{ marginBottom: '1rem', color: '#a1a1aa' }}>Want to chat live?</p>
+                        <a
+                            href="https://discord.gg/3CVfRfQ3"
+                            target="_blank"
+                            rel="noopener noreferrer"
+                            className={styles.submitButton}
+                            style={{
+                                background: '#5865F2',
+                                width: 'auto',
+                                display: 'inline-block',
+                                padding: '0.8rem 2rem',
+                                textDecoration: 'none'
+                            }}
+                        >
+                            Join our Discord Server
+                        </a>
+                    </div>
                 </div>
             </div>
         </div>

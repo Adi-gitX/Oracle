@@ -1,8 +1,5 @@
 import type { NextApiRequest, NextApiResponse } from 'next'
 
-// Placeholders - In production, use nodemailer
-// import nodemailer from 'nodemailer'
-
 export default async function handler(
     req: NextApiRequest,
     res: NextApiResponse
@@ -11,33 +8,53 @@ export default async function handler(
         return res.status(405).json({ message: 'Method Not Allowed' })
     }
 
-    const { subject, message } = req.body
+    const { subject, message, type = 'General', contact } = req.body
 
     if (!subject || !message) {
         return res.status(400).json({ message: 'Missing fields' })
     }
 
-    // Server-side logging (since we don't have SMTP creds yet)
-    console.log('--- NEW SUGGESTION RECEIVED ---')
-    console.log(`Subject: ${subject}`)
-    console.log(`Message: ${message}`)
-    console.log('-------------------------------')
+    // Server-side logging
+    console.log(`[Feedback] [${type}] ${subject}: ${message} (${contact || 'Anon'})`)
 
-    const user = process.env.GMAIL_USER
-    const pass = process.env.GMAIL_PASS
+    // Color Logic
+    const colors: Record<string, number> = {
+        'Bug': 0xFF5252,    // Red
+        'Feature': 0x448AFF, // Blue
+        'General': 0x9E9E9E  // Gray
+    }
+    const embedColor = colors[type] || 0x9E9E9E
 
-    if (user && pass) {
-        // TODO: Implement actual sending when credentials exist
-        /*
-        const transporter = nodemailer.createTransport({
-            service: 'gmail',
-            auth: { user, pass }
-        });
-        await transporter.sendMail(...)
-        */
-        console.log('Credentials found but nodemailer not installed yet. Skipping send.')
+    // MODERN APPROACH: Discord/Slack Webhook
+    const discordWebhook = process.env.DISCORD_WEBHOOK_URL
+
+    if (discordWebhook) {
+        try {
+            await fetch(discordWebhook, {
+                method: 'POST',
+                headers: { 'Content-Type': 'application/json' },
+                body: JSON.stringify({
+                    embeds: [{
+                        title: `[${type}] ${subject}`,
+                        description: message,
+                        color: embedColor,
+                        fields: [
+                            { name: 'Contact', value: contact || 'Anonymous', inline: true },
+                            { name: 'Category', value: type, inline: true }
+                        ],
+                        footer: { text: 'Oracle Feedback System' },
+                        timestamp: new Date().toISOString()
+                    }]
+                })
+            })
+            return res.status(200).json({ success: true, method: 'discord' })
+        } catch (error) {
+            console.error('Webhook failed:', error)
+            return res.status(500).json({ success: false, message: 'Webhook Error' })
+        }
     }
 
-    // Return success so UI works
-    return res.status(200).json({ success: true })
+    // Fallback: If no webhook is set, we just log it (Mock Mode)
+    // allowing the UI to show "Success" so you can test the frontend.
+    return res.status(200).json({ success: true, method: 'log_only' })
 }
