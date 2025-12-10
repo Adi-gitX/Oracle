@@ -1,0 +1,124 @@
+.docsContainer {
+    display: flex;
+    max-width: 1200px;
+    margin: 0 auto;
+    padding: 120px 2rem 4rem;
+    gap: 4rem;
+    min-height: 100vh;
+}
+
+.sidebar {
+    width: 250px;
+    position: sticky;
+    top: 120px;
+    height: fit-content;
+    display: flex;
+    flex-direction: column;
+    gap: 1.5rem;
+}
+
+.sidebarTitle {
+    font-size: 0.85rem;
+    text-transform: uppercase;
+    letter-spacing: 0.1em;
+    color: #555;
+    font-weight: 600;
+    margin-bottom: 0.5rem;
+}
+
+.navLink {
+    color: #888;
+    text-decoration: none;
+    font-size: 0.95rem;
+    transition: color 0.2s;
+    cursor: pointer;
+    display: block;
+    margin-bottom: 0.8rem;
+}
+
+.navLink:hover {
+    color: #fff;
+}
+
+.navLink.active {
+    color: #fff;
+    font-weight: 500;
+}
+
+.content {
+    flex: 1;
+    max-width: 800px;
+}
+
+.section {
+    margin-bottom: 4rem;
+    scroll-margin-top: 140px;
+}
+
+.title {
+    font-size: 2.5rem;
+    font-weight: 700;
+    margin-bottom: 1.5rem;
+    color: #fff;
+}
+
+.subtitle {
+    font-size: 1.5rem;
+    font-weight: 600;
+    margin-bottom: 1rem;
+    color: #fff;
+    border-bottom: 1px solid rgba(255, 255, 255, 0.1);
+    padding-bottom: 0.5rem;
+}
+
+.text {
+    line-height: 1.8;
+    color: #ccc;
+    margin-bottom: 1.5rem;
+    font-size: 1.05rem;
+}
+
+.codeBlock {
+    background: #111;
+    border: 1px solid rgba(255, 255, 255, 0.1);
+    border-radius: 8px;
+    padding: 1.5rem;
+    font-family: 'Geist Mono', monospace;
+    font-size: 0.9rem;
+    color: #fff;
+    overflow-x: auto;
+    margin: 1.5rem 0;
+}
+
+.providerList {
+    display: grid;
+    grid-template-columns: repeat(auto-fill, minmax(200px, 1fr));
+    gap: 1rem;
+    margin-top: 1.5rem;
+}
+
+.providerItem {
+    background: rgba(255, 255, 255, 0.03);
+    border: 1px solid rgba(255, 255, 255, 0.05);
+    padding: 1rem;
+    border-radius: 8px;
+    display: flex;
+    align-items: center;
+    gap: 0.8rem;
+}
+
+@media (max-width: 768px) {
+    .docsContainer {
+        flex-direction: column;
+        padding-top: 100px;
+    }
+
+    .sidebar {
+        position: relative;
+        top: 0;
+        width: 100%;
+        margin-bottom: 2rem;
+        border-bottom: 1px solid rgba(255, 255, 255, 0.1);
+        padding-bottom: 2rem;
+    }
+}

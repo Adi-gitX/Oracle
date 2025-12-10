@@ -1,5 +1,6 @@
 import type { NextPage } from 'next'
 import Head from 'next/head'
+import Link from 'next/link'
 import styles from '../styles/Home.module.css'
 import Script from 'next/script'
 import { useRouter } from 'next/router'
@@ -38,9 +39,9 @@ const Home: NextPage = () => {
       <nav className={styles.nav}>
         <div className={styles.logo}>Oracle</div>
         <div className={styles.navLinks}>
-          <a href="#" className={styles.navLink}>Solutions</a>
-          <a href="#" className={styles.navLink}>Pricing</a>
-          <a href="#" className={styles.navLink}>Docs</a>
+          <Link href="/solutions"><a className={styles.navLink}>Solutions</a></Link>
+          <Link href="/pricing"><a className={styles.navLink}>Pricing</a></Link>
+          <Link href="/docs"><a className={styles.navLink}>Docs</a></Link>
           <button className={styles.ctaButton} onClick={handleStartFree}>Start Free</button>
         </div>
       </nav>
