@@ -96,6 +96,21 @@
     /* Ensure above header layer */
 }
 
+.sm-right-element {
+    position: absolute;
+    right: 3rem;
+    display: flex;
+    align-items: center;
+    pointer-events: auto;
+    z-index: 51;
+}
+
+@media (max-width: 768px) {
+    .sm-right-element {
+        right: 1.5rem;
+    }
+}
+
 /* Adjust for mobile padding */
 @media (max-width: 768px) {
     .staggered-menu-header {

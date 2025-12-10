@@ -1,6 +1,7 @@
 import React from 'react';
 import Head from 'next/head'
 import Link from 'next/link'
+import Image from 'next/image'
 // import { Link as ScrollLink } from 'react-scroll' 
 import styles from '../styles/Dashboard.module.css'
 import docStyles from '../styles/Docs.module.css'
@@ -69,6 +70,20 @@ export default function Docs() {
                 logo="Documentation"
                 position="left"
                 isFixed={true}
+                rightElement={
+                    <Link href="/dashboard">
+                        <a>
+                            <Image
+                                src="/assets/branding/oracle-iconLogo.png"
+                                alt="Oracle Icon"
+                                width={40}
+                                height={40}
+                                objectFit="contain"
+                                style={{ cursor: 'pointer' }}
+                            />
+                        </a>
+                    </Link>
+                }
             />
             <Head>
                 <title>Docs - Oracle</title>

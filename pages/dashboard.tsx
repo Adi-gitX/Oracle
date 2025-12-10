@@ -1,6 +1,7 @@
 import { useState, useRef, useEffect } from 'react'
 import Head from 'next/head'
 import Link from 'next/link'
+import Image from 'next/image'
 import styles from '../styles/Dashboard.module.css'
 import ChatInput from '../components/ChatInput'
 import ResultMessage from '../components/ResultMessage'
@@ -242,8 +243,18 @@ export default function Dashboard() {
                         <span>New</span> Oracle Analysis v2.0
                     </div>
 
-                    <h1 className={styles.heroTitle}>
-                        Build something <span>Oracle</span>
+                    <h1 className={styles.heroTitle} style={{ display: 'flex', alignItems: 'center', justifyContent: 'center', gap: '0px' }}>
+                        Verify API keys with
+                        <span style={{ display: 'flex', alignItems: 'center', marginLeft: '-140px' }}>
+                            <Image
+                                src="/assets/branding/oracle-logo.png"
+                                alt="Oracle Logo"
+                                width={500}
+                                height={160}
+                                objectFit="contain"
+                                priority
+                            />
+                        </span>
                     </h1>
 
                     <p className={styles.heroSubtitle}>

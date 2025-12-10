@@ -1,5 +1,6 @@
 import Head from 'next/head'
 import Link from 'next/link'
+import Image from 'next/image'
 import styles from '../styles/Dashboard.module.css'
 import StaggeredMenu from '../components/StaggeredMenu/StaggeredMenu'
 
@@ -26,6 +27,20 @@ export default function Pricing() {
                 logo="Pricing"
                 position="left"
                 isFixed={true}
+                rightElement={
+                    <Link href="/dashboard">
+                        <a>
+                            <Image
+                                src="/assets/branding/oracle-iconLogo.png"
+                                alt="Oracle Icon"
+                                width={40}
+                                height={40}
+                                objectFit="contain"
+                                style={{ cursor: 'pointer' }}
+                            />
+                        </a>
+                    </Link>
+                }
             />
             <Head>
                 <title>Pricing - Oracle</title>

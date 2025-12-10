@@ -1,5 +1,7 @@
 import { useState } from 'react'
 import Head from 'next/head'
+import Image from 'next/image'
+import Link from 'next/link'
 import styles from '../styles/Dashboard.module.css'
 import StaggeredMenu from '../components/StaggeredMenu/StaggeredMenu'
 
@@ -57,6 +59,20 @@ export default function Suggestions() {
                 logo="Feedback"
                 position="left"
                 isFixed={true}
+                rightElement={
+                    <Link href="/dashboard">
+                        <a>
+                            <Image
+                                src="/assets/branding/oracle-iconLogo.png"
+                                alt="Oracle Icon"
+                                width={40}
+                                height={40}
+                                objectFit="contain"
+                                style={{ cursor: 'pointer' }}
+                            />
+                        </a>
+                    </Link>
+                }
             />
             <Head>
                 <title>Suggestions - Oracle</title>

@@ -4,6 +4,7 @@ import Link from 'next/link'
 import styles from '../styles/Home.module.css'
 import Script from 'next/script'
 import { useRouter } from 'next/router'
+import Image from 'next/image'
 
 // Add type for web component
 declare global {
@@ -37,7 +38,15 @@ const Home: NextPage = () => {
 
       {/* Navigation */}
       <nav className={styles.nav}>
-        <div className={styles.logo}>Oracle</div>
+        <div className={styles.logo}>
+          <Image
+            src="/assets/branding/oracle-logo.png"
+            alt="Oracle Logo"
+            width={240}
+            height={80}
+            objectFit="contain"
+          />
+        </div>
         <div className={styles.navLinks}>
           <Link href="/pricing"><a className={styles.navLink}>Pricing</a></Link>
           <Link href="/docs"><a className={styles.navLink}>Docs</a></Link>

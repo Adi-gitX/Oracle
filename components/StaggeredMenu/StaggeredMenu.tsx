@@ -29,6 +29,7 @@ interface StaggeredMenuProps {
     closeOnClickAway?: boolean;
     onMenuOpen?: () => void;
     onMenuClose?: () => void;
+    rightElement?: ReactNode;
 }
 
 import Link from 'next/link';
@@ -51,7 +52,8 @@ export const StaggeredMenu: React.FC<StaggeredMenuProps> = ({
     isFixed = false,
     closeOnClickAway = true,
     onMenuOpen,
-    onMenuClose
+    onMenuClose,
+    rightElement
 }) => {
     const [open, setOpen] = useState(false);
     const openRef = useRef(false);
@@ -436,6 +438,11 @@ export const StaggeredMenu: React.FC<StaggeredMenuProps> = ({
                         <span ref={plusVRef} className="sm-icon-line sm-icon-line-v" />
                     </span>
                 </button>
+                {rightElement && (
+                    <div className="sm-right-element">
+                        {rightElement}
+                    </div>
+                )}
             </header>
 
             <aside id="staggered-menu-panel" ref={panelRef} className="staggered-menu-panel" aria-hidden={!open}>
@@ -475,7 +482,7 @@ export const StaggeredMenu: React.FC<StaggeredMenuProps> = ({
                     )}
                 </div>
             </aside>
-        </div>
+        </div >
     );
 };
 
