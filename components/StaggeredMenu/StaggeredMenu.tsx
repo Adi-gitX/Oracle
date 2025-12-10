@@ -444,9 +444,11 @@ export const StaggeredMenu: React.FC<StaggeredMenuProps> = ({
                         {items && items.length ? (
                             items.map((it, idx) => (
                                 <li className="sm-panel-itemWrap" key={it.label + idx}>
-                                    <a className="sm-panel-item" href={it.link} aria-label={it.label} data-index={idx + 1}>
-                                        <span className="sm-panel-itemLabel">{it.label}</span>
-                                    </a>
+                                    <Link href={it.link}>
+                                        <a className="sm-panel-item" aria-label={it.label} data-index={idx + 1}>
+                                            <span className="sm-panel-itemLabel">{it.label}</span>
+                                        </a>
+                                    </Link>
                                 </li>
                             ))
                         ) : (

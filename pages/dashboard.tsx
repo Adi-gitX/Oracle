@@ -310,7 +310,7 @@ export default function Dashboard() {
                             maxWidth: '600px',
                             lineHeight: '1.4'
                         }}>
-                            By using Oracle, you agree to our <Link href="/docs#legal" style={{ textDecoration: 'underline', color: 'rgba(255,255,255,0.4)' }}>Terms of Service</Link>.
+                            By using Oracle, you agree to our <Link href="/docs#legal"><a style={{ textDecoration: 'underline', color: 'rgba(255,255,255,0.4)' }}>Terms of Service</a></Link>.
                             Zero Retention Policy Active. Provided &quot;AS IS&quot; without warranty.
                         </div>
                     </div>
