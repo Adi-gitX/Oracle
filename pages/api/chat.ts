@@ -2,9 +2,6 @@ import type { NextApiRequest, NextApiResponse } from 'next'
 import { GoogleGenerativeAI } from '@google/generative-ai'
 import { decryptData, encryptData } from '../../utils/encryption'
 
-const apiKey = process.env.GOOGLE_API_KEY || ''
-const genAI = new GoogleGenerativeAI(apiKey)
-
 // Simple in-memory rate limiter
 const rateLimit = (ip: string) => {
     const limit = 20 // requests
@@ -43,7 +40,22 @@ export default async function handler(
         return res.status(429).json({ message: 'Too many requests. Please try again in a minute.' })
     }
 
-    if (!apiKey) {
+    // Key Rotation Logic
+    const getApiKeys = () => {
+        const keys = []
+        if (process.env.GOOGLE_API_KEY) keys.push(process.env.GOOGLE_API_KEY)
+
+        let i = 2
+        while (process.env[`GOOGLE_API_KEY_${i}`]) {
+            keys.push(process.env[`GOOGLE_API_KEY_${i}`] as string)
+            i++
+        }
+        return keys
+    }
+
+    const apiKeys = getApiKeys()
+
+    if (apiKeys.length === 0) {
         return res.status(500).json({ message: 'Server configuration error: GOOGLE_API_KEY is missing.' })
     }
 
@@ -64,18 +76,23 @@ export default async function handler(
         }
     }
 
-    try {
-        const model = genAI.getGenerativeModel({ model: 'gemini-2.5-flash' })
+    // Try keys sequentially
+    let lastError: any = null
 
-        const prompt = `
+    for (const key of apiKeys) {
+        try {
+            const genAI = new GoogleGenerativeAI(key)
+            const model = genAI.getGenerativeModel({ model: 'gemini-2.5-flash' })
+
+            const prompt = `
 You are Oracle, an elite API security consultant.
 Your goal is to help developers verify, debug, and manage their API credentials.
 
 CONTEXT:
 ${context.length > 0
-                ? `The user has verified these keys in this session:\n${JSON.stringify(context, null, 2)}`
-                : 'No keys have been verified in this session yet.'
-            }
+                    ? `The user has verified these keys in this session:\n${JSON.stringify(context, null, 2)}`
+                    : 'No keys have been verified in this session yet.'
+                }
 
 USER MESSAGE:
 "${message}"
@@ -88,21 +105,35 @@ INSTRUCTIONS:
 5. Do not invent keys. Only discuss keys provided in context or by the user.
 `
 
-        const result = await model.generateContent(prompt)
-        const response = await result.response
-        const text = response.text()
+            const result = await model.generateContent(prompt)
+            const response = await result.response
+            const text = response.text()
 
-        // Encrypt the response
-        const responsePayload = { reply: text }
-        const encryptedResponse = encryptData(JSON.stringify(responsePayload))
+            // Encrypt the response
+            const responsePayload = { reply: text }
+            const encryptedResponse = encryptData(JSON.stringify(responsePayload))
 
-        res.status(200).json({ payload: encryptedResponse, isEncrypted: true } as any)
-    } catch (error: unknown) {
-        console.error('Gemini API Error:', error)
-        const status = (error as any).status || 500
-        const message = (error as any).message || 'Error communicating with AI service'
-        res.status(status).json({ message, error: String(error) })
+            return res.status(200).json({ payload: encryptedResponse, isEncrypted: true } as any)
+
+        } catch (error: any) {
+            console.error(`Gemini API Error with key ending in ...${key.slice(-4)}:`, error.message)
+            lastError = error
+
+            // If it's a quote/rate limit error (429), continue to next key
+            // Google often returns 429 in status or within error details
+            if (error.status === 429 || error.message?.includes('429') || error.message?.includes('quota')) {
+                continue
+            }
+
+            // If it's not a rate limit error, break and fail (e.g. bad request)
+            break
+        }
     }
+
+    // If we reach here, all keys failed
+    const status = (lastError as any)?.status || 500
+    const errorMessage = (lastError as any)?.message || 'Error communicating with AI service'
+    res.status(status).json({ message: errorMessage, error: String(lastError) })
 }
 
 // Add global type for rate limiter to persist across hot reloads in dev

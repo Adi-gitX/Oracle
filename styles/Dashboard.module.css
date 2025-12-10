@@ -869,8 +869,19 @@
     background: #4752c4;
 }
 
-@media (max-width: 600px) {
+@media (max-width: 768px) {
     .formGrid {
         grid-template-columns: 1fr;
     }
+}
+
+.discordSection {
+    margin-top: 3rem;
+    text-align: center;
+    opacity: 0.8;
+}
+
+.discordText {
+    margin-bottom: 1rem;
+    color: #a1a1aa;
 }
