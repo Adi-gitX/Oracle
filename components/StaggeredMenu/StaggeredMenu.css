@@ -172,7 +172,7 @@
     top: 0;
     left: 0;
     width: clamp(260px, 20vw, 320px);
-    /* Tighter, more standard sidebar */
+    /* Reverted to compact width */
     height: 100%;
     background: rgba(5, 5, 5, 0.7);
     backdrop-filter: blur(20px);
@@ -180,7 +180,8 @@
     border-right: 1px solid rgba(255, 255, 255, 0.06);
     display: flex;
     flex-direction: column;
-    padding: 7rem 2rem 2rem 2rem;
+    padding: 7rem 2rem 3rem 2rem;
+    /* Reverted padding */
     overflow-y: auto;
     z-index: 45;
     transform: translateX(-100%);
@@ -234,7 +235,7 @@
     display: flex;
     flex-direction: column;
     justify-content: flex-start;
-    padding-top: 1rem;
+    padding-top: 1.5rem;
 }
 
 /* Items List */
@@ -244,8 +245,8 @@
     margin: 0;
     display: flex;
     flex-direction: column;
-    gap: 0.75rem;
-    /* Clean standard gap */
+    gap: 1.5rem;
+    /* Increased gap */
 }
 
 .sm-panel-itemWrap {
@@ -258,14 +259,14 @@
 
 .sm-panel-item {
     display: inline-block;
-    font-size: 1.5rem;
-    /* Standard modern nav size */
-    font-weight: 500;
-    /* Lighter weight */
+    font-size: 2.5rem;
+    /* Increased font size as requested */
+    font-weight: 600;
     color: #a1a1aa;
     text-decoration: none;
-    line-height: 1.2;
-    letter-spacing: -0.01em;
+    line-height: 1.1;
+    /* Tighter line height for larger text */
+    letter-spacing: -0.02em;
     text-transform: capitalize;
     transition: color 0.2s ease;
     font-family: var(--font-sans);
