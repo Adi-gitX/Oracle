@@ -9,6 +9,7 @@
     "lint": "next lint"
   },
   "dependencies": {
+    "@google/generative-ai": "^0.24.1",
     "cross-fetch": "^4.0.0",
     "gsap": "^3.14.1",
     "next": "12.3.4",

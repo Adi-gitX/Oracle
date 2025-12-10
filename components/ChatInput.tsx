@@ -4,10 +4,12 @@ import styles from '../styles/Dashboard.module.css'
 interface ChatInputProps {
     onSend: (message: string) => void
     disabled?: boolean
-    isCentered?: boolean // Logic to handle if it's the hero input or chat input
+    isCentered?: boolean
+    isChatMode: boolean
+    onToggleMode: () => void
 }
 
-export default function ChatInput({ onSend, disabled, isCentered = false }: ChatInputProps) {
+export default function ChatInput({ onSend, disabled, isCentered = false, isChatMode, onToggleMode }: ChatInputProps) {
     const [input, setInput] = useState('')
     const textareaRef = useRef<HTMLTextAreaElement>(null)
 
@@ -25,6 +27,7 @@ export default function ChatInput({ onSend, disabled, isCentered = false }: Chat
 
     const handleKeyDown = (e: React.KeyboardEvent) => {
         if (e.key === 'Enter' && !e.shiftKey) {
+            if (e.repeat) return
             e.preventDefault()
             handleSend()
         }
@@ -47,7 +50,7 @@ export default function ChatInput({ onSend, disabled, isCentered = false }: Chat
                 value={input}
                 onChange={(e) => setInput(e.target.value)}
                 onKeyDown={handleKeyDown}
-                placeholder="Paste API keys to verify..."
+                placeholder={isChatMode ? "Ask Oracle about your keys..." : "Paste API keys to verify..."}
                 rows={1}
                 disabled={disabled}
             />
@@ -65,7 +68,11 @@ export default function ChatInput({ onSend, disabled, isCentered = false }: Chat
                 </div>
 
                 <div className={styles.actionRight}>
-                    <button className={styles.actionBtn}>
+                    <button
+                        className={styles.actionBtn}
+                        onClick={onToggleMode}
+                        style={isChatMode ? { color: '#3b82f6', background: 'rgba(59, 130, 246, 0.1)' } : {}}
+                    >
                         <svg width="16" height="16" viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="2"><path d="M21 15a2 2 0 0 1-2 2H7l-4 4V5a2 2 0 0 1 2-2h14a2 2 0 0 1 2 2z"></path></svg>
                         Chat
                     </button>

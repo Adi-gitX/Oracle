@@ -36,6 +36,7 @@ const socialItems = [
 export default function Dashboard() {
     const [messages, setMessages] = useState<Message[]>([])
     const [loading, setLoading] = useState(false)
+    const [isChatMode, setIsChatMode] = useState(false)
     const chatEndRef = useRef<HTMLDivElement>(null)
 
     const scrollToBottom = () => {
@@ -48,11 +49,56 @@ export default function Dashboard() {
         }
     }, [messages, loading])
 
-    const handleCheck = async (inputText: string) => {
+    const processingRef = useRef(false)
+
+    const handleSend = async (inputText: string) => {
+        if (processingRef.current || loading) return
+        processingRef.current = true
+
         const userMsgId = Date.now().toString()
         setMessages(prev => [...prev, { id: userMsgId, role: 'user', content: inputText }])
         setLoading(true)
 
+        if (isChatMode) {
+            // Chat Mode Logic
+            try {
+                // Gather context (all valid keys found so far)
+                const allResults = messages.flatMap(m => m.results || [])
+                const validKeys = allResults.filter(r => r.status === 'valid')
+
+                const res = await fetch('/api/chat', {
+                    method: 'POST',
+                    headers: { 'Content-Type': 'application/json' },
+                    body: JSON.stringify({
+                        message: inputText,
+                        context: validKeys
+                    })
+                })
+
+                const data = await res.json()
+
+                if (!res.ok) {
+                    throw new Error(data.message || res.statusText)
+                }
+
+                setMessages(prev => [...prev, {
+                    id: Date.now().toString(),
+                    role: 'assistant',
+                    content: data.reply || "I'm having trouble connecting right now."
+                }])
+            } catch (e: any) {
+                setMessages(prev => [...prev, {
+                    id: Date.now().toString(),
+                    role: 'assistant',
+                    content: `Error: ${e.message || "Sorry, I encountered an error while processing your request."}`
+                }])
+            }
+            setLoading(false)
+            processingRef.current = false
+            return
+        }
+
+        // Check Mode Logic
         const extractKey = (line: string) => {
             const match = line.match(/(AIza[a-zA-Z0-9-_]+|sk-ant-[a-zA-Z0-9-_]+|sk-[a-zA-Z0-9-]+)/);
             return match ? match[0] : null;
@@ -68,7 +114,7 @@ export default function Dashboard() {
             setMessages(prev => [...prev, {
                 id: Date.now().toString(),
                 role: 'assistant',
-                content: "I couldn't find any valid API key formats in your message. Please try again."
+                content: "I couldn't find any valid API key formats in your message. please switch to chat mode if you want to talk."
             }])
             setLoading(false)
             return
@@ -111,7 +157,9 @@ export default function Dashboard() {
             results: newResults
         }])
         setLoading(false)
+        processingRef.current = false
     }
+
     return (
         <div className={styles.dashboardContainer}>
             <StaggeredMenu
@@ -120,7 +168,6 @@ export default function Dashboard() {
                 logo={messages.length > 0 ? "Oracle Intelligent Check" : null}
                 position="left"
                 isFixed={true}
-            // Colors handled by CSS for glassmorphism
             />
             <Head>
                 <title>{messages.length === 0 ? 'Start - Oracle' : 'Results - Oracle'}</title>
@@ -144,13 +191,17 @@ export default function Dashboard() {
                     </p>
 
                     <div style={{ width: '100%', maxWidth: '700px' }}>
-                        <ChatInput onSend={handleCheck} disabled={loading} isCentered={true} />
+                        <ChatInput
+                            onSend={handleSend}
+                            disabled={loading}
+                            isCentered={true}
+                            isChatMode={isChatMode}
+                            onToggleMode={() => setIsChatMode(!isChatMode)}
+                        />
                     </div>
                 </div>
             ) : (
                 <div className={styles.chatLayout}>
-                    {/* Header removed - now in StaggeredMenu */}
-
                     <div className={styles.chatScrollArea}>
                         {messages.map((msg) => (
                             <div key={msg.id} className={`${styles.messageRow} ${styles[msg.role]}`}>
@@ -169,7 +220,9 @@ export default function Dashboard() {
                             <div className={`${styles.messageRow} ${styles.assistant}`}>
                                 <div className={styles.messageBubble}>
                                     <div className={styles.senderName}>Oracle</div>
-                                    <div className={styles.messageText}>Verifying credentials...</div>
+                                    <div className={styles.messageText}>
+                                        {isChatMode ? "Thinking..." : "Verifying credentials..."}
+                                    </div>
                                 </div>
                             </div>
                         )}
@@ -179,7 +232,12 @@ export default function Dashboard() {
                     {/* Floating Input at bottom */}
                     <div className={styles.floatingInput}>
                         <div style={{ width: '100%', maxWidth: '800px' }}>
-                            <ChatInput onSend={handleCheck} disabled={loading} />
+                            <ChatInput
+                                onSend={handleSend}
+                                disabled={loading}
+                                isChatMode={isChatMode}
+                                onToggleMode={() => setIsChatMode(!isChatMode)}
+                            />
                         </div>
                     </div>
                 </div>
