@@ -30,8 +30,8 @@
     /* Match Home navbar height */
     display: flex;
     align-items: center;
-    justify-content: flex-start;
-    /* Align left */
+    justify-content: center;
+    /* Center the logo/title */
     padding: 0 3rem;
     /* Match Home padding */
     background: transparent;
@@ -48,13 +48,31 @@
 }
 
 .sm-logo {
-    display: none;
-    /* User requested no logo on navbar */
+    display: flex;
+    align-items: center;
+    justify-content: center;
+    user-select: none;
+    font-weight: 500;
+    font-size: 0.9rem;
+    color: rgba(255, 255, 255, 0.5);
+    /* Match chat header style */
+    font-family: var(--font-sans);
+    pointer-events: auto;
 }
 
-/* Toggle Button Styling - Refined for "Modern" look */
+.sm-logo-img {
+    display: block;
+    height: 32px;
+    width: auto;
+    object-fit: contain;
+}
+
+/* Toggle Button Styling - Absolute Left */
 .sm-toggle {
-    position: relative;
+    position: absolute;
+    /* Take out of flow to keep logo centered */
+    left: 3rem;
+    /* Match padding */
     display: inline-flex;
     align-items: center;
     gap: 0.6rem;
@@ -74,6 +92,19 @@
     letter-spacing: 0.05em;
     transition: all 0.3s cubic-bezier(0.4, 0, 0.2, 1);
     backdrop-filter: blur(4px);
+    z-index: 51;
+    /* Ensure above header layer */
+}
+
+/* Adjust for mobile padding */
+@media (max-width: 768px) {
+    .staggered-menu-header {
+        padding: 0 1.5rem;
+    }
+
+    .sm-toggle {
+        left: 1.5rem;
+    }
 }
 
 .sm-toggle:hover {
@@ -140,8 +171,8 @@
     position: absolute;
     top: 0;
     left: 0;
-    width: clamp(280px, 25vw, 380px);
-    /* Reduced width */
+    width: clamp(260px, 20vw, 320px);
+    /* Tighter, more standard sidebar */
     height: 100%;
     background: rgba(5, 5, 5, 0.7);
     backdrop-filter: blur(20px);
@@ -149,8 +180,7 @@
     border-right: 1px solid rgba(255, 255, 255, 0.06);
     display: flex;
     flex-direction: column;
-    padding: 6rem 2rem 3rem 2.5rem;
-    /* Adjusted padding for narrower width */
+    padding: 7rem 2rem 2rem 2rem;
     overflow-y: auto;
     z-index: 45;
     transform: translateX(-100%);
@@ -179,7 +209,7 @@
     top: 0;
     left: 0;
     bottom: 0;
-    width: clamp(280px, 25vw, 380px);
+    width: clamp(260px, 20vw, 320px);
     pointer-events: none;
     z-index: 44;
 }
@@ -204,9 +234,7 @@
     display: flex;
     flex-direction: column;
     justify-content: flex-start;
-    /* Align top to avoid floating in middle */
-    padding-top: 2rem;
-    /* Add specific spacing from header */
+    padding-top: 1rem;
 }
 
 /* Items List */
@@ -216,34 +244,31 @@
     margin: 0;
     display: flex;
     flex-direction: column;
-    gap: 2rem;
-    /* Increased gap to fill space */
+    gap: 0.75rem;
+    /* Clean standard gap */
 }
 
 .sm-panel-itemWrap {
     overflow: hidden;
     position: relative;
     display: flex;
-    align-items: baseline;
-    /* Align numbering with text baseline */
+    align-items: center;
+    /* Center numbering vertically */
 }
 
 .sm-panel-item {
     display: inline-block;
-    font-size: 3rem;
-    /* Increased size significantly */
-    font-weight: 700;
-    /* Bolder */
+    font-size: 1.5rem;
+    /* Standard modern nav size */
+    font-weight: 500;
+    /* Lighter weight */
     color: #a1a1aa;
-    /* Muted default state */
     text-decoration: none;
-    line-height: 1.1;
-    letter-spacing: -0.03em;
+    line-height: 1.2;
+    letter-spacing: -0.01em;
     text-transform: capitalize;
-    /* Cleaner look than uppercase */
     transition: color 0.2s ease;
     font-family: var(--font-sans);
-    /* Use app font */
 }
 
 .sm-panel-item:hover,
@@ -265,20 +290,16 @@
     counter-increment: smItem;
     content: counter(smItem, decimal-leading-zero);
     display: inline-block;
-    margin-right: 1.5rem;
-    font-size: 1rem;
-    /* Slightly larger number */
+    margin-right: 1rem;
+    font-size: 0.75rem;
     font-weight: 400;
     color: #3b82f6;
-    /* Accent color */
     font-family: 'Geist Mono', monospace;
-    opacity: var(--sm-num-opacity, 0.8);
-    vertical-align: middle;
-    transform: translateY(-4px);
-    /* Vertical adjustment for new font size */
+    opacity: 0.5;
+    transform: translateY(0);
 }
 
-/* Remove old suffix numbering to fix clipping */
+/* Remove old suffix numbering */
 .sm-panel-list[data-numbering] .sm-panel-item::after {
     content: none;
 }
@@ -286,7 +307,7 @@
 /* Socials Section - Minimalist Footer */
 .sm-socials {
     margin-top: auto;
-    padding-top: 4rem;
+    padding-top: 2rem;
     display: flex;
     flex-direction: column;
     gap: 1.5rem;

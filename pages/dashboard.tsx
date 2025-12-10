@@ -117,7 +117,7 @@ export default function Dashboard() {
             <StaggeredMenu
                 items={menuItems}
                 socialItems={socialItems}
-                logo={null}
+                logo={messages.length > 0 ? "Oracle Intelligent Check" : null}
                 position="left"
                 isFixed={true}
             // Colors handled by CSS for glassmorphism
@@ -149,9 +149,7 @@ export default function Dashboard() {
                 </div>
             ) : (
                 <div className={styles.chatLayout}>
-                    <div className={styles.chatHeader}>
-                        Oracle Intelligent Check
-                    </div>
+                    {/* Header removed - now in StaggeredMenu */}
 
                     <div className={styles.chatScrollArea}>
                         {messages.map((msg) => (
