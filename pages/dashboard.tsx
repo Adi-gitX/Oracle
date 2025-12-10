@@ -4,6 +4,8 @@ import styles from '../styles/Dashboard.module.css'
 import ChatInput from '../components/ChatInput'
 import ResultMessage from '../components/ResultMessage'
 import StaggeredMenu from '../components/StaggeredMenu/StaggeredMenu'
+import ReactMarkdown from 'react-markdown'
+import remarkGfm from 'remark-gfm'
 
 interface KeyResult {
     key: string
@@ -118,6 +120,7 @@ export default function Dashboard() {
                 content: "I couldn't find any valid API key formats in your message. please switch to chat mode if you want to talk."
             }])
             setLoading(false)
+            processingRef.current = false
             return
         }
 
@@ -211,7 +214,9 @@ export default function Dashboard() {
                                         {msg.role === 'user' ? 'You' : 'Oracle'}
                                     </div>
                                     <div className={styles.messageText}>
-                                        {msg.content}
+                                        <ReactMarkdown remarkPlugins={[remarkGfm]}>
+                                            {msg.content || ''}
+                                        </ReactMarkdown>
                                     </div>
                                     {msg.results && <ResultMessage results={msg.results} />}
                                 </div>

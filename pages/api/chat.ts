@@ -19,20 +19,27 @@ export default async function handler(
     const { message, context } = req.body
 
     try {
-        const model = genAI.getGenerativeModel({ model: 'gemini-2.0-flash' })
+        const model = genAI.getGenerativeModel({ model: 'gemini-2.5-flash' })
 
         const prompt = `
-You are Oracle, an intelligent API key management assistant.
-Context: The user has previously verified some API keys.
-Here is the context of valid/working keys found in this session:
-${JSON.stringify(context, null, 2)}
+You are Oracle, an elite API security consultant.
+Your goal is to help developers verify, debug, and manage their API credentials.
 
-User Request: ${message}
+CONTEXT:
+${context.length > 0
+                ? `The user has verified these keys in this session:\n${JSON.stringify(context, null, 2)}`
+                : 'No keys have been verified in this session yet.'
+            }
 
-Instructions:
-1. Answer the user's request helpfully.
-2. If they ask for a list of working keys, provide them in a clean, copy-paste friendly format.
-3. Be professional and concise.
+USER MESSAGE:
+"${message}"
+
+INSTRUCTIONS:
+1. be concise, professional, and helpful.
+2. format responses using Markdown (bold for emphasis, code blocks for code/keys, lists for steps).
+3. If the user asks about the keys above, analyze them based on the provided JSON data.
+4. If the user asks general tech questions, answer them briefly.
+5. Do not invent keys. Only discuss keys provided in context or by the user.
 `
 
         const result = await model.generateContent(prompt)

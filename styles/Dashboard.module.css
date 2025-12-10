@@ -405,6 +405,11 @@
     box-shadow: 0 0 10px rgba(213, 0, 249, 0.4);
 }
 
+.dot.orange {
+    background: #FF6400;
+    box-shadow: 0 0 10px rgba(255, 100, 0, 0.4);
+}
+
 .cardCount {
     background: rgba(255, 255, 255, 0.1);
     color: rgba(255, 255, 255, 0.6);

@@ -82,6 +82,7 @@ const checkGemini = async (key: string): Promise<CheckResponse> => {
         const res = await fetch(`https://generativelanguage.googleapis.com/v1beta/models?key=${key}`)
 
         if (res.status === 400) return { valid: false, message: 'Invalid API Key' }
+        if (res.status === 403) return { valid: false, message: 'Leaked Key - Inactive' }
         if (!res.ok) return { valid: false, message: `Error: ${res.statusText}` }
 
         const data = await res.json()

@@ -33,21 +33,27 @@ export default function ResultMessage({ results }: ResultMessageProps) {
                     <div className={styles.cardCount}>{items.length}</div>
                 </div>
                 <ul className={styles.cardList}>
-                    {items.map((item, idx) => (
-                        <li key={idx} className={styles.cardItem}>
-                            <div className={styles.itemInfo}>
-                                <div className={styles.providerName}>{item.provider}</div>
-                                <div className={styles.keyText}>{item.key}</div>
-                            </div>
-                            <button
-                                className={styles.copyBtn}
-                                onClick={() => copyToClipboard(item.key)}
-                                title="Copy"
-                            >
-                                <svg width="14" height="14" viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="2" strokeLinecap="round" strokeLinejoin="round"><rect x="9" y="9" width="13" height="13" rx="2" ry="2"></rect><path d="M5 15H4a2 2 0 0 1-2-2V4a2 2 0 0 1 2-2h9a2 2 0 0 1 2 2v1"></path></svg>
-                            </button>
-                        </li>
-                    ))}
+                    {items.map((item, idx) => {
+                        const isLeaked = item.details?.includes('Leaked')
+                        return (
+                            <li key={idx} className={styles.cardItem}>
+                                <div className={styles.itemInfo}>
+                                    <div className={styles.providerName}>
+                                        {item.provider}
+                                        {isLeaked && <span style={{ marginLeft: '8px', fontSize: '10px', background: 'rgba(255, 100, 0, 0.2)', color: '#ff6400', padding: '2px 6px', borderRadius: '4px' }}>LEAKED</span>}
+                                    </div>
+                                    <div className={styles.keyText}>{item.key}</div>
+                                </div>
+                                <button
+                                    className={styles.copyBtn}
+                                    onClick={() => copyToClipboard(item.key)}
+                                    title="Copy"
+                                >
+                                    <svg width="14" height="14" viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="2" strokeLinecap="round" strokeLinejoin="round"><rect x="9" y="9" width="13" height="13" rx="2" ry="2"></rect><path d="M5 15H4a2 2 0 0 1-2-2V4a2 2 0 0 1 2-2h9a2 2 0 0 1 2 2v1"></path></svg>
+                                </button>
+                            </li>
+                        )
+                    })}
                 </ul>
             </div>
         )
