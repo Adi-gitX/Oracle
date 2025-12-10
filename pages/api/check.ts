@@ -1,144 +1,74 @@
 import type { NextApiRequest, NextApiResponse } from 'next'
-import fetch from 'cross-fetch'
-import { decryptData, encryptData } from '../../utils/encryption'
+import { decryptData, encryptData } from '../../utils/encryption' // Ensure encryption utils are here
+import { CheckResult, ProviderAdapter } from '../../lib/adapters/types'
+import { OpenAIAdapter } from '../../lib/adapters/openai'
+import { AnthropicAdapter } from '../../lib/adapters/anthropic'
+import { GeminiAdapter } from '../../lib/adapters/gemini'
 
-type CheckResponse = {
-    valid: boolean
-    provider?: string
-    message?: string
-    premium?: boolean
-    models?: string[]
-}
-
-const checkOpenAI = async (key: string): Promise<CheckResponse> => {
-    try {
-        const res = await fetch('https://api.openai.com/v1/models', {
-            headers: { Authorization: `Bearer ${key}` },
-        })
-
-        if (res.status === 401) return { valid: false, message: 'Invalid API Key' }
-        if (!res.ok) return { valid: false, message: `Error: ${res.statusText}` }
-
-        const data = await res.json()
-        const models = data.data.map((m: any) => m.id)
-        const hasGPT4 = models.some((m: string) => m.includes('gpt-4'))
-
-        return {
-            valid: true,
-            provider: 'OpenAI',
-            premium: hasGPT4,
-            models: models.slice(0, 5), // just return a few
-            message: hasGPT4 ? 'GPT-4 Enabled' : 'GPT-3.5 Only'
-        }
-    } catch (error) {
-        return { valid: false, message: 'Network Error' }
-    }
-}
-
-const checkAnthropic = async (key: string): Promise<CheckResponse> => {
-    try {
-        // Anthropic doesn't have a simple GET models endpoint that uses the key in the same standard way universally documented without version headers, 
-        // but we can try a dummy message or see if they added one. 
-        // Actually, asking for models is safested if exists, but usually a small complete request is needed.
-        // Let's try a very small completion with max_tokens 1.
-        const res = await fetch('https://api.anthropic.com/v1/messages', {
-            method: 'POST',
-            headers: {
-                'x-api-key': key,
-                'anthropic-version': '2023-06-01',
-                'content-type': 'application/json'
-            },
-            body: JSON.stringify({
-                model: 'claude-3-haiku-20240307',
-                max_tokens: 1,
-                messages: [{ role: 'user', content: 'Hi' }]
-            })
-        })
-
-        if (res.status === 401 || res.status === 403) return { valid: false, message: 'Invalid API Key' }
-        // If we get 400 about model, the key is likely valid but model might be wrong (unlikely for haiku).
-        // If we get 200, valid.
-
-        // Also, checking for "premium" in Anthropic is harder, usually all paid.
-        // We can assume valid = usable.
-
-        if (res.ok) {
-            return {
-                valid: true,
-                provider: 'Anthropic',
-                premium: true, // Anthropic is generally paid-only for API
-                message: 'Active'
-            }
-        }
-
-        const errData = await res.json()
-        return { valid: false, message: errData.error?.message || res.statusText }
-    } catch (error) {
-        return { valid: false, message: 'Network Error' }
-    }
-}
-
-const checkGemini = async (key: string): Promise<CheckResponse> => {
-    try {
-        const res = await fetch(`https://generativelanguage.googleapis.com/v1beta/models?key=${key}`)
-
-        if (res.status === 400) return { valid: false, message: 'Invalid API Key' }
-        if (res.status === 403) return { valid: false, message: 'Leaked Key - Inactive' }
-        if (!res.ok) return { valid: false, message: `Error: ${res.statusText}` }
-
-        const data = await res.json()
-        const models = data.models ? data.models.map((m: any) => m.name) : []
-
-        return {
-            valid: true,
-            provider: 'Google Gemini',
-            premium: false, // Gemini API is generally free or pay-as-you-go, no specific "premium" tier flag in models
-            models: models.slice(0, 5),
-            message: 'Active'
-        }
-    } catch (error) {
-        return { valid: false, message: 'Network Error' }
-    }
-}
+const Adapters: ProviderAdapter[] = [
+    OpenAIAdapter,
+    AnthropicAdapter,
+    GeminiAdapter
+]
 
 export default async function handler(
     req: NextApiRequest,
-    res: NextApiResponse<CheckResponse>
+    res: NextApiResponse<CheckResult | { message: string }>
 ) {
     if (req.method !== 'POST') {
-        return res.status(405).json({ valid: false, message: 'Method Not Allowed' })
+        return res.status(405).json({
+            valid: false, provider: 'System', message: 'Method Not Allowed',
+            confidenceScore: 0, trustLevel: 'Low'
+        } as any)
     }
 
     const { key, isEncrypted } = req.body
     let finalKey = key
 
+    // 1. Decrypt if needed (Trust Layer)
     if (isEncrypted) {
         try {
             finalKey = decryptData(key)
         } catch (e) {
             console.error('Decryption failed', e)
-            return res.status(400).json({ valid: false, message: 'Encryption Error' })
+            return res.status(400).json({
+                valid: false, provider: 'System', message: 'Encryption Error',
+                confidenceScore: 0, trustLevel: 'Low'
+            } as any)
         }
     }
 
-    if (!finalKey) return res.status(400).json({ valid: false, message: 'Missing Key' })
+    if (!finalKey) return res.status(400).json({
+        valid: false, provider: 'System', message: 'Missing Key',
+        confidenceScore: 0, trustLevel: 'Low'
+    } as any)
 
-    let result: CheckResponse = { valid: false, provider: 'Unknown' }
+    // 2. Adapter Matching (Engineering Backbone)
+    const adapter = Adapters.find(a => a.matches(finalKey))
 
-    if (finalKey.startsWith('sk-ant')) {
-        result = await checkAnthropic(finalKey)
-        result.provider = 'Anthropic'
-    } else if (finalKey.startsWith('sk-')) {
-        result = await checkOpenAI(finalKey)
-        result.provider = 'OpenAI'
-    } else if (finalKey.startsWith('AIza')) {
-        result = await checkGemini(finalKey)
-        result.provider = 'Google Gemini'
+    let result: CheckResult;
+
+    if (adapter) {
+        // 3. Delegation
+        result = await adapter.check(finalKey);
     } else {
-        result = { valid: false, message: 'Unknown Key Format' }
+        // Fallback for unknown formats
+        result = {
+            valid: false,
+            provider: 'Unknown',
+            message: 'Unknown Key Format',
+            confidenceScore: 0.0,
+            trustLevel: 'Low'
+        };
     }
 
-    // Encrypt the result before sending
-    const encryptedResult = encryptData(JSON.stringify(result))
-    res.status(200).json({ payload: encryptedResult, isEncrypted: true } as any)
+    // 4. Sanitation (Trust Layer - Best Effort)
+    finalKey = null; // Explicit wipe hint
+
+    // 5. Response Encryption (Trust Layer)
+    const encryptedResult = encryptData(JSON.stringify(result));
+
+    // Type assertion to any because we are sending an encrypted payload wrapper, 
+    // not the CheckResult shape directly on the wire.
+    res.status(200).json({ payload: encryptedResult, isEncrypted: true } as any);
 }

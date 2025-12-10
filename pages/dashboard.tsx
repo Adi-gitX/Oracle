@@ -289,7 +289,7 @@ export default function Dashboard() {
                     </div>
 
                     {/* Floating Input at bottom */}
-                    <div className={styles.floatingInput}>
+                    <div className={styles.floatingInput} style={{ flexDirection: 'column', alignItems: 'center', gap: '10px' }}>
                         <div style={{ width: '100%', maxWidth: '800px' }}>
                             <ChatInput
                                 onSend={handleSend}
@@ -297,6 +297,16 @@ export default function Dashboard() {
                                 isChatMode={isChatMode}
                                 onToggleMode={() => setIsChatMode(!isChatMode)}
                             />
+                        </div>
+                        <div style={{
+                            fontSize: '0.7rem',
+                            color: 'rgba(255,255,255,0.3)',
+                            textAlign: 'center',
+                            maxWidth: '600px',
+                            lineHeight: '1.4'
+                        }}>
+                            By using Oracle, you agree to our <a href="/docs#legal" style={{ textDecoration: 'underline', color: 'rgba(255,255,255,0.4)' }}>Terms of Service</a>.
+                            Zero Retention Policy Active. Provided "AS IS" without warranty.
                         </div>
                     </div>
                 </div>

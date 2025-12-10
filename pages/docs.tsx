@@ -121,6 +121,11 @@ export default function Docs() {
                                 className={`${docStyles.navLink} ${activeSection === 'usage' ? docStyles.active : ''}`}>
                                 Usage Limits
                             </a>
+                            <a href="#legal"
+                                onClick={(e) => handleScrollTo(e, 'legal')}
+                                className={`${docStyles.navLink} ${activeSection === 'legal' ? docStyles.active : ''}`}>
+                                Legal & Terms
+                            </a>
                         </div>
                     </aside>
 
@@ -197,6 +202,33 @@ GOOGLE_API_KEY=AIzaSyD...`}
                             <p className={docStyles.text}>
                                 Oracle is currently in free preview. There are no strict rate limits for individual usage.
                                 For enterprise batch processing, please contact us.
+                            </p>
+                        </section>
+
+                        <section id="legal" className={docStyles.section}>
+                            <h2 className={docStyles.subtitle}>Legal & Terms of Service</h2>
+
+                            <h3 className={docStyles.subtitle} style={{ fontSize: '1.2rem', marginTop: '2rem' }}>1. Disclaimer of Warranty</h3>
+                            <p className={docStyles.text} style={{ fontSize: '0.9rem', color: '#a1a1aa' }}>
+                                THE SOFTWARE IS PROVIDED "AS IS", WITHOUT WARRANTY OF ANY KIND, EXPRESS OR IMPLIED, INCLUDING BUT NOT LIMITED TO THE WARRANTIES OF MERCHANTABILITY, FITNESS FOR A PARTICULAR PURPOSE AND NONINFRINGEMENT. IN NO EVENT SHALL THE AUTHORS OR COPYRIGHT HOLDERS BE LIABLE FOR ANY CLAIM, DAMAGES OR OTHER LIABILITY, WHETHER IN AN ACTION OF CONTRACT, TORT OR OTHERWISE, ARISING FROM, OUT OF OR IN CONNECTION WITH THE SOFTWARE OR THE USE OR OTHER DEALINGS IN THE SOFTWARE.
+                            </p>
+
+                            <h3 className={docStyles.subtitle} style={{ fontSize: '1.2rem', marginTop: '2rem' }}>2. Limitation of Liability</h3>
+                            <p className={docStyles.text}>
+                                You expressly understand and agree that Oracle shall not be liable for any direct, indirect, incidental, special, consequential or exemplary damages, including but not limited to, damages for loss of profits, goodwill, use, data or other intangible losses resulting from the use or the inability to use the service.
+                            </p>
+
+                            <h3 className={docStyles.subtitle} style={{ fontSize: '1.2rem', marginTop: '2rem' }}>3. Zero Retention Policy</h3>
+                            <p className={docStyles.text}>
+                                Oracle operates on a strict "Zero Retention" basis. We do not store, log, or persist your API keys continuously. Keys are processed in-memory for the duration of the verification request and are immediately discarded.
+                            </p>
+                            <p className={docStyles.text}>
+                                While we employ industry-standard encryption (AES-256) for transmission, you acknowledge that you are using this service at your own risk. We serve as a passthrough verification tool only.
+                            </p>
+
+                            <h3 className={docStyles.subtitle} style={{ fontSize: '1.2rem', marginTop: '2rem' }}>4. User Responsibility</h3>
+                            <p className={docStyles.text}>
+                                You are solely responsible for the security of your API keys. We recommend rotating any keys that you believe may have been compromised, regardless of Oracle's verification results.
                             </p>
                         </section>
                     </main>

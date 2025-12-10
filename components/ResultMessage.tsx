@@ -6,6 +6,8 @@ interface KeyResult {
     status: 'valid' | 'invalid' | 'unchecked'
     details?: string
     premium?: boolean
+    confidenceScore?: number
+    trustLevel?: 'High' | 'Medium' | 'Low'
 }
 
 interface ResultMessageProps {
@@ -35,12 +37,29 @@ export default function ResultMessage({ results }: ResultMessageProps) {
                 <ul className={styles.cardList}>
                     {items.map((item, idx) => {
                         const isLeaked = item.details?.includes('Leaked')
+                        // Trust Badge Logic
+                        const trustColor = item.trustLevel === 'High' ? '#00E676' :
+                            item.trustLevel === 'Medium' ? '#FFB74D' : '#FF5252';
+                        const showTrust = item.confidenceScore !== undefined;
+
                         return (
                             <li key={idx} className={styles.cardItem}>
                                 <div className={styles.itemInfo}>
-                                    <div className={styles.providerName}>
+                                    <div className={styles.providerName} style={{ display: 'flex', alignItems: 'center', gap: '8px' }}>
                                         {item.provider}
-                                        {isLeaked && <span style={{ marginLeft: '8px', fontSize: '10px', background: 'rgba(255, 100, 0, 0.2)', color: '#ff6400', padding: '2px 6px', borderRadius: '4px' }}>LEAKED</span>}
+                                        {isLeaked && <span style={{ fontSize: '10px', background: 'rgba(255, 100, 0, 0.2)', color: '#ff6400', padding: '2px 6px', borderRadius: '4px' }}>LEAKED</span>}
+                                        {showTrust && !isLeaked && (
+                                            <span style={{
+                                                fontSize: '10px',
+                                                background: `rgba(${item.trustLevel === 'High' ? '0,230,118' : '255,82,82'}, 0.1)`,
+                                                color: trustColor,
+                                                padding: '2px 6px',
+                                                borderRadius: '4px',
+                                                border: `1px solid ${trustColor}33`
+                                            }}>
+                                                {item.trustLevel} Trust {(item.confidenceScore! * 100).toFixed(0)}%
+                                            </span>
+                                        )}
                                     </div>
                                     <div className={styles.keyText}>{item.key}</div>
                                 </div>
@@ -72,3 +91,4 @@ export default function ResultMessage({ results }: ResultMessageProps) {
         </div>
     )
 }
+
