@@ -78,16 +78,15 @@ export default function Suggestions() {
                     </p>
 
                     <form onSubmit={handleSubmit} className={styles.feedbackForm}>
-                        <div style={{ display: 'grid', gridTemplateColumns: '1fr 2fr', gap: '1rem', marginBottom: '1rem' }}>
+                        <div className={styles.formGrid}>
                             <select
                                 value={type}
                                 onChange={e => setType(e.target.value)}
-                                className={styles.glassInput}
-                                style={{ appearance: 'none', cursor: 'pointer' }}
+                                className={`${styles.glassInput} ${styles.customSelect}`}
                             >
-                                <option value="General">General</option>
-                                <option value="Feature">Feature Idea</option>
-                                <option value="Bug">Bug Report</option>
+                                <option style={{ color: '#000' }} value="General">General</option>
+                                <option style={{ color: '#000' }} value="Feature">Feature Idea</option>
+                                <option style={{ color: '#000' }} value="Bug">Bug Report</option>
                             </select>
 
                             <input
@@ -144,14 +143,7 @@ export default function Suggestions() {
                             href="https://discord.gg/3CVfRfQ3"
                             target="_blank"
                             rel="noopener noreferrer"
-                            className={styles.submitButton}
-                            style={{
-                                background: '#5865F2',
-                                width: 'auto',
-                                display: 'inline-block',
-                                padding: '0.8rem 2rem',
-                                textDecoration: 'none'
-                            }}
+                            className={styles.discordButton}
                         >
                             Join our Discord Server
                         </a>

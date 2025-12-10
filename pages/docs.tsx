@@ -210,7 +210,7 @@ GOOGLE_API_KEY=AIzaSyD...`}
 
                             <h3 className={docStyles.subtitle} style={{ fontSize: '1.2rem', marginTop: '2rem' }}>1. Disclaimer of Warranty</h3>
                             <p className={docStyles.text} style={{ fontSize: '0.9rem', color: '#a1a1aa' }}>
-                                THE SOFTWARE IS PROVIDED "AS IS", WITHOUT WARRANTY OF ANY KIND, EXPRESS OR IMPLIED, INCLUDING BUT NOT LIMITED TO THE WARRANTIES OF MERCHANTABILITY, FITNESS FOR A PARTICULAR PURPOSE AND NONINFRINGEMENT. IN NO EVENT SHALL THE AUTHORS OR COPYRIGHT HOLDERS BE LIABLE FOR ANY CLAIM, DAMAGES OR OTHER LIABILITY, WHETHER IN AN ACTION OF CONTRACT, TORT OR OTHERWISE, ARISING FROM, OUT OF OR IN CONNECTION WITH THE SOFTWARE OR THE USE OR OTHER DEALINGS IN THE SOFTWARE.
+                                THE SOFTWARE IS PROVIDED &quot;AS IS&quot;, WITHOUT WARRANTY OF ANY KIND, EXPRESS OR IMPLIED, INCLUDING BUT NOT LIMITED TO THE WARRANTIES OF MERCHANTABILITY, FITNESS FOR A PARTICULAR PURPOSE AND NONINFRINGEMENT. IN NO EVENT SHALL THE AUTHORS OR COPYRIGHT HOLDERS BE LIABLE FOR ANY CLAIM, DAMAGES OR OTHER LIABILITY, WHETHER IN AN ACTION OF CONTRACT, TORT OR OTHERWISE, ARISING FROM, OUT OF OR IN CONNECTION WITH THE SOFTWARE OR THE USE OR OTHER DEALINGS IN THE SOFTWARE.
                             </p>
 
                             <h3 className={docStyles.subtitle} style={{ fontSize: '1.2rem', marginTop: '2rem' }}>2. Limitation of Liability</h3>
@@ -220,7 +220,7 @@ GOOGLE_API_KEY=AIzaSyD...`}
 
                             <h3 className={docStyles.subtitle} style={{ fontSize: '1.2rem', marginTop: '2rem' }}>3. Zero Retention Policy</h3>
                             <p className={docStyles.text}>
-                                Oracle operates on a strict "Zero Retention" basis. We do not store, log, or persist your API keys continuously. Keys are processed in-memory for the duration of the verification request and are immediately discarded.
+                                Oracle operates on a strict &quot;Zero Retention&quot; basis. We do not store, log, or persist your API keys continuously. Keys are processed in-memory for the duration of the verification request and are immediately discarded.
                             </p>
                             <p className={docStyles.text}>
                                 While we employ industry-standard encryption (AES-256) for transmission, you acknowledge that you are using this service at your own risk. We serve as a passthrough verification tool only.
@@ -228,7 +228,7 @@ GOOGLE_API_KEY=AIzaSyD...`}
 
                             <h3 className={docStyles.subtitle} style={{ fontSize: '1.2rem', marginTop: '2rem' }}>4. User Responsibility</h3>
                             <p className={docStyles.text}>
-                                You are solely responsible for the security of your API keys. We recommend rotating any keys that you believe may have been compromised, regardless of Oracle's verification results.
+                                You are solely responsible for the security of your API keys. We recommend rotating any keys that you believe may have been compromised, regardless of Oracle&apos;s verification results.
                             </p>
                         </section>
                     </main>

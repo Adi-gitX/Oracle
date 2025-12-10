@@ -1,5 +1,6 @@
 import { useState, useRef, useEffect } from 'react'
 import Head from 'next/head'
+import Link from 'next/link'
 import styles from '../styles/Dashboard.module.css'
 import ChatInput from '../components/ChatInput'
 import ResultMessage from '../components/ResultMessage'
@@ -18,7 +19,7 @@ interface KeyResult {
 
 interface Message {
     role: 'user' | 'assistant'
-    content?: string
+    content: string
     results?: KeyResult[]
     id: string
 }
@@ -40,18 +41,22 @@ const socialItems = [
 export default function Dashboard() {
     const [messages, setMessages] = useState<Message[]>([])
     const [loading, setLoading] = useState(false)
-    const [isChatMode, setIsChatMode] = useState(false)
+    const [isChatMode, setIsChatMode] = useState(false) // Toggle between Check Mode (false) and Chat Mode (true)
     const chatContainerRef = useRef<HTMLDivElement>(null)
     const chatContentRef = useRef<HTMLDivElement>(null)
 
+    // Auto-scroll logic
     const scrollToBottom = () => {
-        if (!chatContainerRef.current) return
-        const { scrollHeight, clientHeight } = chatContainerRef.current
-        chatContainerRef.current.scrollTo({
-            top: scrollHeight - clientHeight,
-            behavior: 'smooth'
-        })
+        if (chatContainerRef.current) {
+            const { scrollHeight, clientHeight } = chatContainerRef.current
+            chatContainerRef.current.scrollTo({
+                top: scrollHeight - clientHeight,
+                behavior: 'smooth'
+            })
+        }
     }
+
+    const hasMessages = messages.length > 0
 
     // Optimized Auto-scroll with ResizeObserver
     useEffect(() => {
@@ -68,7 +73,7 @@ export default function Dashboard() {
 
         resizeObserver.observe(content)
         return () => resizeObserver.disconnect()
-    }, [messages.length > 0]) // Only re-run when chat mode initially activates
+    }, [hasMessages]) // Only re-run when chat mode initially activates
 
     const processingRef = useRef(false)
 
@@ -305,8 +310,8 @@ export default function Dashboard() {
                             maxWidth: '600px',
                             lineHeight: '1.4'
                         }}>
-                            By using Oracle, you agree to our <a href="/docs#legal" style={{ textDecoration: 'underline', color: 'rgba(255,255,255,0.4)' }}>Terms of Service</a>.
-                            Zero Retention Policy Active. Provided "AS IS" without warranty.
+                            By using Oracle, you agree to our <Link href="/docs#legal" style={{ textDecoration: 'underline', color: 'rgba(255,255,255,0.4)' }}>Terms of Service</Link>.
+                            Zero Retention Policy Active. Provided &quot;AS IS&quot; without warranty.
                         </div>
                     </div>
                 </div>
