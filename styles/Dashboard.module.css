@@ -40,6 +40,8 @@
     display: flex;
     flex-direction: column;
     align-items: center;
+    justify-content: center;
+    min-height: 100vh;
     padding: 2rem;
     text-align: center;
     animation: fadeIn 0.5s ease-out;
@@ -54,7 +56,7 @@
     border-radius: 99px;
     font-size: 0.85rem;
     color: rgba(255, 255, 255, 0.7);
-    margin-bottom: 2.5rem;
+    margin-bottom: 1rem;
     backdrop-filter: blur(10px);
     display: inline-flex;
     /* Fix: Inline flex to fit content */
@@ -80,7 +82,7 @@
 .heroTitle {
     font-size: 4rem;
     font-weight: 800;
-    margin: 0 0 1rem;
+    margin: 0 0 0.25rem;
     letter-spacing: -0.04em;
     line-height: 1.1;
     background: linear-gradient(180deg, #fff 0%, #ccc 100%);
@@ -107,7 +109,7 @@
 .heroSubtitle {
     font-size: 1.2rem;
     color: rgba(255, 255, 255, 0.5);
-    margin-bottom: 4rem;
+    margin-bottom: 2rem;
     font-weight: 400;
     max-width: 500px;
     line-height: 1.6;

@@ -243,14 +243,14 @@ export default function Dashboard() {
                         <span>New</span> Oracle Analysis v2.0
                     </div>
 
-                    <h1 className={styles.heroTitle} style={{ display: 'flex', alignItems: 'center', justifyContent: 'center', gap: '0px' }}>
+                    <h1 className={styles.heroTitle} style={{ display: 'flex', alignItems: 'center', justifyContent: 'center', gap: '0px', paddingLeft: '160px' }}>
                         Verify API keys with
-                        <span style={{ display: 'flex', alignItems: 'center', marginLeft: '-140px' }}>
+                        <span style={{ display: 'flex', alignItems: 'center', marginLeft: '-160px' }}>
                             <Image
                                 src="/assets/branding/oracle-logo.png"
                                 alt="Oracle Logo"
-                                width={500}
-                                height={160}
+                                width={550}
+                                height={176}
                                 objectFit="contain"
                                 priority
                             />
