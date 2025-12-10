@@ -5,6 +5,7 @@ import StaggeredMenu from '../components/StaggeredMenu/StaggeredMenu'
 
 const menuItems = [
     { label: 'Home', link: '/' },
+    { label: 'Dashboard', link: '/dashboard' },
     { label: 'Pricing', link: '/pricing' },
     { label: 'Docs', link: '/docs' },
 ];
