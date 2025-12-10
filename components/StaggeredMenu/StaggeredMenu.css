@@ -140,24 +140,23 @@
     position: absolute;
     top: 0;
     left: 0;
-    width: clamp(320px, 30vw, 450px);
-    /* Balanced width */
+    width: clamp(280px, 25vw, 380px);
+    /* Reduced width */
     height: 100%;
     background: rgba(5, 5, 5, 0.7);
-    /* More transparency for seamless feel */
     backdrop-filter: blur(20px);
     -webkit-backdrop-filter: blur(20px);
     border-right: 1px solid rgba(255, 255, 255, 0.06);
     display: flex;
     flex-direction: column;
-    padding: 7rem 3rem 3rem 3rem;
+    padding: 6rem 2rem 3rem 2.5rem;
+    /* Adjusted padding for narrower width */
     overflow-y: auto;
     z-index: 45;
     transform: translateX(-100%);
     pointer-events: auto;
     box-shadow: 20px 0 50px rgba(0, 0, 0, 0.5);
     transition: transform 0.6s cubic-bezier(0.16, 1, 0.3, 1);
-    /* Smooth iOS-like curve */
 }
 
 /* Right alignment support */
@@ -180,7 +179,7 @@
     top: 0;
     left: 0;
     bottom: 0;
-    width: clamp(320px, 30vw, 450px);
+    width: clamp(280px, 25vw, 380px);
     pointer-events: none;
     z-index: 44;
 }
@@ -204,8 +203,10 @@
     flex: 1;
     display: flex;
     flex-direction: column;
-    justify-content: center;
-    /* Center items vertically for balance */
+    justify-content: flex-start;
+    /* Align top to avoid floating in middle */
+    padding-top: 2rem;
+    /* Add specific spacing from header */
 }
 
 /* Items List */
@@ -215,26 +216,28 @@
     margin: 0;
     display: flex;
     flex-direction: column;
-    gap: 1.5rem;
-    /* Better spacing/breathing room */
+    gap: 2rem;
+    /* Increased gap to fill space */
 }
 
 .sm-panel-itemWrap {
     overflow: hidden;
     position: relative;
     display: flex;
-    align-items: center;
+    align-items: baseline;
+    /* Align numbering with text baseline */
 }
 
 .sm-panel-item {
     display: inline-block;
-    font-size: 2.25rem;
-    /* Clean, large but not massive */
-    font-weight: 600;
+    font-size: 3rem;
+    /* Increased size significantly */
+    font-weight: 700;
+    /* Bolder */
     color: #a1a1aa;
     /* Muted default state */
     text-decoration: none;
-    line-height: 1.2;
+    line-height: 1.1;
     letter-spacing: -0.03em;
     text-transform: capitalize;
     /* Cleaner look than uppercase */
@@ -263,14 +266,16 @@
     content: counter(smItem, decimal-leading-zero);
     display: inline-block;
     margin-right: 1.5rem;
-    font-size: 0.85rem;
+    font-size: 1rem;
+    /* Slightly larger number */
     font-weight: 400;
     color: #3b82f6;
     /* Accent color */
     font-family: 'Geist Mono', monospace;
-    opacity: var(--sm-num-opacity, 0.6);
+    opacity: var(--sm-num-opacity, 0.8);
     vertical-align: middle;
-    transform: translateY(-2px);
+    transform: translateY(-4px);
+    /* Vertical adjustment for new font size */
 }
 
 /* Remove old suffix numbering to fix clipping */
@@ -284,13 +289,21 @@
     padding-top: 4rem;
     display: flex;
     flex-direction: column;
-    gap: 1rem;
+    gap: 1.5rem;
     border-top: 1px solid rgba(255, 255, 255, 0.05);
+    /* Separator */
+    width: 100%;
 }
 
 .sm-socials-title {
-    display: none;
-    /* Hide title for cleaner look */
+    display: block;
+    /* Show title again to fill space */
+    font-size: 0.85rem;
+    letter-spacing: 0.1em;
+    text-transform: uppercase;
+    color: #555;
+    font-family: 'Geist Mono', monospace;
+    margin-bottom: 0.5rem;
 }
 
 .sm-socials-list {
@@ -300,18 +313,17 @@
     display: flex;
     flex-direction: row;
     align-items: center;
-    gap: 1.5rem;
+    gap: 2rem;
     flex-wrap: wrap;
 }
 
 .sm-socials-link {
-    font-size: 0.9rem;
+    font-size: 1rem;
     font-weight: 500;
-    color: #666;
+    color: #888;
     text-decoration: none;
     transition: color 0.2s ease;
-    font-family: 'Geist Mono', monospace;
-    /* Tech feel for links */
+    font-family: var(--font-sans);
 }
 
 .sm-socials-link:hover {
