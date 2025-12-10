@@ -31,6 +31,9 @@ interface StaggeredMenuProps {
     onMenuClose?: () => void;
 }
 
+import Link from 'next/link';
+import Image from 'next/image';
+
 export const StaggeredMenu: React.FC<StaggeredMenuProps> = ({
     position = 'right',
     colors = ['#111', '#333'],
@@ -400,7 +403,7 @@ export const StaggeredMenu: React.FC<StaggeredMenuProps> = ({
             <header className="staggered-menu-header" aria-label="Main navigation header">
                 <div className="sm-logo" aria-label="Logo">
                     {logo === null ? null : (logo ? logo : (
-                        <img
+                        <Image
                             src={logoUrl || '/assets/logos/reactbits-gh-white.svg'}
                             alt="Logo"
                             className="sm-logo-img"

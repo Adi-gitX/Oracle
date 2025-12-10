@@ -86,11 +86,12 @@ export default function Dashboard() {
                     role: 'assistant',
                     content: data.reply || "I'm having trouble connecting right now."
                 }])
-            } catch (e: any) {
+            } catch (e) {
+                const errorMessage = e instanceof Error ? e.message : "Sorry, I encountered an error while processing your request."
                 setMessages(prev => [...prev, {
                     id: Date.now().toString(),
                     role: 'assistant',
-                    content: `Error: ${e.message || "Sorry, I encountered an error while processing your request."}`
+                    content: `Error: ${errorMessage}`
                 }])
             }
             setLoading(false)

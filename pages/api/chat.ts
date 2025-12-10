@@ -40,10 +40,10 @@ Instructions:
         const text = response.text()
 
         res.status(200).json({ reply: text })
-    } catch (error: any) {
+    } catch (error: unknown) {
         console.error('Gemini API Error:', error)
-        const status = error.status || 500
-        const message = error.message || 'Error communicating with AI service'
-        res.status(status).json({ message, error: error.toString() })
+        const status = (error as any).status || 500
+        const message = (error as any).message || 'Error communicating with AI service'
+        res.status(status).json({ message, error: String(error) })
     }
 }

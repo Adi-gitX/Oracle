@@ -106,10 +106,10 @@ export default function Docs() {
                             <h1 className={docStyles.title}>Introduction</h1>
                             <p className={docStyles.text}>
                                 Oracle is the developer-first tool for verifying, debugging, and auditing API keys.
-                                We solve the problem of "Is this key working?" by securely testing it against the official provider endpoints.
+                                We solve the problem of &quot;Is this key working?&quot; by securely testing it against the official provider endpoints.
                             </p>
                             <p className={docStyles.text}>
-                                Whether you're cleaning up a detailed .env file or auditing a legacy codebase, Oracle gives you instant clarity on which credentials are active, what permissions they have (when possible), and if they correspond to a paid plan.
+                                Whether you&apos;re cleaning up a detailed .env file or auditing a legacy codebase, Oracle gives you instant clarity on which credentials are active, what permissions they have (when possible), and if they correspond to a paid plan.
                             </p>
                         </section>
 
@@ -140,11 +140,11 @@ GOOGLE_API_KEY=AIzaSyD...`}
                         <section id="security" className={docStyles.section}>
                             <h2 className={docStyles.subtitle}>Security</h2>
                             <p className={docStyles.text}>
-                                Your security is our priority. Oracle operates on a <strong>"Verify & Forget"</strong> model.
+                                Your security is our priority. Oracle operates on a <strong>&quot;Verify &amp; Forget&quot;</strong> model.
                             </p>
                             <ul style={{ color: '#ccc', lineHeight: '1.8', paddingLeft: '1.5rem', marginBottom: '1.5rem' }}>
                                 <li>Keys are sent to our server via HTTPS (TLS 1.3).</li>
-                                <li>We execute a single "list models" or "get account" request to the provider.</li>
+                                <li>We execute a single &quot;list models&quot; or &quot;get account&quot; request to the provider.</li>
                                 <li>The result (Valid/Invalid) is returned to you.</li>
                                 <li><strong>Keys are never stored</strong> in a database or logs.</li>
                             </ul>
