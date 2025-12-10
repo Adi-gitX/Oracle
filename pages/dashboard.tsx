@@ -6,6 +6,7 @@ import ResultMessage from '../components/ResultMessage'
 import StaggeredMenu from '../components/StaggeredMenu/StaggeredMenu'
 import ReactMarkdown from 'react-markdown'
 import remarkGfm from 'remark-gfm'
+import { encryptData } from '../utils/encryption'
 
 interface KeyResult {
     key: string
@@ -27,6 +28,7 @@ const menuItems = [
     { label: 'Dashboard', link: '/dashboard' },
     { label: 'Pricing', link: '/pricing' },
     { label: 'Docs', link: '/docs' },
+    { label: 'Suggestions', link: '/suggestions' },
 ];
 
 const socialItems = [
@@ -39,17 +41,34 @@ export default function Dashboard() {
     const [messages, setMessages] = useState<Message[]>([])
     const [loading, setLoading] = useState(false)
     const [isChatMode, setIsChatMode] = useState(false)
-    const chatEndRef = useRef<HTMLDivElement>(null)
+    const chatContainerRef = useRef<HTMLDivElement>(null)
+    const chatContentRef = useRef<HTMLDivElement>(null)
 
     const scrollToBottom = () => {
-        chatEndRef.current?.scrollIntoView({ behavior: 'smooth' })
+        if (!chatContainerRef.current) return
+        const { scrollHeight, clientHeight } = chatContainerRef.current
+        chatContainerRef.current.scrollTo({
+            top: scrollHeight - clientHeight,
+            behavior: 'smooth'
+        })
     }
 
+    // Optimized Auto-scroll with ResizeObserver
     useEffect(() => {
-        if (messages.length > 0) {
-            scrollToBottom()
-        }
-    }, [messages, loading])
+        const container = chatContainerRef.current
+        const content = chatContentRef.current
+        if (!container || !content) return
+
+        const resizeObserver = new ResizeObserver(() => {
+            const targetTop = container.scrollHeight - container.clientHeight
+            if (targetTop > 0) {
+                container.scrollTo({ top: targetTop, behavior: 'smooth' })
+            }
+        })
+
+        resizeObserver.observe(content)
+        return () => resizeObserver.disconnect()
+    }, [messages.length > 0]) // Only re-run when chat mode initially activates
 
     const processingRef = useRef(false)
 
@@ -61,6 +80,11 @@ export default function Dashboard() {
         setMessages(prev => [...prev, { id: userMsgId, role: 'user', content: inputText }])
         setLoading(true)
 
+        // Force immediate scroll for user message
+        requestAnimationFrame(() => {
+            scrollToBottom()
+        })
+
         if (isChatMode) {
             // Chat Mode Logic
             try {
@@ -68,13 +92,15 @@ export default function Dashboard() {
                 const allResults = messages.flatMap(m => m.results || [])
                 const validKeys = allResults.filter(r => r.status === 'valid')
 
+                const encryptedBody = encryptData(JSON.stringify({
+                    message: inputText,
+                    context: validKeys
+                }))
+
                 const res = await fetch('/api/chat', {
                     method: 'POST',
                     headers: { 'Content-Type': 'application/json' },
-                    body: JSON.stringify({
-                        message: inputText,
-                        context: validKeys
-                    })
+                    body: JSON.stringify({ payload: encryptedBody, isEncrypted: true })
                 })
 
                 const data = await res.json()
@@ -126,10 +152,13 @@ export default function Dashboard() {
 
         const resultsPromises = uniqueKeys.map(async (key) => {
             try {
+                // Encrypt the key before sending
+                const encryptedKey = encryptData(key);
+
                 const res = await fetch('/api/check', {
                     method: 'POST',
                     headers: { 'Content-Type': 'application/json' },
-                    body: JSON.stringify({ key })
+                    body: JSON.stringify({ key: encryptedKey, isEncrypted: true }) // Send encrypted
                 })
                 const data = await res.json()
                 return {
@@ -206,33 +235,35 @@ export default function Dashboard() {
                 </div>
             ) : (
                 <div className={styles.chatLayout}>
-                    <div className={styles.chatScrollArea}>
-                        {messages.map((msg) => (
-                            <div key={msg.id} className={`${styles.messageRow} ${styles[msg.role]}`}>
-                                <div className={styles.messageBubble}>
-                                    <div className={styles.senderName}>
-                                        {msg.role === 'user' ? 'You' : 'Oracle'}
-                                    </div>
-                                    <div className={styles.messageText}>
-                                        <ReactMarkdown remarkPlugins={[remarkGfm]}>
-                                            {msg.content || ''}
-                                        </ReactMarkdown>
-                                    </div>
-                                    {msg.results && <ResultMessage results={msg.results} />}
-                                </div>
-                            </div>
-                        ))}
-                        {loading && (
-                            <div className={`${styles.messageRow} ${styles.assistant}`}>
-                                <div className={styles.messageBubble}>
-                                    <div className={styles.senderName}>Oracle</div>
-                                    <div className={styles.messageText}>
-                                        {isChatMode ? "Thinking..." : "Verifying credentials..."}
+                    <div className={styles.chatScrollArea} ref={chatContainerRef}>
+                        <div className={styles.chatContentInner} ref={chatContentRef}>
+                            {messages.map((msg) => (
+                                <div key={msg.id} className={`${styles.messageRow} ${styles[msg.role]}`}>
+                                    <div className={styles.messageBubble}>
+                                        <div className={styles.senderName}>
+                                            {msg.role === 'user' ? 'You' : 'Oracle'}
+                                        </div>
+                                        <div className={styles.messageText}>
+                                            <ReactMarkdown remarkPlugins={[remarkGfm]}>
+                                                {msg.content || ''}
+                                            </ReactMarkdown>
+                                        </div>
+                                        {msg.results && <ResultMessage results={msg.results} />}
                                     </div>
                                 </div>
-                            </div>
-                        )}
-                        <div ref={chatEndRef} />
+                            ))}
+                            {loading && (
+                                <div className={`${styles.messageRow} ${styles.assistant}`}>
+                                    <div className={styles.messageBubble}>
+                                        <div className={styles.senderName}>Oracle</div>
+                                        <div className={styles.messageText}>
+                                            {isChatMode ? "Thinking..." : "Verifying credentials..."}
+                                        </div>
+                                    </div>
+                                </div>
+                            )}
+                            <div />
+                        </div>
                     </div>
 
                     {/* Floating Input at bottom */}

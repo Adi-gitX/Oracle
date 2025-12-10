@@ -8,6 +8,7 @@ const menuItems = [
     { label: 'Dashboard', link: '/dashboard' },
     { label: 'Pricing', link: '/pricing' },
     { label: 'Docs', link: '/docs' },
+    { label: 'Suggestions', link: '/suggestions' },
 ];
 
 const socialItems = [

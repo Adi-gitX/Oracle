@@ -1,5 +1,6 @@
 import type { NextApiRequest, NextApiResponse } from 'next'
 import fetch from 'cross-fetch'
+import { decryptData } from '../../utils/encryption'
 
 type CheckResponse = {
     valid: boolean
@@ -108,23 +109,32 @@ export default async function handler(
         return res.status(405).json({ valid: false, message: 'Method Not Allowed' })
     }
 
-    const { key } = req.body
-    if (!key) return res.status(400).json({ valid: false, message: 'Missing Key' })
+    const { key, isEncrypted } = req.body
+    let finalKey = key
+
+    if (isEncrypted) {
+        try {
+            finalKey = decryptData(key)
+        } catch (e) {
+            console.error('Decryption failed', e)
+            return res.status(400).json({ valid: false, message: 'Encryption Error' })
+        }
+    }
+
+    if (!finalKey) return res.status(400).json({ valid: false, message: 'Missing Key' })
 
     let result: CheckResponse = { valid: false, provider: 'Unknown' }
 
-    if (key.startsWith('sk-ant')) {
-        result = await checkAnthropic(key)
+    if (finalKey.startsWith('sk-ant')) {
+        result = await checkAnthropic(finalKey)
         result.provider = 'Anthropic'
-    } else if (key.startsWith('sk-')) {
-        result = await checkOpenAI(key)
+    } else if (finalKey.startsWith('sk-')) {
+        result = await checkOpenAI(finalKey)
         result.provider = 'OpenAI'
-    } else if (key.startsWith('AIza')) {
-        result = await checkGemini(key)
+    } else if (finalKey.startsWith('AIza')) {
+        result = await checkGemini(finalKey)
         result.provider = 'Google Gemini'
     } else {
-        // Try Gemini as fallback if it looks like a Google key but maybe different prefix? 
-        // Usually AIza is standard. Fallback to invalid.
         result = { valid: false, message: 'Unknown Key Format' }
     }
 

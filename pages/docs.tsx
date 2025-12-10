@@ -11,6 +11,7 @@ const menuItems = [
     { label: 'Dashboard', link: '/dashboard' },
     { label: 'Pricing', link: '/pricing' },
     { label: 'Docs', link: '/docs' },
+    { label: 'Suggestions', link: '/suggestions' },
 ];
 
 const socialItems = [
@@ -140,13 +141,26 @@ GOOGLE_API_KEY=AIzaSyD...`}
                         <section id="security" className={docStyles.section}>
                             <h2 className={docStyles.subtitle}>Security</h2>
                             <p className={docStyles.text}>
-                                Your security is our priority. Oracle operates on a <strong>&quot;Verify &amp; Forget&quot;</strong> model.
+                                Your security is our priority. Oracle operates on a <strong>&quot;Verify &amp; Forget&quot;</strong> model and includes enterprise-grade protection.
                             </p>
                             <ul style={{ color: '#ccc', lineHeight: '1.8', paddingLeft: '1.5rem', marginBottom: '1.5rem' }}>
-                                <li>Keys are sent to our server via HTTPS (TLS 1.3).</li>
-                                <li>We execute a single &quot;list models&quot; or &quot;get account&quot; request to the provider.</li>
-                                <li>The result (Valid/Invalid) is returned to you.</li>
-                                <li><strong>Keys are never stored</strong> in a database or logs.</li>
+                                <li>Keys are sent via HTTPS (TLS 1.3).</li>
+                                <li>We execute a single &quot;list models&quot; request to verify validity.</li>
+                                <li><strong>Keys are never stored</strong> in any database or logs.</li>
+                                <li><strong>Leaked Key Detection:</strong> We actively flag keys reported as compromised by providers.</li>
+                                <li><strong>Rate Limiting:</strong> API usage is throttled (20 req/min) to prevent abuse.</li>
+                            </ul>
+                        </section>
+
+                        <section id="chat" className={docStyles.section}>
+                            <h2 className={docStyles.subtitle}>AI Assistant (Oracle)</h2>
+                            <p className={docStyles.text}>
+                                The dashboard includes a context-aware AI assistant. You can ask Oracle to:
+                            </p>
+                            <ul style={{ color: '#ccc', lineHeight: '1.8', paddingLeft: '1.5rem', marginBottom: '1.5rem' }}>
+                                <li>Explain errors for invalid keys.</li>
+                                <li>Check if a specific model (e.g., GPT-4) is available on your key.</li>
+                                <li>Provide security best practices.</li>
                             </ul>
                         </section>
 

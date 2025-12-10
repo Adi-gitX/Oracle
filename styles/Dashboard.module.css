@@ -248,15 +248,21 @@
 .chatScrollArea {
     flex: 1;
     overflow-y: auto;
-    padding: 120px 2rem 250px;
-    /* Top padding clears fixed header (80px) + buffer */
     width: 100%;
-    max-width: 1000px;
-    margin: 0 auto;
+    /* max-width removed to allow full-width scroll hit area */
     scroll-behavior: smooth;
     /* Custom Scrollbar */
     scrollbar-width: thin;
     scrollbar-color: rgba(255, 255, 255, 0.1) transparent;
+}
+
+.chatContentInner {
+    max-width: 1000px;
+    width: 100%;
+    margin: 0 auto;
+    padding: 120px 2rem 250px;
+    display: flex;
+    flex-direction: column;
 }
 
 .chatScrollArea::-webkit-scrollbar {
@@ -322,8 +328,78 @@
 .messageText {
     line-height: 1.6;
     color: rgba(255, 255, 255, 0.9);
-    white-space: pre-wrap;
     font-size: 1rem;
+    /* Removed white-space: pre-wrap to let markdown handle spacing */
+}
+
+.messageText p {
+    margin-bottom: 1rem;
+}
+
+.messageText p:last-child {
+    margin-bottom: 0;
+}
+
+.messageText ul,
+.messageText ol {
+    margin: 0.5rem 0 1rem 1.5rem;
+    padding-left: 0.5rem;
+}
+
+.messageText li {
+    margin-bottom: 0.25rem;
+}
+
+.messageText h1,
+.messageText h2,
+.messageText h3 {
+    margin-top: 1.5rem;
+    margin-bottom: 0.75rem;
+    font-weight: 600;
+    color: #fff;
+    line-height: 1.3;
+}
+
+.messageText h1 {
+    font-size: 1.4rem;
+}
+
+.messageText h2 {
+    font-size: 1.25rem;
+}
+
+.messageText h3 {
+    font-size: 1.1rem;
+}
+
+.messageText code {
+    background: rgba(255, 255, 255, 0.1);
+    padding: 2px 5px;
+    border-radius: 4px;
+    font-family: 'Geist Mono', monospace;
+    font-size: 0.9em;
+    color: #ff8e53;
+}
+
+.messageText pre {
+    background: rgba(0, 0, 0, 0.3);
+    padding: 1rem;
+    border-radius: 8px;
+    overflow-x: auto;
+    margin: 1rem 0;
+    border: 1px solid rgba(255, 255, 255, 0.1);
+}
+
+.messageText pre code {
+    background: transparent;
+    padding: 0;
+    color: #e0e0e0;
+    font-size: 0.9em;
+}
+
+.messageText strong {
+    color: #fff;
+    font-weight: 700;
 }
 
 /* Results Grid - Improved Layout */
