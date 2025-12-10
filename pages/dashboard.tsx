@@ -6,7 +6,7 @@ import ResultMessage from '../components/ResultMessage'
 import StaggeredMenu from '../components/StaggeredMenu/StaggeredMenu'
 import ReactMarkdown from 'react-markdown'
 import remarkGfm from 'remark-gfm'
-import { encryptData } from '../utils/encryption'
+import { encryptData, decryptData } from '../utils/encryption'
 
 interface KeyResult {
     key: string
@@ -86,9 +86,8 @@ export default function Dashboard() {
         })
 
         if (isChatMode) {
-            // Chat Mode Logic
             try {
-                // Gather context (all valid keys found so far)
+                // Gather context (valid keys)
                 const allResults = messages.flatMap(m => m.results || [])
                 const validKeys = allResults.filter(r => r.status === 'valid')
 
@@ -103,7 +102,16 @@ export default function Dashboard() {
                     body: JSON.stringify({ payload: encryptedBody, isEncrypted: true })
                 })
 
-                const data = await res.json()
+                const rawData = await res.json()
+                let data = rawData
+
+                if (rawData.isEncrypted) {
+                    try {
+                        data = JSON.parse(decryptData(rawData.payload))
+                    } catch (e) {
+                        throw new Error("Failed to decrypt server response")
+                    }
+                }
 
                 if (!res.ok) {
                     throw new Error(data.message || res.statusText)
@@ -115,7 +123,7 @@ export default function Dashboard() {
                     content: data.reply || "I'm having trouble connecting right now."
                 }])
             } catch (e) {
-                const errorMessage = e instanceof Error ? e.message : "Sorry, I encountered an error while processing your request."
+                const errorMessage = e instanceof Error ? e.message : "Sorry, I encountered an error."
                 setMessages(prev => [...prev, {
                     id: Date.now().toString(),
                     role: 'assistant',
@@ -143,7 +151,7 @@ export default function Dashboard() {
             setMessages(prev => [...prev, {
                 id: Date.now().toString(),
                 role: 'assistant',
-                content: "I couldn't find any valid API key formats in your message. please switch to chat mode if you want to talk."
+                content: "I couldn't find any valid API key formats. Switch to Chat Mode to talk."
             }])
             setLoading(false)
             processingRef.current = false
@@ -152,15 +160,29 @@ export default function Dashboard() {
 
         const resultsPromises = uniqueKeys.map(async (key) => {
             try {
-                // Encrypt the key before sending
                 const encryptedKey = encryptData(key);
-
                 const res = await fetch('/api/check', {
                     method: 'POST',
                     headers: { 'Content-Type': 'application/json' },
-                    body: JSON.stringify({ key: encryptedKey, isEncrypted: true }) // Send encrypted
+                    body: JSON.stringify({ key: encryptedKey, isEncrypted: true })
                 })
-                const data = await res.json()
+
+                const rawData = await res.json()
+                let data = rawData
+
+                if (rawData.isEncrypted) {
+                    try {
+                        data = JSON.parse(decryptData(rawData.payload))
+                    } catch (e) {
+                        return {
+                            key,
+                            provider: 'Unknown',
+                            status: 'invalid' as 'valid' | 'invalid',
+                            details: 'Decryption Error'
+                        }
+                    }
+                }
+
                 return {
                     key,
                     provider: data.provider || 'Unknown',
@@ -181,7 +203,7 @@ export default function Dashboard() {
         const newResults = await Promise.all(resultsPromises)
         const workingCount = newResults.filter(r => r.status === 'valid').length
         const deadCount = newResults.filter(r => r.status === 'invalid').length
-        const summaryText = `I processed ${uniqueKeys.length} keys. Found ${workingCount} working and ${deadCount} invalid.`
+        const summaryText = `Processed ${uniqueKeys.length} keys. Found ${workingCount} working, ${deadCount} invalid.`
 
         setMessages(prev => [...prev, {
             id: Date.now().toString(),

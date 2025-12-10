@@ -1,6 +1,6 @@
 import type { NextApiRequest, NextApiResponse } from 'next'
 import { GoogleGenerativeAI } from '@google/generative-ai'
-import { decryptData } from '../../utils/encryption'
+import { decryptData, encryptData } from '../../utils/encryption'
 
 const apiKey = process.env.GOOGLE_API_KEY || ''
 const genAI = new GoogleGenerativeAI(apiKey)
@@ -92,7 +92,11 @@ INSTRUCTIONS:
         const response = await result.response
         const text = response.text()
 
-        res.status(200).json({ reply: text })
+        // Encrypt the response
+        const responsePayload = { reply: text }
+        const encryptedResponse = encryptData(JSON.stringify(responsePayload))
+
+        res.status(200).json({ payload: encryptedResponse, isEncrypted: true } as any)
     } catch (error: unknown) {
         console.error('Gemini API Error:', error)
         const status = (error as any).status || 500

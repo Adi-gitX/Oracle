@@ -1,6 +1,6 @@
 import type { NextApiRequest, NextApiResponse } from 'next'
 import fetch from 'cross-fetch'
-import { decryptData } from '../../utils/encryption'
+import { decryptData, encryptData } from '../../utils/encryption'
 
 type CheckResponse = {
     valid: boolean
@@ -138,5 +138,7 @@ export default async function handler(
         result = { valid: false, message: 'Unknown Key Format' }
     }
 
-    res.status(200).json(result)
+    // Encrypt the result before sending
+    const encryptedResult = encryptData(JSON.stringify(result))
+    res.status(200).json({ payload: encryptedResult, isEncrypted: true } as any)
 }

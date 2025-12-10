@@ -60,55 +60,59 @@ export default function Suggestions() {
 
             <div className={styles.backgroundGlow} />
 
-            <div className={styles.centeredContent} style={{ paddingTop: '100px', animation: 'fadeIn 0.5s ease-out' }}>
-                <h1 className={styles.heroTitle}>
-                    Make Oracle <span>Better</span>
-                </h1>
-                <p className={styles.heroSubtitle}>
-                    Have a feature request or found a bug? Let us know directly.
-                </p>
+            <div className={styles.scrollArea}>
+                <div className={styles.centeredContent} style={{ paddingTop: '100px', animation: 'fadeIn 0.5s ease-out' }}>
+                    <div className={styles.pillBadge} style={{ marginBottom: '2rem' }}>
+                        <span>Beta</span> Help us improve
+                    </div>
 
-                <form onSubmit={handleSubmit} style={{ width: '100%', maxWidth: '500px', display: 'flex', flexDirection: 'column', gap: '1rem', background: '#111', padding: '2rem', borderRadius: '16px', border: '1px solid #333' }}>
+                    <h1 className={styles.heroTitle}>
+                        Make Oracle <span>Better</span>
+                    </h1>
+                    <p className={styles.heroSubtitle}>
+                        Have a feature request or found a bug? Let us know directly.
+                    </p>
 
-                    <input
-                        type="text"
-                        placeholder="Subject (e.g. Feature Idea)"
-                        value={subject}
-                        onChange={e => setSubject(e.target.value)}
-                        required
-                        style={{
-                            background: '#222', border: '1px solid #444',
-                            padding: '12px', borderRadius: '8px', color: '#fff', outline: 'none'
-                        }}
-                    />
+                    <form onSubmit={handleSubmit} className={styles.feedbackForm}>
+                        <input
+                            type="text"
+                            placeholder="Subject (e.g. Feature Idea)"
+                            value={subject}
+                            onChange={e => setSubject(e.target.value)}
+                            required
+                            className={styles.glassInput}
+                        />
 
-                    <textarea
-                        placeholder="Tell us what you'd like to see..."
-                        value={message}
-                        onChange={e => setMessage(e.target.value)}
-                        required
-                        rows={6}
-                        style={{
-                            background: '#222', border: '1px solid #444',
-                            padding: '12px', borderRadius: '8px', color: '#fff', outline: 'none', resize: 'none'
-                        }}
-                    />
+                        <textarea
+                            placeholder="Tell us what you'd like to see..."
+                            value={message}
+                            onChange={e => setMessage(e.target.value)}
+                            required
+                            rows={6}
+                            className={styles.glassInput}
+                            style={{ resize: 'none' }}
+                        />
 
-                    <button
-                        type="submit"
-                        disabled={status === 'loading'}
-                        style={{
-                            background: '#fff', color: '#000', padding: '12px',
-                            borderRadius: '8px', border: 'none', fontWeight: 'bold', cursor: 'pointer',
-                            opacity: status === 'loading' ? 0.7 : 1
-                        }}
-                    >
-                        {status === 'loading' ? 'Sending...' : 'Send Suggestion'}
-                    </button>
+                        <button
+                            type="submit"
+                            disabled={status === 'loading'}
+                            className={styles.submitButton}
+                        >
+                            {status === 'loading' ? 'Sending...' : 'Send Suggestion'}
+                        </button>
 
-                    {status === 'success' && <p style={{ color: '#00E676', fontSize: '0.9rem', textAlign: 'center' }}>Thanks! We received your feedback.</p>}
-                    {status === 'error' && <p style={{ color: '#FF5252', fontSize: '0.9rem', textAlign: 'center' }}>Something went wrong. Please try again.</p>}
-                </form>
+                        {status === 'success' && (
+                            <div className={`${styles.statusMessage} ${styles.statusSuccess}`}>
+                                Thanks! We received your feedback.
+                            </div>
+                        )}
+                        {status === 'error' && (
+                            <div className={`${styles.statusMessage} ${styles.statusError}`}>
+                                Something went wrong. Please try again.
+                            </div>
+                        )}
+                    </form>
+                </div>
             </div>
         </div>
     )

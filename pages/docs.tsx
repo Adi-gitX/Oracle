@@ -23,6 +23,8 @@ const socialItems = [
 export default function Docs() {
     const [activeSection, setActiveSection] = React.useState('');
 
+    const scrollRef = React.useRef<HTMLDivElement>(null);
+
     React.useEffect(() => {
         const observer = new IntersectionObserver((entries) => {
             entries.forEach(entry => {
@@ -30,11 +32,14 @@ export default function Docs() {
                     setActiveSection(entry.target.id);
                 }
             });
-        }, { rootMargin: '-20% 0px -35% 0px' });
-
-        document.querySelectorAll('section[id]').forEach((section) => {
-            observer.observe(section);
+        }, {
+            root: scrollRef.current, // Use the scroll container as root
+            rootMargin: '-20% 0px -35% 0px',
+            threshold: 0.1
         });
+
+        const sections = document.querySelectorAll('section[id]');
+        sections.forEach((section) => observer.observe(section));
 
         return () => observer.disconnect();
     }, []);
@@ -42,8 +47,17 @@ export default function Docs() {
     const handleScrollTo = (e: React.MouseEvent<HTMLAnchorElement>, id: string) => {
         e.preventDefault();
         const element = document.getElementById(id);
-        if (element) {
-            element.scrollIntoView({ behavior: 'smooth' });
+        if (element && scrollRef.current) {
+            // Calculate position relative to container
+            const containerTop = scrollRef.current.getBoundingClientRect().top;
+            const elementTop = element.getBoundingClientRect().top;
+            const relativeTop = elementTop - containerTop + scrollRef.current.scrollTop;
+
+            // Adjust for sticky header/padding (approx 100px)
+            scrollRef.current.scrollTo({
+                top: relativeTop - 40,
+                behavior: 'smooth'
+            });
         }
     };
 
@@ -63,7 +77,10 @@ export default function Docs() {
             <div className={styles.backgroundGlow} />
 
             {/* Scrollable Area */}
-            <div style={{ flex: 1, overflowY: 'auto', zIndex: 10, position: 'relative', scrollBehavior: 'smooth' }}>
+            <div
+                ref={scrollRef}
+                style={{ flex: 1, overflowY: 'auto', zIndex: 10, position: 'relative', scrollBehavior: 'smooth' }}
+            >
                 <div className={docStyles.docsContainer}>
                     <aside className={docStyles.sidebar}>
                         <div>
@@ -94,6 +111,11 @@ export default function Docs() {
                         </div>
                         <div>
                             <div className={docStyles.sidebarTitle}>API</div>
+                            <a href="#chat"
+                                onClick={(e) => handleScrollTo(e, 'chat')}
+                                className={`${docStyles.navLink} ${activeSection === 'chat' ? docStyles.active : ''}`}>
+                                AI Assistant
+                            </a>
                             <a href="#usage"
                                 onClick={(e) => handleScrollTo(e, 'usage')}
                                 className={`${docStyles.navLink} ${activeSection === 'usage' ? docStyles.active : ''}`}>
@@ -139,16 +161,22 @@ GOOGLE_API_KEY=AIzaSyD...`}
                         </section>
 
                         <section id="security" className={docStyles.section}>
-                            <h2 className={docStyles.subtitle}>Security</h2>
+                            <h2 className={docStyles.subtitle}>Security & Privacy</h2>
                             <p className={docStyles.text}>
                                 Your security is our priority. Oracle operates on a <strong>&quot;Verify &amp; Forget&quot;</strong> model and includes enterprise-grade protection.
                             </p>
-                            <ul style={{ color: '#ccc', lineHeight: '1.8', paddingLeft: '1.5rem', marginBottom: '1.5rem' }}>
-                                <li>Keys are sent via HTTPS (TLS 1.3).</li>
-                                <li>We execute a single &quot;list models&quot; request to verify validity.</li>
-                                <li><strong>Keys are never stored</strong> in any database or logs.</li>
-                                <li><strong>Leaked Key Detection:</strong> We actively flag keys reported as compromised by providers.</li>
-                                <li><strong>Rate Limiting:</strong> API usage is throttled (20 req/min) to prevent abuse.</li>
+                            <p className={docStyles.text}>
+                                Oracle is built with a <strong>&quot;Zero-Retention / Maximum Encryption&quot;</strong> architecture.
+                            </p>
+                            <ul style={{ color: '#a1a1aa', lineHeight: '1.8', paddingLeft: '1.5rem', marginBottom: '1.5rem' }}>
+                                <li><strong>In-Memory Processing:</strong> Your keys are processed in RAM and never written to disk or databases.</li>
+                                <li><strong>End-to-End Encryption (E2EE):</strong>
+                                    We use advanced <strong>AES-256 Client-Side Encryption</strong>.
+                                    Your data is encrypted <em>before</em> it leaves your browser and responses are encrypted by the server.
+                                    Even if the HTTPS layer is compromised, your data remains an opaque, unreadable hash to any interceptor.
+                                </li>
+                                <li><strong>Leaked Key Detection:</strong> We automatically check against public leak databases.</li>
+                                <li><strong>Rate Limiting:</strong> Strict per-IP limits prevent brute-force attacks.</li>
                             </ul>
                         </section>
 

@@ -25,6 +25,7 @@ body {
   color: var(--geist-foreground);
   -webkit-font-smoothing: antialiased;
   background-color: #000;
+  scroll-behavior: smooth;
 }
 
 /* Dark Scrollbar Styling */
