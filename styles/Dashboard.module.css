@@ -301,6 +301,12 @@
     border: 1px solid rgba(255, 255, 255, 0.05);
 }
 
+@media (max-width: 768px) {
+    .messageRow.user .messageBubble {
+        max-width: 90%;
+    }
+}
+
 .messageRow.assistant .messageBubble {
     width: 100%;
     /* Assistant results take full width */
@@ -516,8 +522,37 @@
     .resultsGrid {
         grid-template-columns: 1fr;
     }
+}
 
-    .messageRow.user .messageBubble {
-        max-width: 90%;
-    }
+/* Premium Professional Cards - Vercel Style */
+.pricingCard {
+    background: #0a0a0a;
+    /* Deep black */
+    border: 1px solid #333;
+    /* Crisp border */
+    border-radius: 12px;
+    /* Tighter radius */
+    padding: 2.5rem;
+    max-width: 400px;
+    width: 100%;
+    box-shadow: 0 4px 6px -1px rgba(0, 0, 0, 0.1),
+        0 2px 4px -1px rgba(0, 0, 0, 0.06);
+    display: flex;
+    flex-direction: column;
+    gap: 2rem;
+    margin-top: 3rem;
+    transition: all 0.2s ease;
+    position: relative;
+    overflow: hidden;
+}
+
+/* Remove shiny top border */
+.pricingCard::before {
+    display: none;
+}
+
+.pricingCard:hover {
+    transform: translateY(-2px);
+    border-color: #555;
+    box-shadow: 0 10px 15px -3px rgba(0, 0, 0, 0.1), 0 4px 6px -2px rgba(0, 0, 0, 0.05);
 }

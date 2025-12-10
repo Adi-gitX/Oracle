@@ -1,3 +1,4 @@
+import React from 'react';
 import Head from 'next/head'
 import Link from 'next/link'
 // import { Link as ScrollLink } from 'react-scroll' 
@@ -7,9 +8,8 @@ import StaggeredMenu from '../components/StaggeredMenu/StaggeredMenu'
 
 const menuItems = [
     { label: 'Home', link: '/' },
-    { label: 'Solutions', link: '/solutions' },
     { label: 'Pricing', link: '/pricing' },
-    { label: 'Docs', link: '/docs' }
+    { label: 'Docs', link: '/docs' },
 ];
 
 const socialItems = [
@@ -19,6 +19,32 @@ const socialItems = [
 ];
 
 export default function Docs() {
+    const [activeSection, setActiveSection] = React.useState('');
+
+    React.useEffect(() => {
+        const observer = new IntersectionObserver((entries) => {
+            entries.forEach(entry => {
+                if (entry.isIntersecting) {
+                    setActiveSection(entry.target.id);
+                }
+            });
+        }, { rootMargin: '-20% 0px -35% 0px' });
+
+        document.querySelectorAll('section[id]').forEach((section) => {
+            observer.observe(section);
+        });
+
+        return () => observer.disconnect();
+    }, []);
+
+    const handleScrollTo = (e: React.MouseEvent<HTMLAnchorElement>, id: string) => {
+        e.preventDefault();
+        const element = document.getElementById(id);
+        if (element) {
+            element.scrollIntoView({ behavior: 'smooth' });
+        }
+    };
+
     return (
         <div className={styles.dashboardContainer}>
             <StaggeredMenu
@@ -35,22 +61,42 @@ export default function Docs() {
             <div className={styles.backgroundGlow} />
 
             {/* Scrollable Area */}
-            <div style={{ flex: 1, overflowY: 'auto', zIndex: 10, position: 'relative' }}>
+            <div style={{ flex: 1, overflowY: 'auto', zIndex: 10, position: 'relative', scrollBehavior: 'smooth' }}>
                 <div className={docStyles.docsContainer}>
                     <aside className={docStyles.sidebar}>
                         <div>
                             <div className={docStyles.sidebarTitle}>Start Here</div>
-                            <a href="#intro" className={docStyles.navLink}>Introduction</a>
-                            <a href="#authentication" className={docStyles.navLink}>Authentication</a>
+                            <a href="#intro"
+                                onClick={(e) => handleScrollTo(e, 'intro')}
+                                className={`${docStyles.navLink} ${activeSection === 'intro' ? docStyles.active : ''}`}>
+                                Introduction
+                            </a>
+                            <a href="#authentication"
+                                onClick={(e) => handleScrollTo(e, 'authentication')}
+                                className={`${docStyles.navLink} ${activeSection === 'authentication' ? docStyles.active : ''}`}>
+                                Authentication
+                            </a>
                         </div>
                         <div>
                             <div className={docStyles.sidebarTitle}>Core</div>
-                            <a href="#providers" className={docStyles.navLink}>Supported Providers</a>
-                            <a href="#security" className={docStyles.navLink}>Security Model</a>
+                            <a href="#providers"
+                                onClick={(e) => handleScrollTo(e, 'providers')}
+                                className={`${docStyles.navLink} ${activeSection === 'providers' ? docStyles.active : ''}`}>
+                                Supported Providers
+                            </a>
+                            <a href="#security"
+                                onClick={(e) => handleScrollTo(e, 'security')}
+                                className={`${docStyles.navLink} ${activeSection === 'security' ? docStyles.active : ''}`}>
+                                Security Model
+                            </a>
                         </div>
                         <div>
                             <div className={docStyles.sidebarTitle}>API</div>
-                            <a href="#usage" className={docStyles.navLink}>Usage Limits</a>
+                            <a href="#usage"
+                                onClick={(e) => handleScrollTo(e, 'usage')}
+                                className={`${docStyles.navLink} ${activeSection === 'usage' ? docStyles.active : ''}`}>
+                                Usage Limits
+                            </a>
                         </div>
                     </aside>
 
@@ -101,6 +147,14 @@ GOOGLE_API_KEY=AIzaSyD...`}
                                 <li>The result (Valid/Invalid) is returned to you.</li>
                                 <li><strong>Keys are never stored</strong> in a database or logs.</li>
                             </ul>
+                        </section>
+
+                        <section id="usage" className={docStyles.section}>
+                            <h2 className={docStyles.subtitle}>Usage Limits</h2>
+                            <p className={docStyles.text}>
+                                Oracle is currently in free preview. There are no strict rate limits for individual usage.
+                                For enterprise batch processing, please contact us.
+                            </p>
                         </section>
                     </main>
                 </div>

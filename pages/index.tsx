@@ -39,7 +39,6 @@ const Home: NextPage = () => {
       <nav className={styles.nav}>
         <div className={styles.logo}>Oracle</div>
         <div className={styles.navLinks}>
-          <Link href="/solutions"><a className={styles.navLink}>Solutions</a></Link>
           <Link href="/pricing"><a className={styles.navLink}>Pricing</a></Link>
           <Link href="/docs"><a className={styles.navLink}>Docs</a></Link>
           <button className={styles.ctaButton} onClick={handleStartFree}>Start Free</button>
@@ -56,7 +55,7 @@ const Home: NextPage = () => {
           {/* Content is mostly likely inside the spline or intended to be minimal. */}
         </div>
       </section>
-    </div>
+    </div >
   )
 }
 

@@ -18,93 +18,113 @@
 }
 
 .sidebarTitle {
-    font-size: 0.85rem;
+    font-size: 0.75rem;
     text-transform: uppercase;
-    letter-spacing: 0.1em;
-    color: #555;
+    letter-spacing: 0.05em;
+    color: #a1a1aa;
+    /* High contrast but muted */
     font-weight: 600;
-    margin-bottom: 0.5rem;
+    margin-bottom: 0.75rem;
 }
 
 .navLink {
-    color: #888;
+    color: #737373;
+    /* Muted text */
     text-decoration: none;
-    font-size: 0.95rem;
-    transition: color 0.2s;
+    font-size: 0.9rem;
+    transition: color 0.1s ease;
     cursor: pointer;
     display: block;
-    margin-bottom: 0.8rem;
+    margin-bottom: 0.5rem;
+    padding-left: 12px;
+    border-left: 1px solid #333;
+    /* Default subtle border */
 }
 
 .navLink:hover {
-    color: #fff;
+    color: #ededed;
+    border-left-color: #555;
 }
 
 .navLink.active {
     color: #fff;
     font-weight: 500;
+    border-left: 1px solid #fff;
+    /* Crisp white border */
+    /* No glow, no gradient */
 }
 
 .content {
     flex: 1;
-    max-width: 800px;
+    max-width: 750px;
+    /* Improved readability line-length */
 }
 
 .section {
-    margin-bottom: 4rem;
+    margin-bottom: 5rem;
     scroll-margin-top: 140px;
 }
 
 .title {
-    font-size: 2.5rem;
+    font-size: 2.25rem;
     font-weight: 700;
     margin-bottom: 1.5rem;
-    color: #fff;
+    color: #ededed;
+    letter-spacing: -0.02em;
 }
 
 .subtitle {
-    font-size: 1.5rem;
+    font-size: 1.25rem;
     font-weight: 600;
     margin-bottom: 1rem;
-    color: #fff;
-    border-bottom: 1px solid rgba(255, 255, 255, 0.1);
-    padding-bottom: 0.5rem;
+    color: #ededed;
+    border-bottom: none;
+    /* Cleaner look without border */
+    padding-bottom: 0;
 }
 
 .text {
-    line-height: 1.8;
-    color: #ccc;
+    line-height: 1.7;
+    color: #a1a1aa;
     margin-bottom: 1.5rem;
-    font-size: 1.05rem;
+    font-size: 1rem;
 }
 
 .codeBlock {
-    background: #111;
-    border: 1px solid rgba(255, 255, 255, 0.1);
-    border-radius: 8px;
-    padding: 1.5rem;
+    background: #0f0f0f;
+    border: 1px solid #333;
+    border-radius: 6px;
+    padding: 1.25rem;
     font-family: 'Geist Mono', monospace;
-    font-size: 0.9rem;
-    color: #fff;
+    font-size: 0.85rem;
+    color: #ededed;
     overflow-x: auto;
     margin: 1.5rem 0;
 }
 
 .providerList {
     display: grid;
-    grid-template-columns: repeat(auto-fill, minmax(200px, 1fr));
+    grid-template-columns: repeat(auto-fill, minmax(180px, 1fr));
     gap: 1rem;
     margin-top: 1.5rem;
 }
 
 .providerItem {
-    background: rgba(255, 255, 255, 0.03);
-    border: 1px solid rgba(255, 255, 255, 0.05);
-    padding: 1rem;
-    border-radius: 8px;
+    background: transparent;
+    border: 1px solid #333;
+    padding: 0.875rem;
+    border-radius: 6px;
     display: flex;
     align-items: center;
-    gap: 0.8rem;
+    gap: 0.75rem;
+    color: #a1a1aa;
+    font-size: 0.9rem;
+    transition: border-color 0.2s;
+}
+
+.providerItem:hover {
+    border-color: #555;
+    color: #ededed;
 }
 
 @media (max-width: 768px) {

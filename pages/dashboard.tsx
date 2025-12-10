@@ -22,9 +22,8 @@ interface Message {
 
 const menuItems = [
     { label: 'Home', link: '/' },
-    { label: 'Solutions', link: '/solutions' },
     { label: 'Pricing', link: '/pricing' },
-    { label: 'Docs', link: '/docs' }
+    { label: 'Docs', link: '/docs' },
 ];
 
 const socialItems = [
