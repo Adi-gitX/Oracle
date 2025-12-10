@@ -631,6 +631,7 @@
     padding: 1px;
     background: linear-gradient(to bottom right, rgba(255, 255, 255, 0.15), rgba(255, 255, 255, 0.05));
     -webkit-mask: linear-gradient(#fff 0 0) content-box, linear-gradient(#fff 0 0);
+    mask: linear-gradient(#fff 0 0) content-box, linear-gradient(#fff 0 0);
     -webkit-mask-composite: xor;
     mask-composite: exclude;
     pointer-events: none;
@@ -639,6 +640,38 @@
 .pricingCard:hover {
     transform: translateY(-8px);
     box-shadow: 0 20px 40px -10px rgba(0, 0, 0, 0.6), 0 0 15px rgba(255, 255, 255, 0.05);
+    border-color: rgba(255, 255, 255, 0.2);
+}
+
+.cardInternalHeader {
+    border-bottom: 1px solid rgba(255, 255, 255, 0.08);
+    padding-bottom: 2rem;
+}
+
+.planName {
+    font-size: 1.5rem;
+    font-weight: 600;
+    color: #fff;
+    margin-bottom: 0.5rem;
+}
+
+.priceContainer {
+    display: flex;
+    align-items: baseline;
+}
+
+.planDescription {
+    color: rgba(255, 255, 255, 0.6);
+    margin-top: 1rem;
+    font-size: 0.95rem;
+    line-height: 1.6;
+}
+
+.noCardText {
+    text-align: center;
+    font-size: 0.85rem;
+    color: rgba(255, 255, 255, 0.4);
+    margin-top: -1rem;
 }
 
 .pricingContent {
@@ -654,8 +687,9 @@
 
 .pricingHeader {
     text-align: center;
-    max-width: 600px;
-    margin-bottom: 4rem;
+    max-width: 1000px;
+    margin-bottom: 3rem;
+    padding: 0 1rem;
 }
 
 .priceAmount {

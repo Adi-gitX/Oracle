@@ -227,6 +227,25 @@ export default function Dashboard() {
                 items={menuItems}
                 socialItems={socialItems}
                 logo={messages.length > 0 ? "Oracle Intelligent Check" : null}
+                rightElement={
+                    messages.length > 0 ? (
+                        <div
+                            onClick={() => {
+                                setMessages([])
+                                setIsChatMode(false)
+                            }}
+                            style={{ display: 'flex', alignItems: 'center', cursor: 'pointer' }}
+                        >
+                            <Image
+                                src="/assets/branding/oracle-iconLogo.png"
+                                alt="New Chat"
+                                width={35}
+                                height={35}
+                                className="hover:opacity-80 transition-opacity"
+                            />
+                        </div>
+                    ) : null
+                }
                 position="left"
                 isFixed={true}
             />

@@ -54,22 +54,22 @@ export default function Pricing() {
                         <div className={styles.pillBadge} style={{ margin: '0 auto 2rem' }}>
                             <span>Free Forever</span> Developer Friendly
                         </div>
-                        <h1 className={styles.heroTitle} style={{ fontSize: '3.5rem' }}>
+                        <h1 className={styles.heroTitle}>
                             Simple, transparent pricing.
                         </h1>
-                        <p className={styles.heroSubtitle} style={{ margin: '0 auto' }}>
+                        <p className={styles.heroSubtitle} style={{ maxWidth: '600px', margin: '1rem auto' }}>
                             No hidden fees. No credit cards required. Just instant API verification.
                         </p>
                     </div>
 
                     <div className={styles.pricingCard}>
-                        <div style={{ borderBottom: '1px solid #333', paddingBottom: '2rem' }}>
-                            <h2 style={{ fontSize: '1.5rem', fontWeight: '600', color: '#ededed', marginBottom: '0.5rem' }}>Pro</h2>
-                            <div style={{ display: 'flex', alignItems: 'baseline' }}>
+                        <div className={styles.cardInternalHeader}>
+                            <h2 className={styles.planName}>Pro</h2>
+                            <div className={styles.priceContainer}>
                                 <span className={styles.priceAmount}>$0</span>
                                 <span className={styles.pricePeriod}>/month</span>
                             </div>
-                            <p style={{ color: '#a1a1aa', marginTop: '1rem', fontSize: '0.95rem', lineHeight: '1.6' }}>
+                            <p className={styles.planDescription}>
                                 Full access to all verification features. <br />
                                 Designed for individual developers and small teams.
                             </p>
@@ -91,12 +91,14 @@ export default function Pricing() {
                             ))}
                         </ul>
 
-                        <Link href="/dashboard" style={{ width: '100%' }}>
-                            <button className={styles.ctaButton}>
-                                Start Checking Now
-                            </button>
+                        <Link href="/dashboard" passHref>
+                            <a style={{ width: '100%', textDecoration: 'none' }}>
+                                <button className={styles.ctaButton}>
+                                    Start Checking Now
+                                </button>
+                            </a>
                         </Link>
-                        <p style={{ textAlign: 'center', fontSize: '0.8rem', color: '#555' }}>
+                        <p className={styles.noCardText}>
                             No credit card needed.
                         </p>
                     </div>
