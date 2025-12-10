@@ -55,50 +55,86 @@
 .hero {
   position: relative;
   height: 100vh;
-  width: 100%;
   display: flex;
+  justify-content: center;
   align-items: center;
-  padding: 0 4rem;
   overflow: hidden;
+  /* Background fallback */
   background: #000;
 }
 
 .heroContent {
+  position: relative;
   z-index: 10;
-  max-width: 600px;
+  max-width: 800px;
+  text-align: center;
+  padding: 0 1rem;
+  /* Optional: Enhance readability if spline intersects text */
+  text-shadow: 0 4px 24px #000;
 }
 
 .heroTitle {
-  font-size: 5rem;
-  line-height: 1;
-  font-weight: 700;
-  margin-bottom: 1.5rem;
-  letter-spacing: -0.04em;
-  background: linear-gradient(180deg, #fff 0%, #666 100%);
+  font-size: 6rem;
+  line-height: 0.95;
+  font-weight: 800;
+  margin-bottom: 2rem;
+  letter-spacing: -0.06em;
+  background: linear-gradient(180deg, #fff 0%, #aaa 100%);
   -webkit-background-clip: text;
+  background-clip: text;
   -webkit-text-fill-color: transparent;
+  animation: fadeUp 1s ease-out forwards;
+  opacity: 0;
+  transform: translateY(20px);
 }
 
 .heroSubtitle {
-  font-size: 1.25rem;
+  font-size: 1.5rem;
   color: var(--accents-5);
-  margin-bottom: 2rem;
+  margin-bottom: 2.5rem;
   line-height: 1.5;
-  max-width: 450px;
+  max-width: 600px;
+  margin-left: auto;
+  margin-right: auto;
+  animation: fadeUp 1s ease-out 0.2s forwards;
+  opacity: 0;
+  transform: translateY(20px);
 }
 
 .heroButtons {
   display: flex;
-  gap: 1rem;
+  gap: 1.5rem;
+  justify-content: center;
+  animation: fadeUp 1s ease-out 0.4s forwards;
+  opacity: 0;
+  transform: translateY(20px);
 }
 
+/* Center the container and zoom to cover viewport */
 .splineContainer {
   position: absolute;
-  top: 0;
-  right: 0;
-  width: 60%;
+  top: 50%;
+  left: 50%;
+  width: 100%;
   height: 100%;
   z-index: 1;
+  transform: translate(-50%, -50%) scale(1.4);
+  /* filter removed to restore original brightness */
+  pointer-events: none;
+}
+
+/* Ensure viewer takes full space of container */
+.splineContainer>* {
+  width: 100%;
+  height: 100%;
+}
+
+/* Keyframes for simple entrance */
+@keyframes fadeUp {
+  to {
+    opacity: 1;
+    transform: translateY(0);
+  }
 }
 
 /* App Dashboard Section */
@@ -132,6 +168,7 @@
   text-align: center;
   background: linear-gradient(180deg, #fff 0%, #888 100%);
   -webkit-background-clip: text;
+  background-clip: text;
   -webkit-text-fill-color: transparent;
   letter-spacing: -0.04em;
   z-index: 1;
@@ -209,53 +246,233 @@
   color: #888;
 }
 
-.statsGrid {
+/* Dynamic Grid - adjusts based on columns */
+.categorizedGrid {
   display: grid;
-  grid-template-columns: repeat(4, 1fr);
   gap: 1.5rem;
   width: 100%;
-  max-width: 900px;
+  max-width: 1400px;
   margin-bottom: 3rem;
   z-index: 1;
+  align-items: start;
 }
 
-.statCard {
-  border: 1px solid rgba(255, 255, 255, 0.1);
-  padding: 1.5rem;
-  border-radius: 12px;
-  text-align: left;
-  /* Modern Left Align */
+/* 2 columns by default (Working/Invalid), 3 if Pro exists. 
+   We will control grid-template-columns via inline style or separate class in JS */
+
+.categoryCard {
+  border: 1px solid rgba(255, 255, 255, 0.08);
+  border-radius: 8px;
+  background: #050505;
+  /* Very dark background, distinct from main bg */
+  display: flex;
+  flex-direction: column;
+  overflow: hidden;
+  height: auto;
+  min-height: 200px;
+  box-shadow: 0 0 0 1px rgba(0, 0, 0, 1);
+  /* subtle inner shadow simulation */
+}
+
+.categoryHeader {
+  padding: 1rem 1.25rem;
+  border-bottom: 1px solid rgba(255, 255, 255, 0.08);
+  display: flex;
+  justify-content: space-between;
+  align-items: center;
+  background: rgba(255, 255, 255, 0.02);
+}
+
+.categoryTitle {
+  font-size: 0.95rem;
+  font-weight: 600;
+  color: #fff;
+  display: flex;
+  align-items: center;
+  gap: 0.75rem;
+}
+
+/* Small dot for status indication instead of colored text */
+.statusIndicator {
+  width: 8px;
+  height: 8px;
+  border-radius: 50%;
+}
+
+.statusIndicator.working {
+  background: #fff;
+  box-shadow: 0 0 8px rgba(255, 255, 255, 0.5);
+}
+
+.statusIndicator.invalid {
+  background: #333;
+  border: 1px solid #555;
+}
+
+.statusIndicator.pro {
+  background: #fff;
+  box-shadow: 0 0 12px rgba(255, 255, 255, 0.8);
+}
+
+.countBadge {
+  background: rgba(255, 255, 255, 0.08);
+  color: #888;
+  padding: 1px 8px;
+  border-radius: 99px;
+  font-size: 0.75rem;
+  font-family: 'Geist Mono', monospace;
+}
+
+.categoryList {
+  padding: 0;
+  margin: 0;
+  list-style: none;
+  max-height: 800px;
+  overflow-y: auto;
+}
+
+/* List Header Row */
+.listHeader {
+  display: grid;
+  grid-template-columns: 120px 1fr 100px 40px;
+  /* Matches resultItem */
+  gap: 1rem;
+  padding: 0.75rem 1.25rem;
+  border-bottom: 1px solid rgba(255, 255, 255, 0.04);
+  background: rgba(255, 255, 255, 0.01);
+  font-size: 0.75rem;
+  font-weight: 600;
+  color: #555;
+  text-transform: uppercase;
+  letter-spacing: 0.05em;
+}
+
+/* List Items - Horizontal Row Layout */
+.resultItem {
+  padding: 0.75rem 1.25rem;
+  border-bottom: 1px solid rgba(255, 255, 255, 0.04);
+  display: grid;
+  grid-template-columns: 120px 1fr 100px 40px;
+  /* Provider | Key | Details | Copy */
+  gap: 1rem;
+  align-items: center;
+  transition: background 0.2s;
+  font-size: 0.85rem;
+  opacity: 0;
+  animation: slideIn 0.5s ease forwards;
+}
+
+.resultItem:last-child {
+  border-bottom: none;
+}
+
+.resultItem:hover {
   background: rgba(255, 255, 255, 0.03);
-  backdrop-filter: blur(10px);
-  transition: transform 0.2s ease, border-color 0.2s ease;
+}
+
+.providerCell {
+  display: flex;
+  align-items: center;
+  gap: 0.5rem;
+  font-weight: 500;
+  color: #fff;
+}
+
+.keyCell {
+  font-family: 'Geist Mono', monospace;
+  color: #888;
+  background: rgba(255, 255, 255, 0.03);
+  padding: 4px 8px;
+  border-radius: 4px;
+  border: 1px solid rgba(255, 255, 255, 0.05);
+  font-size: 0.75rem;
+  white-space: nowrap;
+  overflow: hidden;
+  text-overflow: ellipsis;
+  cursor: text;
+  user-select: all;
+  /* Easy selection */
+}
+
+.detailsCell {
+  color: #666;
+  font-size: 0.75rem;
+  text-align: right;
+  white-space: nowrap;
+}
+
+.actionCell {
+  display: flex;
+  justify-content: flex-end;
+}
+
+.iconButton {
+  background: transparent;
+  border: none;
+  color: #666;
+  cursor: pointer;
+  padding: 4px;
+  display: flex;
+  align-items: center;
+  justify-content: center;
+  border-radius: 4px;
+  transition: all 0.2s;
+}
+
+.iconButton:hover {
+  color: #fff;
+  background: rgba(255, 255, 255, 0.1);
+}
+
+/* Remove old specific row classes */
+.categoryCard.working .categoryTitle,
+.categoryCard.invalid .categoryTitle,
+.categoryCard.pro .categoryTitle {
+  color: inherit;
 }
 
 .statCard:hover {
+  transform: translateY(-4px);
   border-color: rgba(255, 255, 255, 0.2);
-  transform: translateY(-2px);
+  box-shadow: 0 10px 40px -10px rgba(0, 0, 0, 0.5);
 }
 
 .statValue {
-  font-size: 2.5rem;
-  font-weight: 700;
-  display: block;
+  font-size: 4rem;
+  font-weight: 800;
+  letter-spacing: -0.04em;
   line-height: 1;
-  margin-bottom: 0.5rem;
-  letter-spacing: -0.02em;
+  line-height: 1;
+  background: linear-gradient(180deg, #fff 0%, #666 100%);
+  -webkit-background-clip: text;
+  background-clip: text;
+  -webkit-text-fill-color: transparent;
 }
 
 .statLabel {
-  color: var(--accents-4);
-  font-size: 0.8rem;
+  font-size: 0.9rem;
+  font-weight: 600;
   text-transform: uppercase;
-  letter-spacing: 0.1em;
-  font-weight: 500;
+  letter-spacing: 0.05em;
+  color: #888;
 }
 
+/* Card Specifics for colored borders/glows */
+.statCard.working {
+  border-top: 4px solid var(--geist-success);
+}
+
+.statCard.pro {
+  border-top: 4px solid #7928ca;
+}
+
+.statCard.invalid {
+  border-top: 4px solid var(--geist-error);
+}
+
+/* Results Table Enhancements */
 .resultsSection {
   width: 100%;
-  max-width: 900px;
-  z-index: 1;
   background: rgba(255, 255, 255, 0.03);
   border: 1px solid rgba(255, 255, 255, 0.1);
   border-radius: 12px;
@@ -334,4 +551,16 @@
   padding: 4px 8px;
   border-radius: 6px;
   font-size: 0.85rem;
+}
+
+@keyframes slideIn {
+  from {
+    opacity: 0;
+    transform: translateY(10px);
+  }
+
+  to {
+    opacity: 1;
+    transform: translateY(0);
+  }
 }

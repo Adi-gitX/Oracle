@@ -40,10 +40,22 @@ const Home: NextPage = () => {
     setLoading(true)
     setResults([]) // Reset results for new check
 
-    const keys = input.split('\n').map(k => k.trim()).filter(k => k)
+    // Extract keys using regex to handle various formats (e.g., "- [ ] key", "key", " key ")
+    const extractKey = (line: string) => {
+      // Match Google (AIza...), Anthropic (sk-ant-...), or OpenAI (sk-...)
+      const match = line.match(/(AIza[a-zA-Z0-9-_]+|sk-ant-[a-zA-Z0-9-_]+|sk-[a-zA-Z0-9-]+)/);
+      return match ? match[0] : null;
+    }
+
+    const keys = input.split('\n')
+      .map(extractKey)
+      .filter((k): k is string => !!k);
+
+    // Remove duplicates
+    const uniqueKeys = Array.from(new Set(keys));
 
     // Parallel execution for speed
-    const resultsPromises = keys.map(async (key) => {
+    const resultsPromises = uniqueKeys.map(async (key) => {
       try {
         const res = await fetch('/api/check', {
           method: 'POST',
@@ -109,21 +121,7 @@ const Home: NextPage = () => {
 
       {/* Hero Section */}
       <section className={styles.hero}>
-        <div className={styles.heroContent}>
-          <h1 className={styles.heroTitle}>Intelligence<br />in Motion</h1>
-          <p className={styles.heroSubtitle}>
-            Experience AI that evolves with every interaction—learning, adapting, and flowing like the world around you.
-          </p>
-          <div className={styles.heroButtons}>
-            <button className={styles.ctaButton} onClick={scrollToDashboard}>Get Started</button>
-            <button
-              className={styles.ctaButton}
-              style={{ background: 'transparent', border: '1px solid #333', color: '#fff' }}
-            >
-              Try Demo
-            </button>
-          </div>
-        </div>
+
 
         <div className={styles.splineContainer}>
           <spline-viewer url="https://prod.spline.design/f7t3AZjdewBu95hf/scene.splinecode"></spline-viewer>
@@ -152,60 +150,126 @@ const Home: NextPage = () => {
         </div>
 
         {results.length > 0 && (
-          <>
-            <div className={styles.statsGrid}>
-              <div className={styles.statCard}>
-                <span className={styles.statValue}>{stats.total}</span>
-                <span className={styles.statLabel}>Total</span>
+          <div
+            className={styles.categorizedGrid}
+            style={{ gridTemplateColumns: results.some(r => r.premium) ? 'repeat(3, 1fr)' : 'repeat(2, 1fr)' }}
+          >
+
+            {/* Working Keys */}
+            <div className={`${styles.categoryCard} ${styles.working}`}>
+              <div className={styles.categoryHeader}>
+                <div className={styles.categoryTitle}>
+                  <div className={`${styles.statusIndicator} ${styles.working}`} />
+                  Working
+                </div>
+                <div className={styles.countBadge}>{results.filter(r => r.status === 'valid' && !r.premium).length}</div>
               </div>
-              <div className={styles.statCard} style={{ borderColor: 'var(--geist-success)' }}>
-                <span className={styles.statValue} style={{ color: 'var(--geist-success)' }}>
-                  {stats.working}
-                </span>
-                <span className={styles.statLabel}>Active</span>
+              <div className={styles.listHeader}>
+                <span>Provider</span>
+                <span>API Key</span>
+                <span style={{ textAlign: 'right' }}>Details</span>
+                <span></span>
               </div>
-              <div className={styles.statCard} style={{ borderColor: '#7928ca' }}>
-                <span className={styles.statValue} style={{ color: '#7928ca' }}>
-                  {stats.premium}
-                </span>
-                <span className={styles.statLabel}>Premium</span>
-              </div>
-              <div className={styles.statCard} style={{ borderColor: 'var(--geist-error)' }}>
-                <span className={styles.statValue} style={{ color: 'var(--geist-error)' }}>
-                  {stats.dead}
-                </span>
-                <span className={styles.statLabel}>Revoked</span>
-              </div>
+              <ul className={styles.categoryList}>
+                {results.filter(r => r.status === 'valid' && !r.premium).map((r, i) => (
+                  <li key={i} className={styles.resultItem} style={{ animationDelay: `${i * 0.05}s` }}>
+                    <div className={styles.providerCell}>{r.provider}</div>
+                    <div className={styles.keyCell}>
+                      {r.key}
+                    </div>
+                    <div className={styles.detailsCell}>{r.details}</div>
+                    <div className={styles.actionCell}>
+                      <button
+                        className={styles.iconButton}
+                        onClick={() => navigator.clipboard.writeText(r.key)}
+                        title="Copy Key"
+                      >
+                        {/* Simple Copy Icon SVG */}
+                        <svg width="14" height="14" viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="2" strokeLinecap="round" strokeLinejoin="round"><rect x="9" y="9" width="13" height="13" rx="2" ry="2"></rect><path d="M5 15H4a2 2 0 0 1-2-2V4a2 2 0 0 1 2-2h9a2 2 0 0 1 2 2v1"></path></svg>
+                      </button>
+                    </div>
+                  </li>
+                ))}
+              </ul>
             </div>
 
-            <div className={styles.resultsSection}>
-              <table className={styles.table}>
-                <thead>
-                  <tr>
-                    <th>Status</th>
-                    <th>Provider</th>
-                    <th>Key</th>
-                    <th>Details</th>
-                  </tr>
-                </thead>
-                <tbody>
-                  {results.map((r, i) => (
-                    <tr key={i}>
-                      <td>
-                        <span className={`${styles.statusDot} ${styles[r.status]} ${r.premium ? styles.premium : ''} ${r.provider === 'Google Gemini' ? styles.gemini : ''} `} />
-                        {r.status === 'valid'
-                          ? (r.premium ? 'Premium' : 'Standard')
-                          : 'Invalid'}
-                      </td>
-                      <td>{r.provider}</td>
-                      <td className={styles.keyMask}>{maskKey(r.key)}</td>
-                      <td>{r.details}</td>
-                    </tr>
-                  ))}
-                </tbody>
-              </table>
+            {/* Invalid Keys */}
+            <div className={`${styles.categoryCard} ${styles.invalid}`}>
+              <div className={styles.categoryHeader}>
+                <div className={styles.categoryTitle}>
+                  <div className={`${styles.statusIndicator} ${styles.invalid}`} />
+                  Invalid
+                </div>
+                <div className={styles.countBadge}>{results.filter(r => r.status === 'invalid').length}</div>
+              </div>
+              <div className={styles.listHeader}>
+                <span>Provider</span>
+                <span>API Key</span>
+                <span style={{ textAlign: 'right' }}>Details</span>
+                <span></span>
+              </div>
+              <ul className={styles.categoryList}>
+                {results.filter(r => r.status === 'invalid').map((r, i) => (
+                  <li key={i} className={styles.resultItem} style={{ animationDelay: `${i * 0.05}s` }}>
+                    <div className={styles.providerCell}>{r.provider}</div>
+                    <div className={styles.keyCell}>
+                      {r.key}
+                    </div>
+                    <div className={styles.detailsCell}>{r.details}</div>
+                    <div className={styles.actionCell}>
+                      <button
+                        className={styles.iconButton}
+                        onClick={() => navigator.clipboard.writeText(r.key)}
+                        title="Copy Key"
+                      >
+                        <svg width="14" height="14" viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="2" strokeLinecap="round" strokeLinejoin="round"><rect x="9" y="9" width="13" height="13" rx="2" ry="2"></rect><path d="M5 15H4a2 2 0 0 1-2-2V4a2 2 0 0 1 2-2h9a2 2 0 0 1 2 2v1"></path></svg>
+                      </button>
+                    </div>
+                  </li>
+                ))}
+              </ul>
             </div>
-          </>
+
+            {/* Pro Keys - Only rendered if present */}
+            {results.some(r => r.premium) && (
+              <div className={`${styles.categoryCard} ${styles.pro}`}>
+                <div className={styles.categoryHeader}>
+                  <div className={styles.categoryTitle}>
+                    <div className={`${styles.statusIndicator} ${styles.pro}`} />
+                    Pro
+                  </div>
+                  <div className={styles.countBadge}>{results.filter(r => r.premium).length}</div>
+                </div>
+                <div className={styles.listHeader}>
+                  <span>Provider</span>
+                  <span>API Key</span>
+                  <span style={{ textAlign: 'right' }}>Details</span>
+                  <span></span>
+                </div>
+                <ul className={styles.categoryList}>
+                  {results.filter(r => r.premium).map((r, i) => (
+                    <li key={i} className={styles.resultItem} style={{ animationDelay: `${i * 0.05}s` }}>
+                      <div className={styles.providerCell}>{r.provider}</div>
+                      <div className={styles.keyCell}>
+                        {r.key}
+                      </div>
+                      <div className={styles.detailsCell}>{r.details}</div>
+                      <div className={styles.actionCell}>
+                        <button
+                          className={styles.iconButton}
+                          onClick={() => navigator.clipboard.writeText(r.key)}
+                          title="Copy Key"
+                        >
+                          <svg width="14" height="14" viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="2" strokeLinecap="round" strokeLinejoin="round"><rect x="9" y="9" width="13" height="13" rx="2" ry="2"></rect><path d="M5 15H4a2 2 0 0 1-2-2V4a2 2 0 0 1 2-2h9a2 2 0 0 1 2 2v1"></path></svg>
+                        </button>
+                      </div>
+                    </li>
+                  ))}
+                </ul>
+              </div>
+            )}
+
+          </div>
         )}
       </main>
     </div>
