@@ -137,6 +137,27 @@ export default async function handler(
             confidenceScore: 1, trustLevel: 'High'
         } as any)
     }
+
+    // Advanced Heuristics: Placeholder & Entropy Analysis
+    if (isPlaceholder(finalKey)) {
+        return res.status(400).json({
+            valid: false, provider: 'Heuristics', message: 'Detected Placeholder Key',
+            confidenceScore: 1, trustLevel: 'High'
+        } as any)
+    }
+
+    const entropy = calculateEntropy(finalKey);
+    // Threshold: 3.0 is a conservative cutoff. Random hex/base64 is usually > 4.0.
+    // Simple words like "password" are ~2.0. 
+    // We only check keys > 16 chars to avoid flagging short valid passwords/tokens.
+    if (finalKey.length > 16 && entropy < 2.5) {
+        return res.status(400).json({
+            valid: false, provider: 'Heuristics', message: 'Low Entropy (Likely Fake/Weak)',
+            confidenceScore: 0.9, trustLevel: 'High'
+        } as any)
+    }
+
+    // 2. Adapter Matching (Engineering Backbone)
     const adapter = Adapters.find(a => a.matches(finalKey))
 
     let result: CheckResult;
@@ -182,4 +203,32 @@ export default async function handler(
     // Type assertion to any because we are sending an encrypted payload wrapper, 
     // not the CheckResult shape directly on the wire.
     res.status(200).json({ payload: encryptedResult, isEncrypted: true } as any);
+}
+
+// --- Helpers ---
+
+function calculateEntropy(str: string): number {
+    const len = str.length;
+    const frequencies = new Map<string, number>();
+
+    for (const char of str) {
+        frequencies.set(char, (frequencies.get(char) || 0) + 1);
+    }
+
+    let entropy = 0;
+    for (const count of frequencies.values()) {
+        const p = count / len;
+        entropy -= p * Math.log2(p);
+    }
+
+    return entropy;
+}
+
+function isPlaceholder(str: string): boolean {
+    const lower = str.toLowerCase();
+    const placeholders = [
+        'your_api_key', 'your-api-key', 'insert_key_here', 'replace_me',
+        'example_key', 'my_secret_key', '123456789', 'abcdefgh'
+    ];
+    return placeholders.some(p => lower.includes(p));
 }
