@@ -216,7 +216,7 @@ function calculateEntropy(str: string): number {
     }
 
     let entropy = 0;
-    for (const count of frequencies.values()) {
+    for (const count of Array.from(frequencies.values())) {
         const p = count / len;
         entropy -= p * Math.log2(p);
     }
