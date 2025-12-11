@@ -102,15 +102,18 @@ export default async function handler(
 
                     finalKey = payload.content;
                 } else {
-                    // Fallback for legacy/simple strings (backward compatibility if needed, but we are enforcing security)
-                    // For now, let's treat the whole string as key if parse fails or schema mismatch
-                    // finalKey = decrypted;
                     // Strict Mode: Reject invalid schema
-                    finalKey = decrypted; // Temporary fallback to not break strictly
+                    return res.status(400).json({
+                        valid: false, provider: 'Security', message: 'Invalid Payload Schema',
+                        confidenceScore: 1, trustLevel: 'High'
+                    } as any);
                 }
             } catch (jsonErr) {
-                // Not a JSON payload, probably just the raw string key from older client
-                finalKey = decrypted;
+                // Strict Mode: Reject non-JSON (Raw strings are no longer accepted)
+                return res.status(400).json({
+                    valid: false, provider: 'Security', message: 'Malformatted Payload',
+                    confidenceScore: 1, trustLevel: 'High'
+                } as any);
             }
 
         } catch (e) {
