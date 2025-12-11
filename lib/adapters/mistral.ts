@@ -4,10 +4,7 @@ import fetch from 'cross-fetch';
 export const MistralAdapter: ProviderAdapter = {
     id: 'mistral',
     name: 'Mistral AI',
-    matches: (key: string) => {
-        // Conservative match, or relying on manual selection/check loop fallback
-        return false;
-    },
+    matches: (key: string) => false,
     check: async (key: string): Promise<CheckResult> => {
         try {
             const res = await fetch('https://api.mistral.ai/v1/models', {

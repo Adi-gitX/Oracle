@@ -4,7 +4,7 @@ import fetch from 'cross-fetch';
 export const OpenAIAdapter: ProviderAdapter = {
     id: 'openai',
     name: 'OpenAI',
-    matches: (key: string) => key.startsWith('sk-'),
+    matches: (key: string) => key.startsWith('sk-') || key.startsWith('sk-proj-'),
     check: async (key: string): Promise<CheckResult> => {
         try {
             const res = await fetch('https://api.openai.com/v1/models', {

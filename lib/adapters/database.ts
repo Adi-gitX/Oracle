@@ -3,7 +3,7 @@ import { ProviderAdapter, CheckResult } from './types';
 export const DatabaseAdapter: ProviderAdapter = {
     id: 'database',
     name: 'Database',
-    matches: (key: string) => /^(postgres|mysql|mongodb(\+srv)?):\/\//.test(key),
+    matches: (key: string) => /^(postgres(?:ql)?|mysql|mongodb(?:\+srv)?):\/\//.test(key),
     check: async (key: string): Promise<CheckResult> => {
         // We cannot easily check DB connections from Vercel Edge/Serverless without drivers.
         // But we can parse it and validate the format and maybe extraction user/host.

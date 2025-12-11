@@ -4,6 +4,7 @@ export interface CheckResult {
     message: string;
     premium?: boolean;
     models?: string[];
+    usage?: { limit: number; used: number; };
     confidenceScore: number; // 0.0 to 1.0
     trustLevel: 'High' | 'Medium' | 'Low';
     metadata?: Record<string, any>; // Extra debug info

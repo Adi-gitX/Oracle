@@ -4,7 +4,7 @@ import fetch from 'cross-fetch';
 export const TwilioAdapter: ProviderAdapter = {
     id: 'twilio',
     name: 'Twilio',
-    matches: (key: string) => key.startsWith('AC') || key.startsWith('SK') || key.includes(':'),
+    matches: (key: string) => key.startsWith('AC') && (key.includes(':') || key.length === 34),
     check: async (key: string): Promise<CheckResult> => {
         try {
             if (!key.includes(':')) {

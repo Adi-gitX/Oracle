@@ -4,7 +4,7 @@ import fetch from 'cross-fetch';
 export const GitLabAdapter: ProviderAdapter = {
     id: 'gitlab',
     name: 'GitLab',
-    matches: (key: string) => key.startsWith('glpat-') || key.length === 20,
+    matches: (key: string) => key.startsWith('glpat-'),
     check: async (key: string): Promise<CheckResult> => {
         try {
             const res = await fetch('https://gitlab.com/api/v4/user', {

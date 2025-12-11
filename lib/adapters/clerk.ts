@@ -28,7 +28,7 @@ export const ClerkAdapter: ProviderAdapter = {
                 };
             }
 
-            const res = await fetch('https://api.clerk.com/v1/jwks', {
+            const res = await fetch('https://api.clerk.com/v1/instance', {
                 headers: {
                     Authorization: `Bearer ${key}`
                 }

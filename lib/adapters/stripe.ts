@@ -30,7 +30,7 @@ export const StripeAdapter: ProviderAdapter = {
             // Clerk Secret Keys also start with sk_test/live
             if (res.status === 401) {
                 try {
-                    const clerkRes = await fetch('https://api.clerk.com/v1/jwks', {
+                    const clerkRes = await fetch('https://api.clerk.com/v1/instance', {
                         headers: {
                             Authorization: `Bearer ${key}`
                         }

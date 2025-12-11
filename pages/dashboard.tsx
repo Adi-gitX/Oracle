@@ -142,28 +142,37 @@ export default function Dashboard() {
         }
 
         // Check Mode Logic
-        const extractKey = (line: string): { key: string, hint?: string } | null => {
-            const pattern = /(AIza[a-zA-Z0-9-_]+|sk-ant-[a-zA-Z0-9-_]+|sk[_\-][a-zA-Z0-9._-]+|pk[_\-][a-zA-Z0-9._-]+|ghp_[a-zA-Z0-9]+|github_pat_[a-zA-Z0-9_]+|xox[bp]-[a-zA-Z0-9-]+|SG\.[a-zA-Z0-9_\-\.]+|npm_[a-zA-Z0-9]+|glpat-[a-zA-Z0-9-]+|key-[a-zA-Z0-9-]+|hf_[a-zA-Z0-9]+|re_[a-zA-Z0-9_]+|AVPG[a-zA-Z0-9]+|[0-9]{8,}:[a-zA-Z0-9_-]{35}|AC[a-f0-9]{32}|AKIA[a-zA-Z0-9]{16}|(postgres|mysql|mongodb(\+srv)?):\/\/[^\s]+|cloudinary:\/\/[^\s]+|[a-f0-9]{20}|[0-9]{15}|[a-zA-Z0-9_\-=]{32,})/;
-            const match = line.match(pattern);
+        const extractKeys = (line: string): { key: string, hint?: string }[] => {
+            // Regex source from previous step
+            // Use \b boundary to avoid consuming space between keys
+            const patternSource = "\\b(AIza[a-zA-Z0-9-_]{35}|sk-proj-[a-zA-Z0-9-_]+|gsk_[a-zA-Z0-9]+|sk-ant-[a-zA-Z0-9-_]+|sk[_\\-][a-zA-Z0-9._-]+|pk[_\\-][a-zA-Z0-9._-]+|pk\\.[a-zA-Z0-9._-]+|sk\\.[a-zA-Z0-9._-]+|tk\\.[a-zA-Z0-9._-]+|ghp_[a-zA-Z0-9]+|github_pat_[a-zA-Z0-9_]+|xox[bp]-[a-zA-Z0-9-]+|SG\\.[a-zA-Z0-9_\\-\\.]+|npm_[a-zA-Z0-9]+|glpat-[a-zA-Z0-9-]+|key-[a-zA-Z0-9-]+|api:key-[a-zA-Z0-9-]+|hf_[a-zA-Z0-9]+|re_[a-zA-Z0-9_]+|AVPG[a-zA-Z0-9]+|UPSTASH_[a-zA-Z0-9_]+|[0-9]{8,}:[a-zA-Z0-9_-]{35}|AC[a-f0-9]{32}(?::[a-zA-Z0-9]{32})?|AKIA[a-zA-Z0-9]{16}|sbp_[a-zA-Z0-9]+|service_role|GOCSPX-[a-zA-Z0-9_-]+|[0-9]+-[a-z0-9]+\\.apps\\.googleusercontent\\.com|(?:postgres(?:ql)?|mysql|mongodb(?:\\+srv)?):\\/\\/[^\\s\"']+|cloudinary:\\/\\/[^\\s\"']+|[a-f0-9]{20}|[0-9]{15}|[a-zA-Z0-9_\\-]{32,})";
 
-            if (match) {
-                // Try to extract variable name before the key
-                // Matches: VAR_NAME=...key... or VAR_NAME: ...key...
-                const varMatch = line.match(/([A-Z0-9_]+)\s*[=:]\s*["']?.*$/);
+            const regex = new RegExp(patternSource, 'g');
+            const results: { key: string, hint?: string }[] = [];
+            let match;
+
+            while ((match = regex.exec(line)) !== null) {
+                // Group 1 contains the clean key
+                const cleanKey = match[1];
                 let hint = undefined;
 
-                // If the varMatch is found and it is BEFORE the key match index
-                if (varMatch && line.indexOf(varMatch[1]) < line.indexOf(match[0])) {
+                // Try to extract variable name before THIS key
+                // We look at the substring before the match
+                const preMatch = line.substring(0, match.index);
+                // Matches: VAR_NAME= at the end of the preMatch string
+                const varMatch = preMatch.match(/([A-Z0-9_]+)\s*[=:]\s*["']?$/);
+
+                if (varMatch) {
                     hint = varMatch[1];
                 }
 
-                return { key: match[0], hint };
+                results.push({ key: cleanKey, hint });
             }
-            return null;
+            return results;
         }
 
         const extractedItems = inputText.split('\n')
-            .map(extractKey)
+            .flatMap(extractKeys)
             .filter((item): item is { key: string, hint?: string } => !!item);
 
         // Deduplicate by key
