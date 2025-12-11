@@ -15,7 +15,7 @@ export default async function handler(
     }
 
     // Server-side logging
-    console.log(`[Feedback] [${type}] ${subject}: ${message} (${contact || 'Anon'})`)
+    // console.log(`[Feedback] [${type}] ${subject}: ${message} (${contact || 'Anon'})`)
 
     // Color Logic
     const colors: Record<string, number> = {
