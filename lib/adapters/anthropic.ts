@@ -4,7 +4,7 @@ import fetch from 'cross-fetch';
 export const AnthropicAdapter: ProviderAdapter = {
     id: 'anthropic',
     name: 'Anthropic',
-    matches: (key: string) => key.startsWith('sk-ant'),
+    matches: (key: string) => key.startsWith('sk-ant-'),
     check: async (key: string): Promise<CheckResult> => {
         try {
             const res = await fetch('https://api.anthropic.com/v1/messages', {
@@ -12,16 +12,16 @@ export const AnthropicAdapter: ProviderAdapter = {
                 headers: {
                     'x-api-key': key,
                     'anthropic-version': '2023-06-01',
-                    'content-type': 'application/json'
+                    'content-type': 'application/json',
                 },
                 body: JSON.stringify({
-                    model: 'claude-3-haiku-20240307',
                     max_tokens: 1,
-                    messages: [{ role: 'user', content: 'Hi' }]
-                })
+                    messages: [{ role: 'user', content: 'test' }],
+                    model: 'claude-2.1' // Using a potentially high-tier model to check access
+                }),
             });
 
-            if (res.status === 401 || res.status === 403) {
+            if (res.status === 401) {
                 return {
                     valid: false,
                     provider: 'Anthropic',
@@ -31,25 +31,46 @@ export const AnthropicAdapter: ProviderAdapter = {
                 };
             }
 
-            if (res.ok) {
+            if (res.status === 403) {
                 return {
-                    valid: true,
+                    valid: false,
                     provider: 'Anthropic',
-                    premium: true,
-                    message: 'Active',
-                    models: ['claude-3-opus', 'claude-3-sonnet', 'claude-3-haiku'], // Checking allows access to all standard models
+                    message: 'Leaked Key - Inactive',
                     confidenceScore: 1.0,
-                    trustLevel: 'High'
+                    trustLevel: 'Low'
                 };
             }
 
-            const errData = await res.json();
+            // Anthropic returns 400 for valid keys but invalid request body (sometimes).
+            // But here we sent a valid body. If we lack credits, it might be 400 or 402 or 429.
+            // 402 = Payment Required (Credits exhausted but key valid). 
+            // Users usually want to know if it works. 402 means "Active but Empty".
+            if (res.status === 402) {
+                return {
+                    valid: true,
+                    provider: 'Anthropic',
+                    message: 'Active (No Credits)',
+                    confidenceScore: 1.0,
+                    trustLevel: 'Medium'
+                };
+            }
+
+            if (!res.ok) {
+                return {
+                    valid: false,
+                    provider: 'Anthropic',
+                    message: `Error: ${res.statusText}`,
+                    confidenceScore: 0.8,
+                    trustLevel: 'Low'
+                };
+            }
+
             return {
-                valid: false,
+                valid: true,
                 provider: 'Anthropic',
-                message: errData.error?.message || res.statusText,
-                confidenceScore: 0.9,
-                trustLevel: 'Low'
+                message: 'Active',
+                confidenceScore: 1.0,
+                trustLevel: 'High'
             };
         } catch (error) {
             return {

@@ -1,20 +1,23 @@
 import { ProviderAdapter, CheckResult } from './types';
 import fetch from 'cross-fetch';
 
-export const OpenAIAdapter: ProviderAdapter = {
-    id: 'openai',
-    name: 'OpenAI',
-    matches: (key: string) => key.startsWith('sk-'),
+export const HerokuAdapter: ProviderAdapter = {
+    id: 'heroku',
+    name: 'Heroku',
+    matches: (key: string) => /^[a-f0-9]{8}-[a-f0-9]{4}-[a-f0-9]{4}-[a-f0-9]{4}-[a-f0-9]{12}$/.test(key) || key.length === 36,
     check: async (key: string): Promise<CheckResult> => {
         try {
-            const res = await fetch('https://api.openai.com/v1/models', {
-                headers: { Authorization: `Bearer ${key}` },
+            const res = await fetch('https://api.heroku.com/apps', {
+                headers: {
+                    'Accept': 'application/vnd.heroku+json; version=3',
+                    'Authorization': `Bearer ${key}`
+                }
             });
 
             if (res.status === 401) {
                 return {
                     valid: false,
-                    provider: 'OpenAI',
+                    provider: 'Heroku',
                     message: 'Invalid API Key',
                     confidenceScore: 1.0,
                     trustLevel: 'Low'
@@ -24,7 +27,7 @@ export const OpenAIAdapter: ProviderAdapter = {
             if (res.status === 403) {
                 return {
                     valid: false,
-                    provider: 'OpenAI',
+                    provider: 'Heroku',
                     message: 'Leaked Key - Inactive',
                     confidenceScore: 1.0,
                     trustLevel: 'Low'
@@ -34,7 +37,7 @@ export const OpenAIAdapter: ProviderAdapter = {
             if (!res.ok) {
                 return {
                     valid: false,
-                    provider: 'OpenAI',
+                    provider: 'Heroku',
                     message: `Error: ${res.statusText}`,
                     confidenceScore: 0.8,
                     trustLevel: 'Low'
@@ -42,21 +45,19 @@ export const OpenAIAdapter: ProviderAdapter = {
             }
 
             const data = await res.json();
-            const models = data.data.map((m: any) => m.id);
-            const gpt4 = models.some((m: string) => m.includes('gpt-4'));
-
+            const appCount = Array.isArray(data) ? data.length : 0;
             return {
                 valid: true,
-                provider: 'OpenAI',
-                premium: gpt4,
-                message: gpt4 ? 'Active (GPT-4)' : 'Active',
+                provider: 'Heroku',
+                message: `Active (${appCount} apps)`,
                 confidenceScore: 1.0,
                 trustLevel: 'High'
             };
+
         } catch (error) {
             return {
                 valid: false,
-                provider: 'OpenAI',
+                provider: 'Heroku',
                 message: 'Network Error',
                 confidenceScore: 0.1,
                 trustLevel: 'Low'
