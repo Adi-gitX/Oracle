@@ -105,10 +105,10 @@ export default function Docs() {
                                 className={`${docStyles.navLink} ${activeSection === 'intro' ? docStyles.active : ''}`}>
                                 Introduction
                             </a>
-                            <a href="#authentication"
-                                onClick={(e) => handleScrollTo(e, 'authentication')}
-                                className={`${docStyles.navLink} ${activeSection === 'authentication' ? docStyles.active : ''}`}>
-                                Authentication
+                            <a href="#features"
+                                onClick={(e) => handleScrollTo(e, 'features')}
+                                className={`${docStyles.navLink} ${activeSection === 'features' ? docStyles.active : ''}`}>
+                                Key Features
                             </a>
                         </div>
                         <div>
@@ -118,28 +118,23 @@ export default function Docs() {
                                 className={`${docStyles.navLink} ${activeSection === 'providers' ? docStyles.active : ''}`}>
                                 Supported Providers
                             </a>
+                            <a href="#context-aware"
+                                onClick={(e) => handleScrollTo(e, 'context-aware')}
+                                className={`${docStyles.navLink} ${activeSection === 'context-aware' ? docStyles.active : ''}`}>
+                                Context-Aware Validation
+                            </a>
                             <a href="#security"
                                 onClick={(e) => handleScrollTo(e, 'security')}
                                 className={`${docStyles.navLink} ${activeSection === 'security' ? docStyles.active : ''}`}>
-                                Security Model
+                                Security Architecture
                             </a>
                         </div>
                         <div>
-                            <div className={docStyles.sidebarTitle}>API</div>
-                            <a href="#chat"
-                                onClick={(e) => handleScrollTo(e, 'chat')}
-                                className={`${docStyles.navLink} ${activeSection === 'chat' ? docStyles.active : ''}`}>
-                                AI Assistant
-                            </a>
-                            <a href="#usage"
-                                onClick={(e) => handleScrollTo(e, 'usage')}
-                                className={`${docStyles.navLink} ${activeSection === 'usage' ? docStyles.active : ''}`}>
-                                Usage Limits
-                            </a>
+                            <div className={docStyles.sidebarTitle}>Legal</div>
                             <a href="#legal"
                                 onClick={(e) => handleScrollTo(e, 'legal')}
                                 className={`${docStyles.navLink} ${activeSection === 'legal' ? docStyles.active : ''}`}>
-                                Legal & Terms
+                                Terms & Privacy
                             </a>
                         </div>
                     </aside>
@@ -148,76 +143,83 @@ export default function Docs() {
                         <section id="intro" className={docStyles.section}>
                             <h1 className={docStyles.title}>Introduction</h1>
                             <p className={docStyles.text}>
-                                Oracle is the developer-first tool for verifying, debugging, and auditing API keys.
-                                We solve the problem of &quot;Is this key working?&quot; by securely testing it against the official provider endpoints.
+                                Oracle is the enterprise-grade tool for Verifying, Auditing, and Securing API infrastructure.
+                                We solve the critical problem of credential opacity—instantly determining if a key is active, what permissions it holds, and if it belongs to the service you think it does.
                             </p>
                             <p className={docStyles.text}>
-                                Whether you&apos;re cleaning up a detailed .env file or auditing a legacy codebase, Oracle gives you instant clarity on which credentials are active, what permissions they have (when possible), and if they correspond to a paid plan.
+                                Designed for DevOps, Security Engineers, and Developers, Oracle parses complex environment files (`.env`), logs, and configs to provide a unified health report of your entire credential stack.
                             </p>
                         </section>
 
-                        <section id="authentication" className={docStyles.section}>
-                            <h2 className={docStyles.subtitle}>Authentication</h2>
-                            <p className={docStyles.text}>
-                                Oracle works by detecting API key formats in your input text. You do not need to format your input in JSON. Simply paste your entire config file, log dump, or chat history.
-                            </p>
-                            <div className={docStyles.codeBlock}>
-                                {`# Example Input
-OPENAI_API_KEY=sk-proj-12345...
-ANTHROPIC_KEY=sk-ant-api03...
-GOOGLE_API_KEY=AIzaSyD...`}
-                            </div>
+                        <section id="features" className={docStyles.section}>
+                            <h2 className={docStyles.subtitle}>Key Features</h2>
+                            <ul className={docStyles.featureList} style={{ color: '#a1a1aa', lineHeight: '1.8' }}>
+                                <li><strong>Multi-Provider Support:</strong> Native validation for over 30+ services (AI, Cloud, Database, Infra).</li>
+                                <li><strong>Context-Aware Analysis:</strong> Detects mismatches between variable names (e.g., `OPENAI_KEY`) and legitimate key types (e.g., Google keys), preventing configuration drift.</li>
+                                <li><strong>Granular Error Reporting:</strong> Distinguishes between <code>Invalid</code> (401), <code>Leaked/Inactive</code> (403), and <code>Quota Exceeded</code> (429).</li>
+                                <li><strong>Smart Fallbacks:</strong> Automatically identifying cross-provider formats (e.g., Stripe/Clerk collisions, Google/Firebase/Gemini shared prefixes).</li>
+                            </ul>
                         </section>
 
                         <section id="providers" className={docStyles.section}>
-                            <h2 className={docStyles.subtitle}>Supported Providers</h2>
+                            <h2 className={docStyles.subtitle}>Supported Providers (28+)</h2>
+                            <p className={docStyles.text}>Oracle supports a massive ecosystem of APIs, constantly updated.</p>
+
+                            <h3 style={{ color: '#fff', fontSize: '1.1rem', marginTop: '1.5rem' }}>AI & LLM Services</h3>
                             <div className={docStyles.providerList}>
-                                {['OpenAI', 'Anthropic', 'Google Gemini', 'Cohere', 'Mistral', 'Groq', 'HuggingFace', 'Stripe', 'AWS (Basic)', 'Supabase'].map(p => (
-                                    <div key={p} className={docStyles.providerItem}>
-                                        <span style={{ color: '#3b82f6' }}>●</span> {p}
-                                    </div>
+                                {['OpenAI', 'Anthropic', 'Google Gemini', 'Cohere', 'Mistral', 'Groq', 'HuggingFace'].map(p => (
+                                    <div key={p} className={docStyles.providerItem}><span style={{ color: '#3b82f6' }}>●</span> {p}</div>
+                                ))}
+                            </div>
+
+                            <h3 style={{ color: '#fff', fontSize: '1.1rem', marginTop: '1.5rem' }}>Infrastructure & Cloud</h3>
+                            <div className={docStyles.providerList}>
+                                {['AWS', 'Google Cloud', 'Firebase', 'Supabase', 'Heroku', 'Cloudinary', 'Upstash', 'Neon/Postgres'].map(p => (
+                                    <div key={p} className={docStyles.providerItem}><span style={{ color: '#10b981' }}>●</span> {p}</div>
+                                ))}
+                            </div>
+
+                            <h3 style={{ color: '#fff', fontSize: '1.1rem', marginTop: '1.5rem' }}>DevOps & Tools</h3>
+                            <div className={docStyles.providerList}>
+                                {['GitHub', 'GitLab', 'NPM', 'Docker', 'Pusher', 'Shodan'].map(p => (
+                                    <div key={p} className={docStyles.providerItem}><span style={{ color: '#a855f7' }}>●</span> {p}</div>
+                                ))}
+                            </div>
+
+                            <h3 style={{ color: '#fff', fontSize: '1.1rem', marginTop: '1.5rem' }}>Communication & Marketing</h3>
+                            <div className={docStyles.providerList}>
+                                {['Slack', 'SendGrid', 'Resend', 'Mailgun', 'MailChimp', 'Twilio', 'Telegram'].map(p => (
+                                    <div key={p} className={docStyles.providerItem}><span style={{ color: '#f59e0b' }}>●</span> {p}</div>
                                 ))}
                             </div>
                         </section>
 
-                        <section id="security" className={docStyles.section}>
-                            <h2 className={docStyles.subtitle}>Security & Privacy</h2>
+                        <section id="context-aware" className={docStyles.section}>
+                            <h2 className={docStyles.subtitle}>Context-Aware Validation</h2>
                             <p className={docStyles.text}>
-                                Your security is our priority. Oracle operates on a <strong>&quot;Verify &amp; Forget&quot;</strong> model and includes enterprise-grade protection.
+                                Environment variables are often copy-pasted incorrectly. Oracle reads the context around your key.
                             </p>
+                            <div className={docStyles.codeBlock}>
+                                {`# Bad Configuration Example
+GROQ_API_KEY="AIzaSyB..."  <-- This is actually a Google Key!
+
+# Oracle Result:
+[WARNING] Google (Labeled Groq)
+"This key matches Google format, not Groq (gsk_...)."`}
+                            </div>
+                        </section>
+
+                        <section id="security" className={docStyles.section}>
+                            <h2 className={docStyles.subtitle}>Security Architecture</h2>
                             <p className={docStyles.text}>
-                                Oracle is built with a <strong>&quot;Zero-Retention / Maximum Encryption&quot;</strong> architecture.
+                                We employ a <strong>Zero-Trust, Zero-Retention</strong> architecture designed for maximum security.
                             </p>
                             <ul style={{ color: '#a1a1aa', lineHeight: '1.8', paddingLeft: '1.5rem', marginBottom: '1.5rem' }}>
-                                <li><strong>In-Memory Processing:</strong> Your keys are processed in RAM and never written to disk or databases.</li>
-                                <li><strong>End-to-End Encryption (E2EE):</strong>
-                                    We use advanced <strong>AES-256 Client-Side Encryption</strong>.
-                                    Your data is encrypted <em>before</em> it leaves your browser and responses are encrypted by the server.
-                                    Even if the HTTPS layer is compromised, your data remains an opaque, unreadable hash to any interceptor.
-                                </li>
-                                <li><strong>Leaked Key Detection:</strong> We automatically check against public leak databases.</li>
-                                <li><strong>Rate Limiting:</strong> Strict per-IP limits prevent brute-force attacks.</li>
+                                <li><strong>Client-Side Encryption:</strong> Keys are encrypted with AES-256 GCM <em>before</em> leaving your browser. The plain-text key is never visible to the network.</li>
+                                <li><strong>Ephemeral Processing:</strong> Keys are decrypted in volatile memory (RAM) only for the microseconds required to validate them against the provider.</li>
+                                <li><strong>Immediate Sanitization:</strong> Variables holding credentials are strictly nullified and garbage-collected immediately after use.</li>
+                                <li><strong>No Persistence:</strong> We do not use a database for credentials. There are no logs, no caches, and no backups of your keys.</li>
                             </ul>
-                        </section>
-
-                        <section id="chat" className={docStyles.section}>
-                            <h2 className={docStyles.subtitle}>AI Assistant (Oracle)</h2>
-                            <p className={docStyles.text}>
-                                The dashboard includes a context-aware AI assistant. You can ask Oracle to:
-                            </p>
-                            <ul style={{ color: '#ccc', lineHeight: '1.8', paddingLeft: '1.5rem', marginBottom: '1.5rem' }}>
-                                <li>Explain errors for invalid keys.</li>
-                                <li>Check if a specific model (e.g., GPT-4) is available on your key.</li>
-                                <li>Provide security best practices.</li>
-                            </ul>
-                        </section>
-
-                        <section id="usage" className={docStyles.section}>
-                            <h2 className={docStyles.subtitle}>Usage Limits</h2>
-                            <p className={docStyles.text}>
-                                Oracle is currently in free preview. There are no strict rate limits for individual usage.
-                                For enterprise batch processing, please contact us.
-                            </p>
                         </section>
 
                         <section id="legal" className={docStyles.section}>
