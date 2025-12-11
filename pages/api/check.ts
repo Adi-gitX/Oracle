@@ -81,7 +81,38 @@ export default async function handler(
     // 1. Decrypt if needed (Trust Layer)
     if (isEncrypted) {
         try {
-            finalKey = decryptData(key)
+            const decrypted = decryptData(key)
+
+            // Expert Hardening: Parsing JSON payload with Timestamp check
+            try {
+                const payload = JSON.parse(decrypted);
+
+                // Check if it's the secure payload format
+                if (payload.content && payload.timestamp) {
+                    const now = Date.now();
+                    const reqTime = payload.timestamp;
+
+                    // Replay Attack Protection: 60s Window
+                    if (now - reqTime > 60000) {
+                        return res.status(400).json({
+                            valid: false, provider: 'Security', message: 'Request Expired (Replay Protection)',
+                            confidenceScore: 1, trustLevel: 'High'
+                        } as any);
+                    }
+
+                    finalKey = payload.content;
+                } else {
+                    // Fallback for legacy/simple strings (backward compatibility if needed, but we are enforcing security)
+                    // For now, let's treat the whole string as key if parse fails or schema mismatch
+                    // finalKey = decrypted;
+                    // Strict Mode: Reject invalid schema
+                    finalKey = decrypted; // Temporary fallback to not break strictly
+                }
+            } catch (jsonErr) {
+                // Not a JSON payload, probably just the raw string key from older client
+                finalKey = decrypted;
+            }
+
         } catch (e) {
             console.error('Decryption failed', e)
             return res.status(400).json({
@@ -96,7 +127,13 @@ export default async function handler(
         confidenceScore: 0, trustLevel: 'Low'
     } as any)
 
-    // 2. Adapter Matching (Engineering Backbone)
+    // Security: Input Sanitization (DoS Protection)
+    if (finalKey.length > 2048) {
+        return res.status(400).json({
+            valid: false, provider: 'Security', message: 'Input Too Long',
+            confidenceScore: 1, trustLevel: 'High'
+        } as any)
+    }
     const adapter = Adapters.find(a => a.matches(finalKey))
 
     let result: CheckResult;

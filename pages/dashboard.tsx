@@ -182,11 +182,18 @@ export default function Dashboard() {
 
         const resultsPromises = uniqueItems.map(async ({ key, hint }) => {
             try {
-                const encryptedKey = encryptData(key);
+                // Security: Encrypt a payload containing the key and a timestamp to prevent Replay Attacks
+                // and ensure integrity.
+                const payload = {
+                    content: key,
+                    timestamp: Date.now()
+                };
+                const encryptedPayload = encryptData(JSON.stringify(payload));
+
                 const res = await fetch('/api/check', {
                     method: 'POST',
                     headers: { 'Content-Type': 'application/json' },
-                    body: JSON.stringify({ key: encryptedKey, hint, isEncrypted: true })
+                    body: JSON.stringify({ key: encryptedPayload, hint, isEncrypted: true })
                 })
 
                 const rawData = await res.json()
