@@ -3,46 +3,17 @@ import fetch from 'cross-fetch';
 
 export const StripeAdapter: ProviderAdapter = {
     id: 'stripe',
-    name: 'Stripe',
+    name: 'Stripe / Clerk',
     matches: (key: string) => key.startsWith('sk_live_') || key.startsWith('sk_test_'),
     check: async (key: string): Promise<CheckResult> => {
         try {
+            // 1. Try Stripe
             const encoded = Buffer.from(key + ':').toString('base64');
             const res = await fetch('https://api.stripe.com/v1/charges?limit=1', {
                 headers: {
                     Authorization: `Basic ${encoded}`
                 }
             });
-
-            if (res.status === 401) {
-                return {
-                    valid: false,
-                    provider: 'Stripe',
-                    message: 'Invalid API Key',
-                    confidenceScore: 1.0,
-                    trustLevel: 'Low'
-                };
-            }
-
-            if (res.status === 403) {
-                // For Stripe, 403 usually means valid key but insufficient permissions. 
-                // It is technically "Active" but Restricted. 
-                // But sticking to the user's rule for "Leaked Key - Inactive" if it's truly blocked?
-                // Stripe returns 402 for payment issues, 403 for permission.
-                // We will call it "Valid (Restricted)" to be accurate, or "Leaked" if it's a pattern?
-                // User asked "i need like this for all the apis keys ... leaked adn other details as well"
-                // 403 is often "Restricted" rather than "Leaked/Inactive". 
-                // But I'll stick to a safe "Leaked/Restricted" messaging if unsure, but for Stripe 403 is common for valid keys with low scope.
-                return {
-                    valid: true,
-                    provider: 'Stripe',
-                    message: 'Active (Restricted Scope)',
-                    confidenceScore: 1.0,
-                    trustLevel: 'Medium'
-                };
-            }
-
-            const data = await res.json();
 
             if (res.ok) {
                 return {
@@ -55,6 +26,51 @@ export const StripeAdapter: ProviderAdapter = {
                 };
             }
 
+            // 2. If Stripe fails (401), Try Clerk
+            // Clerk Secret Keys also start with sk_test/live
+            if (res.status === 401) {
+                try {
+                    const clerkRes = await fetch('https://api.clerk.com/v1/jwks', {
+                        headers: {
+                            Authorization: `Bearer ${key}`
+                        }
+                    });
+
+                    if (clerkRes.ok) {
+                        return {
+                            valid: true,
+                            provider: 'Clerk',
+                            message: 'Active',
+                            confidenceScore: 1.0,
+                            trustLevel: 'High'
+                        };
+                    }
+                } catch (e) {
+                    // Ignore clerk error and return Stripe invalid
+                }
+            }
+
+            if (res.status === 401) {
+                return {
+                    valid: false,
+                    provider: 'Stripe / Clerk',
+                    message: 'Invalid API Key',
+                    confidenceScore: 1.0,
+                    trustLevel: 'Low'
+                };
+            }
+
+            if (res.status === 403) {
+                return {
+                    valid: true,
+                    provider: 'Stripe',
+                    message: 'Active (Restricted Scope)',
+                    confidenceScore: 1.0,
+                    trustLevel: 'Medium'
+                };
+            }
+
+            const data = await res.json();
             if (data.error) {
                 return {
                     valid: false,

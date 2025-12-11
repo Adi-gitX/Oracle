@@ -143,7 +143,7 @@ export default function Dashboard() {
 
         // Check Mode Logic
         const extractKey = (line: string) => {
-            const match = line.match(/(AIza[a-zA-Z0-9-_]+|sk-ant-[a-zA-Z0-9-_]+|sk-[a-zA-Z0-9-]+|ghp_[a-zA-Z0-9]+|github_pat_[a-zA-Z0-9_]+|xox[bp]-[a-zA-Z0-9-]+|SG\.[a-zA-Z0-9_\-\.]+|npm_[a-zA-Z0-9]+|glpat-[a-zA-Z0-9-]+|key-[a-zA-Z0-9-]+|[0-9]{8,}:[a-zA-Z0-9_-]{35}|AC[a-f0-9]{32}|AKIA[a-zA-Z0-9]{16}|[a-zA-Z0-9]{32,})/);
+            const match = line.match(/(AIza[a-zA-Z0-9-_]+|sk-ant-[a-zA-Z0-9-_]+|sk[_\-][a-zA-Z0-9._-]+|pk[_\-][a-zA-Z0-9._-]+|ghp_[a-zA-Z0-9]+|github_pat_[a-zA-Z0-9_]+|xox[bp]-[a-zA-Z0-9-]+|SG\.[a-zA-Z0-9_\-\.]+|npm_[a-zA-Z0-9]+|glpat-[a-zA-Z0-9-]+|key-[a-zA-Z0-9-]+|hf_[a-zA-Z0-9]+|[0-9]{8,}:[a-zA-Z0-9_-]{35}|AC[a-f0-9]{32}|AKIA[a-zA-Z0-9]{16}|(postgres|mysql|mongodb(\+srv)?):\/\/[^\s]+|cloudinary:\/\/[^\s]+|[0-9]{15}|[a-zA-Z0-9]{32,})/);
             return match ? match[0] : null;
         }
 

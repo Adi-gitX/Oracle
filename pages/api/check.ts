@@ -24,6 +24,9 @@ import { MailgunAdapter } from '../../lib/adapters/mailgun'
 import { MailChimpAdapter } from '../../lib/adapters/mailchimp'
 import { GitLabAdapter } from '../../lib/adapters/gitlab'
 import { BitlyAdapter } from '../../lib/adapters/bitly'
+import { ClerkAdapter } from '../../lib/adapters/clerk'
+import { DatabaseAdapter } from '../../lib/adapters/database'
+import { CloudinaryAdapter } from '../../lib/adapters/cloudinary'
 
 const Adapters: ProviderAdapter[] = [
     OpenAIAdapter,
@@ -31,7 +34,8 @@ const Adapters: ProviderAdapter[] = [
     GeminiAdapter,
     CohereAdapter,
     HuggingFaceAdapter,
-    StripeAdapter,
+    StripeAdapter, // Handles sk_ keys for both Stripe and Clerk
+    ClerkAdapter, // Handles pk_ keys
     GroqAdapter,
     MistralAdapter,
     GitHubAdapter,
@@ -47,6 +51,8 @@ const Adapters: ProviderAdapter[] = [
     MailChimpAdapter,
     GitLabAdapter,
     BitlyAdapter,
+    DatabaseAdapter,
+    CloudinaryAdapter,
     // Format fallbacks last
     AWSAdapter,
     SupabaseAdapter
