@@ -70,6 +70,17 @@ export const StripeAdapter: ProviderAdapter = {
                 };
             }
 
+            if (res.status === 429) {
+                return {
+                    valid: true,
+                    provider: 'Stripe',
+                    message: 'Active (Quota Exhausted)',
+                    confidenceScore: 1.0,
+                    trustLevel: 'High',
+                    metadata: { note: 'Valid key but rate limit exceeded' }
+                };
+            }
+
             const data = await res.json();
             if (data.error) {
                 return {

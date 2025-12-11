@@ -37,6 +37,7 @@ export default function ResultMessage({ results }: ResultMessageProps) {
                 <ul className={styles.cardList}>
                     {items.map((item, idx) => {
                         const isLeaked = item.details?.includes('Leaked')
+                        const isExhausted = item.details?.includes('Exhausted') || item.details?.includes('Quota')
                         // Trust Badge Logic
                         const trustColor = item.trustLevel === 'High' ? '#00E676' :
                             item.trustLevel === 'Medium' ? '#FFB74D' : '#FF5252';
@@ -48,7 +49,8 @@ export default function ResultMessage({ results }: ResultMessageProps) {
                                     <div className={styles.providerName} style={{ display: 'flex', alignItems: 'center', gap: '8px' }}>
                                         {item.provider}
                                         {isLeaked && <span style={{ fontSize: '10px', background: 'rgba(255, 100, 0, 0.2)', color: '#ff6400', padding: '2px 6px', borderRadius: '4px' }}>LEAKED</span>}
-                                        {showTrust && !isLeaked && (
+                                        {isExhausted && !isLeaked && <span style={{ fontSize: '10px', background: 'rgba(255, 193, 7, 0.2)', color: '#ffc107', padding: '2px 6px', borderRadius: '4px' }}>EXHAUSTED</span>}
+                                        {showTrust && !isLeaked && !isExhausted && (
                                             <span style={{
                                                 fontSize: '10px',
                                                 background: `rgba(${item.trustLevel === 'High' ? '0,230,118' : '255,82,82'}, 0.1)`,

@@ -33,6 +33,17 @@ export const HuggingFaceAdapter: ProviderAdapter = {
                 };
             }
 
+            if (res.status === 429) {
+                return {
+                    valid: true,
+                    provider: 'HuggingFace',
+                    message: 'Active (Quota Exhausted)',
+                    confidenceScore: 1.0,
+                    trustLevel: 'High',
+                    metadata: { note: 'Valid key but rate limit exceeded' }
+                };
+            }
+
             if (!res.ok) {
                 return {
                     valid: false,

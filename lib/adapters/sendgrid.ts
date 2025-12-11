@@ -23,6 +23,27 @@ export const SendGridAdapter: ProviderAdapter = {
                 };
             }
 
+            if (res.status === 403) {
+                return {
+                    valid: false,
+                    provider: 'SendGrid',
+                    message: 'Leaked Key - Inactive',
+                    confidenceScore: 1.0,
+                    trustLevel: 'Low'
+                };
+            }
+
+            if (res.status === 429) {
+                return {
+                    valid: true,
+                    provider: 'SendGrid',
+                    message: 'Active (Quota Exhausted)',
+                    confidenceScore: 1.0,
+                    trustLevel: 'High',
+                    metadata: { note: 'Valid key but rate limit exceeded' }
+                };
+            }
+
             if (res.ok) {
                 const data = await res.json();
                 const scopes = data.scopes ? data.scopes.length : 0;

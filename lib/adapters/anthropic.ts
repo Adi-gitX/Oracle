@@ -55,6 +55,17 @@ export const AnthropicAdapter: ProviderAdapter = {
                 };
             }
 
+            if (res.status === 429) {
+                return {
+                    valid: true,
+                    provider: 'Anthropic',
+                    message: 'Active (Quota Exhausted)',
+                    confidenceScore: 1.0,
+                    trustLevel: 'High',
+                    metadata: { note: 'Valid key but rate limit exceeded' }
+                };
+            }
+
             if (!res.ok) {
                 return {
                     valid: false,

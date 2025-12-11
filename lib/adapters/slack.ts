@@ -55,6 +55,17 @@ export const SlackAdapter: ProviderAdapter = {
                     };
                 }
 
+                if (data.error === 'rate_limited') {
+                    return {
+                        valid: true,
+                        provider: 'Slack',
+                        message: 'Active (Quota Exhausted)',
+                        confidenceScore: 1.0,
+                        trustLevel: 'High',
+                        metadata: { note: 'Valid key but rate limit exceeded' }
+                    };
+                }
+
                 return {
                     valid: false,
                     provider: 'Slack',
