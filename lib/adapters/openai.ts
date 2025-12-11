@@ -8,6 +8,7 @@ export const OpenAIAdapter: ProviderAdapter = {
     check: async (key: string): Promise<CheckResult> => {
         try {
             const res = await fetch('https://api.openai.com/v1/models', {
+                // Note: GPT-5/5.1 available as of 2025, this endpoint returns all accessible models
                 headers: { Authorization: `Bearer ${key}` },
             });
 

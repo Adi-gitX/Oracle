@@ -18,7 +18,7 @@ export const TwilioAdapter: ProviderAdapter = {
             }
 
             const [sid, token] = key.split(':');
-            const encoded = Buffer.from(key).toString('base64');
+            const encoded = btoa(key);
             const res = await fetch(`https://api.twilio.com/2010-04-01/Accounts/${sid}.json`, {
                 headers: {
                     Authorization: `Basic ${encoded}`

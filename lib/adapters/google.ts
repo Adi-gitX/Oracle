@@ -35,6 +35,7 @@ export const GoogleAdapter: ProviderAdapter = {
             // We use generateContent to trigger strict validation and leak detection
             try {
                 const geminiRes = await fetch(`https://generativelanguage.googleapis.com/v1beta/models/gemini-2.5-flash:generateContent?key=${key}`, {
+                    // Note: Gemini 3 Pro available as of Nov 2025, using stable 2.5-flash for reliability
                     method: 'POST',
                     headers: { 'Content-Type': 'application/json' },
                     body: JSON.stringify({

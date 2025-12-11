@@ -17,7 +17,7 @@ export const AnthropicAdapter: ProviderAdapter = {
                 body: JSON.stringify({
                     max_tokens: 1,
                     messages: [{ role: 'user', content: 'test' }],
-                    model: 'claude-2.1' // Using a potentially high-tier model to check access
+                    model: 'claude-sonnet-4.5' // Latest stable model as of 2025 (Claude 3.5 retired Oct 2025)
                 }),
             });
 

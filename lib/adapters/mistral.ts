@@ -4,7 +4,7 @@ import fetch from 'cross-fetch';
 export const MistralAdapter: ProviderAdapter = {
     id: 'mistral',
     name: 'Mistral AI',
-    matches: (key: string) => false,
+    matches: (key: string) => key.length >= 32 && /^[a-z0-9]{32,}$/i.test(key) && !key.startsWith('sk-') && !key.startsWith('AIza'),
     check: async (key: string): Promise<CheckResult> => {
         try {
             const res = await fetch('https://api.mistral.ai/v1/models', {
@@ -30,6 +30,17 @@ export const MistralAdapter: ProviderAdapter = {
                     message: 'Leaked Key - Inactive',
                     confidenceScore: 1.0,
                     trustLevel: 'Low'
+                };
+            }
+
+            if (res.status === 429) {
+                return {
+                    valid: true,
+                    provider: 'Mistral AI',
+                    message: 'Active (Quota Exhausted)',
+                    confidenceScore: 1.0,
+                    trustLevel: 'High',
+                    metadata: { note: 'Valid key but rate limit exceeded' }
                 };
             }
 

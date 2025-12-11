@@ -8,7 +8,7 @@ export const StripeAdapter: ProviderAdapter = {
     check: async (key: string): Promise<CheckResult> => {
         try {
             // 1. Try Stripe
-            const encoded = Buffer.from(key + ':').toString('base64');
+            const encoded = btoa(key + ':');
             const res = await fetch('https://api.stripe.com/v1/charges?limit=1', {
                 headers: {
                     Authorization: `Basic ${encoded}`
