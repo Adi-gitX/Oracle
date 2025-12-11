@@ -4,8 +4,17 @@ import fetch from 'cross-fetch';
 export const GeminiAdapter: ProviderAdapter = {
     id: 'gemini',
     name: 'Google Gemini',
-    matches: (key: string) => key.startsWith('AIza'),
+    matches: (key: string) => key.startsWith('AIza') || key.startsWith('GOCSPX-'),
     check: async (key: string): Promise<CheckResult> => {
+        if (key.startsWith('GOCSPX-')) {
+            return {
+                valid: true,
+                provider: 'Google (Client Secret)',
+                message: 'Format Valid',
+                confidenceScore: 0.9,
+                trustLevel: 'Medium'
+            };
+        }
         try {
             // 1. Check Gemini (User's Primary Logic)
             const res = await fetch(`https://generativelanguage.googleapis.com/v1beta/models?key=${key}`);

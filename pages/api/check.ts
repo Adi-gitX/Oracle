@@ -27,6 +27,9 @@ import { BitlyAdapter } from '../../lib/adapters/bitly'
 import { ClerkAdapter } from '../../lib/adapters/clerk'
 import { DatabaseAdapter } from '../../lib/adapters/database'
 import { CloudinaryAdapter } from '../../lib/adapters/cloudinary'
+import { ResendAdapter } from '../../lib/adapters/resend'
+import { UpstashAdapter } from '../../lib/adapters/upstash'
+import { PusherAdapter } from '../../lib/adapters/pusher'
 
 const Adapters: ProviderAdapter[] = [
     OpenAIAdapter,
@@ -53,6 +56,9 @@ const Adapters: ProviderAdapter[] = [
     BitlyAdapter,
     DatabaseAdapter,
     CloudinaryAdapter,
+    ResendAdapter,
+    UpstashAdapter,
+    PusherAdapter,
     // Format fallbacks last
     AWSAdapter,
     SupabaseAdapter
@@ -69,7 +75,7 @@ export default async function handler(
         } as any)
     }
 
-    const { key, isEncrypted } = req.body
+    const { key, hint, isEncrypted } = req.body
     let finalKey = key
 
     // 1. Decrypt if needed (Trust Layer)
@@ -98,6 +104,24 @@ export default async function handler(
     if (adapter) {
         // 3. Delegation
         result = await adapter.check(finalKey);
+
+        // 3.1 Hint Verification (Context-Awareness)
+        if (hint) {
+            const normalizedHint = hint.toUpperCase();
+
+            // Heuristic Mismatches
+            if (normalizedHint.includes('GROQ') && adapter.id === 'gemini') {
+                // User pasted Google key into Groq variable
+                result.provider = 'Google (Labeled Groq)';
+                result.metadata = { ...result.metadata, warning: 'This key matches Google format, not Groq (gsk_...)' };
+            }
+            if (normalizedHint.includes('OPENAI') && adapter.id !== 'openai') {
+                result.metadata = { ...result.metadata, warning: `Labeled OpenAI but detected ${adapter.name}` };
+            }
+            if (normalizedHint.includes('ANTHROPIC') && adapter.id !== 'anthropic') {
+                result.metadata = { ...result.metadata, warning: `Labeled Anthropic but detected ${adapter.name}` };
+            }
+        }
     } else {
         // Fallback for unknown formats
         result = {

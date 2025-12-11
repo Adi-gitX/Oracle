@@ -142,18 +142,34 @@ export default function Dashboard() {
         }
 
         // Check Mode Logic
-        const extractKey = (line: string) => {
-            const match = line.match(/(AIza[a-zA-Z0-9-_]+|sk-ant-[a-zA-Z0-9-_]+|sk[_\-][a-zA-Z0-9._-]+|pk[_\-][a-zA-Z0-9._-]+|ghp_[a-zA-Z0-9]+|github_pat_[a-zA-Z0-9_]+|xox[bp]-[a-zA-Z0-9-]+|SG\.[a-zA-Z0-9_\-\.]+|npm_[a-zA-Z0-9]+|glpat-[a-zA-Z0-9-]+|key-[a-zA-Z0-9-]+|hf_[a-zA-Z0-9]+|[0-9]{8,}:[a-zA-Z0-9_-]{35}|AC[a-f0-9]{32}|AKIA[a-zA-Z0-9]{16}|(postgres|mysql|mongodb(\+srv)?):\/\/[^\s]+|cloudinary:\/\/[^\s]+|[0-9]{15}|[a-zA-Z0-9]{32,})/);
-            return match ? match[0] : null;
+        const extractKey = (line: string): { key: string, hint?: string } | null => {
+            const pattern = /(AIza[a-zA-Z0-9-_]+|sk-ant-[a-zA-Z0-9-_]+|sk[_\-][a-zA-Z0-9._-]+|pk[_\-][a-zA-Z0-9._-]+|ghp_[a-zA-Z0-9]+|github_pat_[a-zA-Z0-9_]+|xox[bp]-[a-zA-Z0-9-]+|SG\.[a-zA-Z0-9_\-\.]+|npm_[a-zA-Z0-9]+|glpat-[a-zA-Z0-9-]+|key-[a-zA-Z0-9-]+|hf_[a-zA-Z0-9]+|re_[a-zA-Z0-9_]+|AVPG[a-zA-Z0-9]+|[0-9]{8,}:[a-zA-Z0-9_-]{35}|AC[a-f0-9]{32}|AKIA[a-zA-Z0-9]{16}|(postgres|mysql|mongodb(\+srv)?):\/\/[^\s]+|cloudinary:\/\/[^\s]+|[a-f0-9]{20}|[0-9]{15}|[a-zA-Z0-9_\-=]{32,})/;
+            const match = line.match(pattern);
+
+            if (match) {
+                // Try to extract variable name before the key
+                // Matches: VAR_NAME=...key... or VAR_NAME: ...key...
+                const varMatch = line.match(/([A-Z0-9_]+)\s*[=:]\s*["']?.*$/);
+                let hint = undefined;
+
+                // If the varMatch is found and it is BEFORE the key match index
+                if (varMatch && line.indexOf(varMatch[1]) < line.indexOf(match[0])) {
+                    hint = varMatch[1];
+                }
+
+                return { key: match[0], hint };
+            }
+            return null;
         }
 
-        const keys = inputText.split('\n')
+        const extractedItems = inputText.split('\n')
             .map(extractKey)
-            .filter((k): k is string => !!k);
+            .filter((item): item is { key: string, hint?: string } => !!item);
 
-        const uniqueKeys = Array.from(new Set(keys));
+        // Deduplicate by key
+        const uniqueItems = Array.from(new Map(extractedItems.map(item => [item.key, item])).values());
 
-        if (uniqueKeys.length === 0) {
+        if (uniqueItems.length === 0) {
             setMessages(prev => [...prev, {
                 id: Date.now().toString(),
                 role: 'assistant',
@@ -164,13 +180,13 @@ export default function Dashboard() {
             return
         }
 
-        const resultsPromises = uniqueKeys.map(async (key) => {
+        const resultsPromises = uniqueItems.map(async ({ key, hint }) => {
             try {
                 const encryptedKey = encryptData(key);
                 const res = await fetch('/api/check', {
                     method: 'POST',
                     headers: { 'Content-Type': 'application/json' },
-                    body: JSON.stringify({ key: encryptedKey, isEncrypted: true })
+                    body: JSON.stringify({ key: encryptedKey, hint, isEncrypted: true })
                 })
 
                 const rawData = await res.json()
@@ -209,7 +225,7 @@ export default function Dashboard() {
         const newResults = await Promise.all(resultsPromises)
         const workingCount = newResults.filter(r => r.status === 'valid').length
         const deadCount = newResults.filter(r => r.status === 'invalid').length
-        const summaryText = `Processed ${uniqueKeys.length} keys. Found ${workingCount} working, ${deadCount} invalid.`
+        const summaryText = `Processed ${uniqueItems.length} keys. Found ${workingCount} working, ${deadCount} invalid.`
 
         setMessages(prev => [...prev, {
             id: Date.now().toString(),
