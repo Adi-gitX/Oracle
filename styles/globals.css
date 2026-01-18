@@ -14,6 +14,23 @@
   --geist-warning: #f5a623;
   --font-sans: "Inter", -apple-system, BlinkMacSystemFont, "Segoe UI", "Roboto", "Oxygen", "Ubuntu", "Cantarell", "Fira Sans", "Droid Sans", "Helvetica Neue", sans-serif;
   --gap: 24px;
+
+  /* Postman Theme Colors */
+  --postman-orange: #FF6C37;
+  --postman-orange-hover: #FF7D4D;
+  --postman-dark: #1C1C1C;
+  --postman-sidebar: #2D2D2D;
+  --postman-success: #00C896;
+  --postman-error: #E53935;
+  --postman-warning: #F9A825;
+  --postman-info: #2196F3;
+  --postman-get: #61affe;
+  --postman-post: #49cc90;
+  --postman-put: #fca130;
+  --postman-patch: #50e3c2;
+  --postman-delete: #f93e3e;
+  --postman-head: #9012fe;
+  --postman-options: #0d5aa7;
 }
 
 html,
