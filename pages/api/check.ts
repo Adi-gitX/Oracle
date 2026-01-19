@@ -39,7 +39,7 @@ export const config = {
 
 import { GenericSecretAdapter } from '../../lib/adapters/generic';
 
-// 2. Adapter Registry
+
 export const Adapters: ProviderAdapter[] = [
     OpenAIAdapter, AnthropicAdapter, GoogleAdapter, StripeAdapter, CohereAdapter,
     HuggingFaceAdapter, MistralAdapter, GroqAdapter, GitHubAdapter, SlackAdapter,
@@ -62,21 +62,21 @@ export default async function handler(req: NextRequest) {
         const { key, hint: bodyHint, isEncrypted } = body;
         hint = bodyHint;
 
-        // 1. Decrypt if needed (Trust Layer)
+
         if (isEncrypted) {
             try {
                 const decrypted = decryptData(key);
 
-                // Expert Hardening: Parsing JSON payload with Timestamp check
+
                 try {
                     const payload = JSON.parse(decrypted);
 
-                    // Check if it's the secure payload format
+
                     if (payload.content && payload.timestamp) {
                         const now = Date.now();
                         const reqTime = payload.timestamp;
 
-                        // Replay Attack Protection: 60s Window
+
                         if (now - reqTime > 60000) {
                             return NextResponse.json({
                                 valid: false, provider: 'Security', message: 'Request Expired (Replay Protection)',
@@ -86,14 +86,14 @@ export default async function handler(req: NextRequest) {
 
                         finalKey = payload.content;
                     } else {
-                        // Strict Mode: Reject invalid schema
+
                         return NextResponse.json({
                             valid: false, provider: 'Security', message: 'Invalid Payload Schema',
                             confidenceScore: 1, trustLevel: 'High'
                         }, { status: 400 });
                     }
                 } catch (jsonErr) {
-                    // Strict Mode: Reject non-JSON
+
                     return NextResponse.json({
                         valid: false, provider: 'Security', message: 'Malformatted Payload',
                         confidenceScore: 1, trustLevel: 'High'
@@ -108,7 +108,7 @@ export default async function handler(req: NextRequest) {
                 }, { status: 400 });
             }
         } else {
-            // If checking unencrypted (legacy or internal), assume plain text
+
             finalKey = key;
         }
 
@@ -117,7 +117,7 @@ export default async function handler(req: NextRequest) {
             confidenceScore: 0, trustLevel: 'Low'
         }, { status: 400 });
 
-        // Security: Input Sanitization (DoS Protection)
+
         if (finalKey.length > 2048) {
             return NextResponse.json({
                 valid: false, provider: 'Security', message: 'Input Too Long',
@@ -125,7 +125,7 @@ export default async function handler(req: NextRequest) {
             }, { status: 400 });
         }
 
-        // Advanced Heuristics: Placeholder & Entropy Analysis
+
         if (isPlaceholder(finalKey)) {
             return NextResponse.json({
                 valid: false, provider: 'Heuristics', message: 'Detected Placeholder Key',
@@ -134,7 +134,6 @@ export default async function handler(req: NextRequest) {
         }
 
         const entropy = calculateEntropy(finalKey);
-        // Threshold: 3.0 is conservative.
         if (finalKey.length > 16 && entropy < 2.5) {
             return NextResponse.json({
                 valid: false, provider: 'Heuristics', message: 'Low Entropy (Likely Fake/Weak)',
@@ -142,24 +141,21 @@ export default async function handler(req: NextRequest) {
             }, { status: 400 });
         }
 
-        // 2. Adapter Matching (Engineering Backbone)
+
         const adapter = Adapters.find(a => a.matches(finalKey!));
 
         let result: CheckResult;
 
         if (adapter) {
-            // 3. Delegation
+
             result = await adapter.check(finalKey);
 
-            // 3.1 Leak Monitoring (Enterprise Security)
-            // We check leak status for all valid keys.
+
             if (result.valid) {
                 const leakStatus = await checkLeak(finalKey);
 
                 if (leakStatus === 'leaked') {
-                    // Critical: Revoke validity for leaked keys
                     result.valid = false;
-                    // result.provider = `${result.provider}`;
                     result.message = "This key works, but it's public on GitHub. Revoke immediately.";
                     result.trustLevel = 'Low';
                     result.metadata = { ...result.metadata, leaked: true, warning: 'Key found in public GitHub code! Revoke immediately.' };
@@ -169,11 +165,11 @@ export default async function handler(req: NextRequest) {
                 }
             }
 
-            // 3.2 Hint Verification (Context-Awareness)
+
             if (hint) {
                 const normalizedHint = hint.toUpperCase();
 
-                // Heuristic Mismatches
+
                 if (normalizedHint.includes('GROQ') && adapter.id === 'gemini') {
                     result.provider = 'Google (Labeled Groq)';
                     result.metadata = { ...result.metadata, warning: 'This key matches Google format, not Groq (gsk_...)' };
@@ -186,7 +182,7 @@ export default async function handler(req: NextRequest) {
                 }
             }
         } else {
-            // Fallback for unknown formats
+
             result = {
                 valid: false,
                 provider: 'Unknown',
@@ -196,10 +192,9 @@ export default async function handler(req: NextRequest) {
             };
         }
 
-        // 4. Sanitation (Trust Layer - Best Effort)
-        finalKey = null; // Explicit wipe hint
+        finalKey = null;
 
-        // 5. Response Encryption (Trust Layer)
+
         const encryptedResult = encryptData(JSON.stringify(result));
 
         return NextResponse.json({ payload: encryptedResult, isEncrypted: true });
@@ -210,7 +205,7 @@ export default async function handler(req: NextRequest) {
     }
 }
 
-// --- Helpers ---
+
 
 function calculateEntropy(str: string): number {
     const len = str.length;

@@ -2,10 +2,9 @@ import type { NextApiRequest, NextApiResponse } from 'next'
 import { GoogleGenerativeAI } from '@google/generative-ai'
 import { decryptData, encryptData } from '../../utils/encryption'
 
-// Simple in-memory rate limiter
 const rateLimit = (ip: string) => {
-    const limit = 20 // requests
-    const windowMs = 60 * 1000 // 1 minute
+    const limit = 20
+    const windowMs = 60 * 1000
 
     if (!global.rateLimitMap) {
         global.rateLimitMap = new Map()
@@ -34,13 +33,13 @@ export default async function handler(
         return res.status(405).json({ message: 'Method not allowed' })
     }
 
-    // Rate Limiting
+
     const ip = req.headers['x-forwarded-for'] || req.socket.remoteAddress || 'unknown'
     if (!rateLimit(String(ip))) {
         return res.status(429).json({ message: 'Too many requests. Please try again in a minute.' })
     }
 
-    // Key Rotation Logic
+
     const getApiKeys = () => {
         const keys = []
         if (process.env.GOOGLE_API_KEY) keys.push(process.env.GOOGLE_API_KEY)
@@ -59,7 +58,7 @@ export default async function handler(
         return res.status(500).json({ message: 'Server configuration error: GOOGLE_API_KEY is missing.' })
     }
 
-    // ...
+
     const { payload, isEncrypted, message: rawMessage, context: rawContext } = req.body
 
     let message = rawMessage
@@ -76,7 +75,7 @@ export default async function handler(
         }
     }
 
-    // Try keys sequentially
+
     let lastError: any = null
 
     for (const key of apiKeys) {
@@ -109,7 +108,7 @@ INSTRUCTIONS:
             const response = await result.response
             const text = response.text()
 
-            // Encrypt the response
+
             const responsePayload = { reply: text }
             const encryptedResponse = encryptData(JSON.stringify(responsePayload))
 
@@ -119,24 +118,21 @@ INSTRUCTIONS:
             console.error(`Gemini API Error with key ending in ...${key.slice(-4)}:`, error.message)
             lastError = error
 
-            // If it's a quote/rate limit error (429), continue to next key
-            // Google often returns 429 in status or within error details
             if (error.status === 429 || error.message?.includes('429') || error.message?.includes('quota')) {
                 continue
             }
 
-            // If it's not a rate limit error, break and fail (e.g. bad request)
             break
         }
     }
 
-    // If we reach here, all keys failed
+
     const status = (lastError as any)?.status || 500
     const errorMessage = (lastError as any)?.message || 'Error communicating with AI service'
     res.status(status).json({ message: errorMessage, error: String(lastError) })
 }
 
-// Add global type for rate limiter to persist across hot reloads in dev
+
 declare global {
     var rateLimitMap: Map<string, { count: number, startTime: number }>
 }

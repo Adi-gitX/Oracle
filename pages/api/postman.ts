@@ -1,4 +1,4 @@
-// Postman API Proxy - Server-side request executor
+
 import type { NextApiRequest, NextApiResponse } from 'next';
 
 interface ProxyRequest {
@@ -19,7 +19,7 @@ interface ProxyResponse {
     error?: string;
 }
 
-// Blocked domains for security
+
 const BLOCKED_PATTERNS = [
     /^localhost/i,
     /^127\./,
@@ -40,7 +40,7 @@ function isBlockedUrl(url: string): boolean {
 
         return BLOCKED_PATTERNS.some(pattern => pattern.test(hostname));
     } catch {
-        return true; // Block invalid URLs
+        return true;
     }
 }
 
@@ -48,7 +48,7 @@ export default async function handler(
     req: NextApiRequest,
     res: NextApiResponse<ProxyResponse>
 ) {
-    // Only allow POST requests
+
     if (req.method !== 'POST') {
         return res.status(405).json({
             status: 405,
@@ -63,7 +63,7 @@ export default async function handler(
 
     const { method, url, headers, body, timeout = 30000 } = req.body as ProxyRequest;
 
-    // Validate URL
+
     if (!url) {
         return res.status(400).json({
             status: 400,
@@ -76,7 +76,7 @@ export default async function handler(
         });
     }
 
-    // Check for blocked URLs
+
     if (isBlockedUrl(url)) {
         return res.status(403).json({
             status: 403,
@@ -89,7 +89,7 @@ export default async function handler(
         });
     }
 
-    // Validate URL format
+
     try {
         new URL(url);
     } catch {
@@ -107,42 +107,40 @@ export default async function handler(
     const startTime = Date.now();
 
     try {
-        // Build fetch options
         const fetchOptions: RequestInit = {
             method: method || 'GET',
             headers: {
                 ...headers,
-                // Add user agent to identify requests
                 'User-Agent': 'Oracle-Postman/1.0'
             },
             redirect: 'follow'
         };
 
-        // Add body for non-GET requests
+
         if (body && method !== 'GET' && method !== 'HEAD') {
             fetchOptions.body = body;
         }
 
-        // Create abort controller for timeout
+
         const controller = new AbortController();
         const timeoutId = setTimeout(() => controller.abort(), Math.min(timeout, 30000));
         fetchOptions.signal = controller.signal;
 
-        // Execute request
+
         const response = await fetch(url, fetchOptions);
         clearTimeout(timeoutId);
 
-        // Read response body
+
         const responseText = await response.text();
         const endTime = Date.now();
 
-        // Convert headers to object
+
         const responseHeaders: Record<string, string> = {};
         response.headers.forEach((value, key) => {
             responseHeaders[key] = value;
         });
 
-        // Calculate size
+
         const size = new TextEncoder().encode(responseText).length;
 
         return res.status(200).json({
@@ -178,7 +176,7 @@ export default async function handler(
     }
 }
 
-// Increase body size limit for file uploads
+
 export const config = {
     api: {
         bodyParser: {
