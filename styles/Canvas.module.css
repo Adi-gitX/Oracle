@@ -1,0 +1,307 @@
+/* Canvas Panel - Slides in from right for Postman editing */
+
+.canvasContainer {
+    display: flex;
+    width: 100%;
+    height: 100vh;
+    position: relative;
+    overflow: hidden;
+}
+
+/* Chat side - left side */
+.canvasChatSide {
+    flex: 1;
+    min-width: 400px;
+    display: flex;
+    flex-direction: column;
+    transition: all 0.4s cubic-bezier(0.25, 0.8, 0.25, 1);
+    position: relative;
+    z-index: 1;
+}
+
+.canvasChatSide.withCanvas {
+    flex: 0 0 45%;
+    max-width: 45%;
+    border-right: 1px solid rgba(255, 255, 255, 0.06);
+}
+
+/* Canvas side - right side, Postman editor */
+.canvasPanel {
+    flex: 0 0 55%;
+    background: #0a0a0a;
+    display: flex;
+    flex-direction: column;
+    transform: translateX(100%);
+    opacity: 0;
+    transition: all 0.4s cubic-bezier(0.25, 0.8, 0.25, 1);
+    position: relative;
+    overflow: hidden;
+}
+
+.canvasPanel.open {
+    transform: translateX(0);
+    opacity: 1;
+}
+
+/* Canvas header */
+.canvasHeader {
+    display: flex;
+    align-items: center;
+    justify-content: space-between;
+    padding: 16px 24px;
+    background: rgba(255, 255, 255, 0.02);
+    border-bottom: 1px solid rgba(255, 255, 255, 0.06);
+}
+
+.canvasTitle {
+    display: flex;
+    align-items: center;
+    gap: 10px;
+    font-size: 0.95rem;
+    font-weight: 600;
+    color: #fff;
+}
+
+.canvasTitle svg {
+    color: #FF6C37;
+}
+
+.canvasActions {
+    display: flex;
+    align-items: center;
+    gap: 8px;
+}
+
+.canvasActionBtn {
+    display: flex;
+    align-items: center;
+    justify-content: center;
+    width: 32px;
+    height: 32px;
+    background: transparent;
+    border: 1px solid rgba(255, 255, 255, 0.08);
+    border-radius: 8px;
+    color: rgba(255, 255, 255, 0.5);
+    cursor: pointer;
+    transition: all 0.15s;
+}
+
+.canvasActionBtn:hover {
+    background: rgba(255, 255, 255, 0.05);
+    color: rgba(255, 255, 255, 0.9);
+    border-color: rgba(255, 255, 255, 0.15);
+}
+
+.canvasCloseBtn {
+    color: rgba(255, 255, 255, 0.4);
+}
+
+.canvasCloseBtn:hover {
+    background: rgba(229, 57, 53, 0.1);
+    color: #E53935;
+    border-color: rgba(229, 57, 53, 0.3);
+}
+
+/* Canvas content */
+.canvasContent {
+    flex: 1;
+    overflow-y: auto;
+    padding: 20px;
+}
+
+/* Resize handle */
+.canvasResizer {
+    position: absolute;
+    left: 0;
+    top: 0;
+    width: 4px;
+    height: 100%;
+    background: transparent;
+    cursor: col-resize;
+    z-index: 10;
+    transition: background 0.15s;
+}
+
+.canvasResizer:hover,
+.canvasResizer:active {
+    background: #FF6C37;
+}
+
+/* Canvas placeholder when closed */
+.canvasOpenButton {
+    position: fixed;
+    right: 20px;
+    top: 50%;
+    transform: translateY(-50%);
+    display: flex;
+    flex-direction: column;
+    align-items: center;
+    gap: 8px;
+    padding: 16px 12px;
+    background: rgba(18, 18, 18, 0.95);
+    backdrop-filter: blur(10px);
+    border: 1px solid rgba(255, 108, 55, 0.2);
+    border-radius: 12px;
+    color: #FF6C37;
+    cursor: pointer;
+    transition: all 0.2s;
+    z-index: 50;
+    box-shadow: 0 4px 20px rgba(0, 0, 0, 0.3);
+}
+
+.canvasOpenButton:hover {
+    background: rgba(255, 108, 55, 0.1);
+    border-color: rgba(255, 108, 55, 0.4);
+    transform: translateY(-50%) translateX(-4px);
+}
+
+.canvasOpenButton span {
+    writing-mode: vertical-rl;
+    text-orientation: mixed;
+    font-size: 0.8rem;
+    font-weight: 600;
+    letter-spacing: 1px;
+}
+
+/* Chat input in canvas mode */
+.canvasChatInput {
+    padding: 16px 20px;
+    background: linear-gradient(to top, rgba(10, 10, 10, 1) 50%, transparent);
+    border-top: 1px solid rgba(255, 255, 255, 0.04);
+}
+
+/* Mobile responsive */
+@media (max-width: 1024px) {
+    .canvasContainer {
+        flex-direction: column;
+    }
+
+    .canvasChatSide.withCanvas {
+        flex: 0 0 40%;
+        max-width: none;
+        border-right: none;
+        border-bottom: 1px solid rgba(255, 255, 255, 0.06);
+    }
+
+    .canvasPanel {
+        flex: 0 0 60%;
+        transform: translateY(100%);
+    }
+
+    .canvasPanel.open {
+        transform: translateY(0);
+    }
+
+    .canvasResizer {
+        width: 100%;
+        height: 4px;
+        top: 0;
+        left: 0;
+        cursor: row-resize;
+    }
+}
+
+/* Canvas empty state */
+.canvasEmptyState {
+    display: flex;
+    flex-direction: column;
+    align-items: center;
+    justify-content: center;
+    height: 100%;
+    padding: 40px;
+    text-align: center;
+}
+
+.canvasEmptyIcon {
+    width: 80px;
+    height: 80px;
+    display: flex;
+    align-items: center;
+    justify-content: center;
+    background: rgba(255, 108, 55, 0.1);
+    border-radius: 20px;
+    margin-bottom: 24px;
+}
+
+.canvasEmptyIcon svg {
+    width: 40px;
+    height: 40px;
+    color: #FF6C37;
+}
+
+.canvasEmptyState h3 {
+    margin: 0 0 8px 0;
+    font-size: 1.2rem;
+    color: #fff;
+}
+
+.canvasEmptyState p {
+    margin: 0;
+    font-size: 0.9rem;
+    color: rgba(255, 255, 255, 0.5);
+    max-width: 300px;
+}
+
+/* Quick actions in canvas */
+.canvasQuickActions {
+    display: flex;
+    gap: 8px;
+    margin-top: 24px;
+    flex-wrap: wrap;
+    justify-content: center;
+}
+
+.canvasQuickAction {
+    padding: 10px 16px;
+    background: rgba(255, 255, 255, 0.03);
+    border: 1px solid rgba(255, 255, 255, 0.08);
+    border-radius: 8px;
+    color: rgba(255, 255, 255, 0.7);
+    font-size: 0.85rem;
+    cursor: pointer;
+    transition: all 0.15s;
+}
+
+.canvasQuickAction:hover {
+    background: rgba(255, 108, 55, 0.1);
+    border-color: rgba(255, 108, 55, 0.3);
+    color: #FF6C37;
+}
+
+/* Tabs inside canvas */
+.canvasTabs {
+    display: flex;
+    gap: 2px;
+    padding: 0 20px;
+    background: rgba(255, 255, 255, 0.01);
+    border-bottom: 1px solid rgba(255, 255, 255, 0.06);
+}
+
+.canvasTab {
+    padding: 14px 18px;
+    background: transparent;
+    border: none;
+    color: rgba(255, 255, 255, 0.5);
+    font-size: 0.9rem;
+    cursor: pointer;
+    position: relative;
+    transition: all 0.15s;
+}
+
+.canvasTab:hover {
+    color: rgba(255, 255, 255, 0.8);
+}
+
+.canvasTab.active {
+    color: #FF6C37;
+}
+
+.canvasTab.active::after {
+    content: '';
+    position: absolute;
+    bottom: 0;
+    left: 0;
+    right: 0;
+    height: 2px;
+    background: #FF6C37;
+}
