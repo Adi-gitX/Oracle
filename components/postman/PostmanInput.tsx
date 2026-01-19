@@ -24,7 +24,7 @@ export default function PostmanInput({ onSend, loading, initialConfig }: Postman
 
     const dropdownRef = useRef<HTMLDivElement>(null)
 
-    // Close dropdown when clicking outside
+
     useEffect(() => {
         function handleClickOutside(event: MouseEvent) {
             if (dropdownRef.current && !dropdownRef.current.contains(event.target as Node)) {
@@ -35,7 +35,7 @@ export default function PostmanInput({ onSend, loading, initialConfig }: Postman
         return () => document.removeEventListener('mousedown', handleClickOutside)
     }, [])
 
-    // Handle URL input - check for cURL paste
+
     const handleUrlChange = (value: string) => {
         if (isCurlCommand(value)) {
             setCurlInput(value)
@@ -45,7 +45,7 @@ export default function PostmanInput({ onSend, loading, initialConfig }: Postman
         }
     }
 
-    // Parse and import cURL
+
     const handleCurlImport = () => {
         try {
             const parsed = parseCurl(curlInput)
@@ -57,11 +57,11 @@ export default function PostmanInput({ onSend, loading, initialConfig }: Postman
         }
     }
 
-    // Handle send
+
     const handleSend = () => {
         if (!config.url.trim() || loading) return
 
-        // Add protocol if missing
+
         let url = config.url.trim()
         if (!url.startsWith('http://') && !url.startsWith('https://')) {
             url = 'https://' + url
@@ -70,7 +70,7 @@ export default function PostmanInput({ onSend, loading, initialConfig }: Postman
         onSend({ ...config, url })
     }
 
-    // Handle keyboard shortcut
+
     const handleKeyDown = (e: React.KeyboardEvent) => {
         if ((e.metaKey || e.ctrlKey) && e.key === 'Enter') {
             e.preventDefault()
@@ -78,7 +78,7 @@ export default function PostmanInput({ onSend, loading, initialConfig }: Postman
         }
     }
 
-    // Update config helpers
+
     const updateHeaders = (headers: KeyValue[]) => setConfig(prev => ({ ...prev, headers }))
     const updateParams = (params: KeyValue[]) => setConfig(prev => ({ ...prev, params }))
     const updateAuth = (auth: AuthConfig) => setConfig(prev => ({ ...prev, auth }))
@@ -86,15 +86,15 @@ export default function PostmanInput({ onSend, loading, initialConfig }: Postman
 
     const getMethodColor = (method: HttpMethod) => methodColors[method]
 
-    // Count enabled items for tab badges
+
     const enabledHeaders = config.headers.filter(h => h.enabled && h.key).length
     const enabledParams = config.params.filter(p => p.enabled && p.key).length
 
     return (
         <div className={styles.postmanInputContainer}>
-            {/* Request Bar */}
+
             <div className={styles.requestBar}>
-                {/* Method Selector */}
+
                 <div className={styles.methodSelector} ref={dropdownRef}>
                     <button
                         className={styles.methodButton}
@@ -126,7 +126,7 @@ export default function PostmanInput({ onSend, loading, initialConfig }: Postman
                     )}
                 </div>
 
-                {/* URL Input */}
+
                 <input
                     type="text"
                     className={styles.urlInput}
@@ -136,7 +136,7 @@ export default function PostmanInput({ onSend, loading, initialConfig }: Postman
                     onKeyDown={handleKeyDown}
                 />
 
-                {/* Send Button */}
+
                 <button
                     className={styles.sendButton}
                     onClick={handleSend}
@@ -159,7 +159,7 @@ export default function PostmanInput({ onSend, loading, initialConfig }: Postman
                 </button>
             </div>
 
-            {/* Tabs */}
+
             <div className={styles.tabContainer}>
                 <div className={styles.tabHeader}>
                     <button
@@ -191,7 +191,7 @@ export default function PostmanInput({ onSend, loading, initialConfig }: Postman
                         {config.body.type !== 'none' && <span className={styles.tabCount}>●</span>}
                     </button>
 
-                    {/* cURL Import Button */}
+
                     <button
                         className={styles.tab}
                         onClick={() => setShowCurlModal(true)}
@@ -222,7 +222,7 @@ export default function PostmanInput({ onSend, loading, initialConfig }: Postman
                 </div>
             </div>
 
-            {/* cURL Import Modal */}
+
             {showCurlModal && (
                 <div className={styles.curlModal} onClick={() => setShowCurlModal(false)}>
                     <div className={styles.curlModalContent} onClick={e => e.stopPropagation()}>
