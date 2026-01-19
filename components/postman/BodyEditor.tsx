@@ -18,7 +18,7 @@ const BODY_TYPES: { type: BodyType; label: string }[] = [
 export default function BodyEditor({ body, onChange }: BodyEditorProps) {
     const [jsonError, setJsonError] = useState<string | null>(null)
 
-    // Validate JSON when raw content changes
+
     useEffect(() => {
         if (body.type === 'json' && body.raw) {
             try {
@@ -53,20 +53,19 @@ export default function BodyEditor({ body, onChange }: BodyEditorProps) {
         onChange(newBody)
     }
 
-    // Format JSON
+
     const formatJSON = () => {
         if (body.raw) {
             try {
                 const parsed = JSON.parse(body.raw)
                 onChange({ ...body, raw: JSON.stringify(parsed, null, 2) })
                 setJsonError(null)
-            } catch (e) {
-                // Already invalid, ignore
+            } catch {
             }
         }
     }
 
-    // Key-value editor for form data
+
     const renderKeyValueEditor = (items: KeyValue[], updateFn: (items: KeyValue[]) => void) => {
         const addRow = () => {
             updateFn([...items, { key: '', value: '', enabled: true }])
@@ -130,7 +129,7 @@ export default function BodyEditor({ body, onChange }: BodyEditorProps) {
 
     return (
         <div>
-            {/* Body type selector */}
+
             <div className={styles.bodyTypeSelector}>
                 {BODY_TYPES.map(({ type, label }) => (
                     <button
@@ -143,7 +142,7 @@ export default function BodyEditor({ body, onChange }: BodyEditorProps) {
                 ))}
             </div>
 
-            {/* Body content based on type */}
+
             {body.type === 'none' && (
                 <div style={{
                     fontSize: '0.85rem',

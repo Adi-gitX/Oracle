@@ -7,26 +7,26 @@ interface ParamsEditorProps {
 }
 
 export default function ParamsEditor({ params, onChange }: ParamsEditorProps) {
-    // Add new row
+
     const addRow = () => {
         onChange([...params, { key: '', value: '', enabled: true }])
     }
 
-    // Update row
+
     const updateRow = (index: number, field: 'key' | 'value' | 'enabled', newValue: string | boolean) => {
         const updated = [...params]
         updated[index] = { ...updated[index], [field]: newValue }
         onChange(updated)
     }
 
-    // Delete row
+
     const deleteRow = (index: number) => {
         onChange(params.filter((_, i) => i !== index))
     }
 
     return (
         <div className={styles.kvEditor}>
-            {/* Column headers */}
+
             {params.length > 0 && (
                 <div className={styles.kvRow} style={{ marginBottom: '0.5rem' }}>
                     <div style={{ width: '18px' }} />
@@ -40,7 +40,7 @@ export default function ParamsEditor({ params, onChange }: ParamsEditorProps) {
                 </div>
             )}
 
-            {/* Params list */}
+
             {params.map((param, index) => (
                 <div key={index} className={styles.kvRow}>
                     <input
@@ -76,7 +76,7 @@ export default function ParamsEditor({ params, onChange }: ParamsEditorProps) {
                 </div>
             ))}
 
-            {/* Add row button */}
+
             <button className={styles.addRowButton} onClick={addRow}>
                 <svg width="14" height="14" viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="2">
                     <line x1="12" y1="5" x2="12" y2="19" />
@@ -85,7 +85,7 @@ export default function ParamsEditor({ params, onChange }: ParamsEditorProps) {
                 Add parameter
             </button>
 
-            {/* Info text */}
+
             {params.length === 0 && (
                 <div style={{
                     fontSize: '0.8rem',

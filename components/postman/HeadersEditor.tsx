@@ -6,7 +6,7 @@ interface HeadersEditorProps {
     onChange: (headers: KeyValue[]) => void
 }
 
-// Common header presets
+
 const COMMON_HEADERS = [
     { key: 'Content-Type', value: 'application/json' },
     { key: 'Accept', value: 'application/json' },
@@ -16,26 +16,24 @@ const COMMON_HEADERS = [
 ]
 
 export default function HeadersEditor({ headers, onChange }: HeadersEditorProps) {
-    // Add new row
+
     const addRow = () => {
         onChange([...headers, { key: '', value: '', enabled: true }])
     }
 
-    // Update row
+
     const updateRow = (index: number, field: 'key' | 'value' | 'enabled', newValue: string | boolean) => {
         const updated = [...headers]
         updated[index] = { ...updated[index], [field]: newValue }
         onChange(updated)
     }
 
-    // Delete row
+
     const deleteRow = (index: number) => {
         onChange(headers.filter((_, i) => i !== index))
     }
 
-    // Add preset header
     const addPreset = (preset: { key: string, value: string }) => {
-        // Check if header already exists
         const exists = headers.some(h => h.key.toLowerCase() === preset.key.toLowerCase())
         if (!exists) {
             onChange([...headers, { ...preset, enabled: true }])
@@ -44,7 +42,7 @@ export default function HeadersEditor({ headers, onChange }: HeadersEditorProps)
 
     return (
         <div>
-            {/* Presets */}
+
             <div style={{ display: 'flex', gap: '0.5rem', marginBottom: '1rem', flexWrap: 'wrap' }}>
                 {COMMON_HEADERS.map(preset => (
                     <button
@@ -58,7 +56,7 @@ export default function HeadersEditor({ headers, onChange }: HeadersEditorProps)
                 ))}
             </div>
 
-            {/* Headers list */}
+
             <div className={styles.kvEditor}>
                 {headers.map((header, index) => (
                     <div key={index} className={styles.kvRow}>
@@ -95,7 +93,7 @@ export default function HeadersEditor({ headers, onChange }: HeadersEditorProps)
                     </div>
                 ))}
 
-                {/* Add row button */}
+
                 <button className={styles.addRowButton} onClick={addRow}>
                     <svg width="14" height="14" viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="2">
                         <line x1="12" y1="5" x2="12" y2="19" />
