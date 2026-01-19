@@ -23,15 +23,15 @@ export default function PostmanMode({ onBack }: PostmanModeProps) {
         setLastRequest(config)
 
         try {
-            // Build headers object
+
             const headers: Record<string, string> = {}
 
-            // Add enabled headers
+
             config.headers.filter(h => h.enabled && h.key).forEach(h => {
                 headers[h.key] = h.value
             })
 
-            // Add auth headers
+
             if (config.auth.type === 'bearer' && config.auth.bearer?.token) {
                 headers['Authorization'] = `Bearer ${config.auth.bearer.token}`
             } else if (config.auth.type === 'basic' && config.auth.basic) {
@@ -41,11 +41,11 @@ export default function PostmanMode({ onBack }: PostmanModeProps) {
                 headers[config.auth.apikey.key] = config.auth.apikey.value
             }
 
-            // Build URL with params
+
             let url = config.url
             const enabledParams = config.params.filter(p => p.enabled && p.key)
 
-            // Add API key to query if configured
+
             if (config.auth.type === 'apikey' && config.auth.apikey?.addTo === 'query') {
                 enabledParams.push({
                     key: config.auth.apikey.key,
@@ -61,7 +61,7 @@ export default function PostmanMode({ onBack }: PostmanModeProps) {
                 url += (url.includes('?') ? '&' : '?') + queryString
             }
 
-            // Build body
+
             let body: string | undefined
             if (config.body.type === 'json' && config.body.raw) {
                 headers['Content-Type'] = 'application/json'
@@ -75,8 +75,6 @@ export default function PostmanMode({ onBack }: PostmanModeProps) {
                     .map(p => `${encodeURIComponent(p.key)}=${encodeURIComponent(p.value)}`)
                     .join('&')
             } else if (config.body.type === 'form-data' && config.body.formData) {
-                // Note: For true form-data with files, we'd need FormData API
-                // This is a simplified version
                 const formData = config.body.formData
                     .filter(p => p.enabled)
                     .map(p => `${encodeURIComponent(p.key)}=${encodeURIComponent(p.value)}`)
@@ -84,7 +82,7 @@ export default function PostmanMode({ onBack }: PostmanModeProps) {
                 body = formData
             }
 
-            // Make request through our proxy
+
             const res = await fetch('/api/postman', {
                 method: 'POST',
                 headers: { 'Content-Type': 'application/json' },
@@ -112,7 +110,7 @@ export default function PostmanMode({ onBack }: PostmanModeProps) {
                 }
                 setResponse(responseData)
 
-                // Save to history
+
                 addToHistory({
                     id: generateId(),
                     timestamp: Date.now(),
@@ -127,7 +125,7 @@ export default function PostmanMode({ onBack }: PostmanModeProps) {
         }
     }
 
-    // Copy as cURL
+
     const copyAsCurl = () => {
         if (lastRequest) {
             const curl = exportToCurl(lastRequest)
@@ -138,7 +136,7 @@ export default function PostmanMode({ onBack }: PostmanModeProps) {
     return (
         <div className={styles.postmanContainer}>
             <div className={styles.postmanContent}>
-                {/* Welcome message for first time */}
+
                 {!response && !loading && !error && (
                     <div style={{
                         textAlign: 'center',
@@ -164,13 +162,13 @@ export default function PostmanMode({ onBack }: PostmanModeProps) {
                     </div>
                 )}
 
-                {/* Request Input */}
+
                 <PostmanInput
                     onSend={handleSendRequest}
                     loading={loading}
                 />
 
-                {/* Response Viewer */}
+
                 <ResponseViewer
                     response={response}
                     loading={loading}
@@ -178,7 +176,7 @@ export default function PostmanMode({ onBack }: PostmanModeProps) {
                     method={lastRequest?.method}
                 />
 
-                {/* Actions */}
+
                 {lastRequest && (
                     <div style={{
                         display: 'flex',
