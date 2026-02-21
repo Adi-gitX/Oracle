@@ -11,9 +11,10 @@ export const SupabaseAdapter: ProviderAdapter = {
 
         if (key.startsWith('sbp_') || key.startsWith('service_role')) {
             return {
-                valid: true,
+                valid: false,
                 provider: 'Supabase',
-                message: 'Format Valid',
+                message: 'Format Recognized (Needs Project Context)',
+                verificationLevel: 'format_only',
                 confidenceScore: 0.8,
                 trustLevel: 'Medium',
                 metadata: { note: 'Requires Project URL to fully validate' }
@@ -24,6 +25,7 @@ export const SupabaseAdapter: ProviderAdapter = {
             valid: false,
             provider: 'Supabase',
             message: 'Invalid Format',
+            verificationLevel: 'unknown',
             confidenceScore: 0.5,
             trustLevel: 'Low'
         };
