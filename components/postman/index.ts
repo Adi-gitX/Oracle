@@ -1,11 +1,5 @@
-export { default as PostmanMode } from './PostmanMode'
-export { default as PostmanInput } from './PostmanInput'
-export { default as ResponseViewer } from './ResponseViewer'
-export { default as HeadersEditor } from './HeadersEditor'
-export { default as ParamsEditor } from './ParamsEditor'
-export { default as AuthEditor } from './AuthEditor'
-export { default as BodyEditor } from './BodyEditor'
 export { default as RequestBuilder } from './RequestBuilder'
-export { default as HistoryPanel } from './HistoryPanel'
 export { default as PostmanResponseCard } from './PostmanResponseCard'
-export { default as CanvasPanel } from './CanvasPanel'
+
+// Legacy Postman components intentionally excluded from barrel exports.
+// Import directly from component paths if required for internal migration.
