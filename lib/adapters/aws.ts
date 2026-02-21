@@ -9,9 +9,10 @@ export const AWSAdapter: ProviderAdapter = {
         // AKIA is 20 chars long, usually.
         if (key.length === 20 && /^[A-Z0-9]+$/.test(key)) {
             return {
-                valid: true,
+                valid: false,
                 provider: 'AWS',
-                message: 'Format Valid (Access Key ID)',
+                message: 'Format Recognized (Needs Secret Pair for Verification)',
+                verificationLevel: 'format_only',
                 confidenceScore: 0.9,
                 trustLevel: 'Medium',
                 metadata: { note: 'Requires Secret Key to fully validate' }
@@ -22,6 +23,7 @@ export const AWSAdapter: ProviderAdapter = {
             valid: false,
             provider: 'AWS',
             message: 'Invalid Format',
+            verificationLevel: 'unknown',
             confidenceScore: 0.8,
             trustLevel: 'Low'
         };
