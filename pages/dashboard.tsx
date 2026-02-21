@@ -3,24 +3,28 @@ import Head from 'next/head'
 import Link from 'next/link'
 import Image from 'next/image'
 import styles from '../styles/Dashboard.module.css'
-import ChatInput, { AppMode } from '../components/ChatInput'
+import ChatInput, { AppMode, ChatModelPreference } from '../components/ChatInput'
 import ResultMessage from '../components/ResultMessage'
 import StaggeredMenu from '../components/StaggeredMenu/StaggeredMenu'
 import RequestBuilder from '../components/postman/RequestBuilder'
 import PostmanResponseCard from '../components/postman/PostmanResponseCard'
 import ReactMarkdown from 'react-markdown'
 import remarkGfm from 'remark-gfm'
-import { encryptData, decryptData } from '../utils/encryption'
+import { encryptData, decryptData, isEncryptionAvailable } from '../utils/encryption'
 import { parseUserInput } from '../lib/postman/RequestParser'
-import { RequestConfig, ResponseData, methodColors } from '../lib/postman/types'
+import { RequestConfig, ResponseData } from '../lib/postman/types'
 import { addToHistory, generateId } from '../lib/postman/storage'
 
 interface KeyResult {
     key: string
     provider: string
-    status: 'valid' | 'invalid' | 'unchecked'
+    status: 'valid' | 'invalid' | 'unverified'
     details?: string
     premium?: boolean
+    confidenceScore?: number
+    trustLevel?: 'High' | 'Medium' | 'Low'
+    verificationLevel?: 'verified' | 'format_only' | 'unknown'
+    warnings?: string[]
 }
 
 interface PostmanResult {
@@ -34,6 +38,7 @@ interface Message {
     results?: KeyResult[]
     postmanResult?: PostmanResult
     id: string
+    modelUsed?: string
 }
 
 const menuItems = [
@@ -54,6 +59,7 @@ export default function Dashboard() {
     const [messages, setMessages] = useState<Message[]>([])
     const [loading, setLoading] = useState(false)
     const [mode, setMode] = useState<AppMode>('check')
+    const [modelPreference, setModelPreference] = useState<ChatModelPreference>('fast')
     const chatContainerRef = useRef<HTMLDivElement>(null)
     const chatContentRef = useRef<HTMLDivElement>(null)
 
@@ -71,25 +77,63 @@ export default function Dashboard() {
     const scrollToBottom = () => {
         if (chatContainerRef.current) {
             const { scrollHeight, clientHeight } = chatContainerRef.current
-            chatContainerRef.current.scrollTo({ top: scrollHeight - clientHeight, behavior: 'smooth' })
+            chatContainerRef.current.scrollTo({ top: scrollHeight - clientHeight, behavior: 'auto' })
         }
     }
 
     const hasMessages = messages.length > 0
+    const autoScrollRef = useRef(true)
+    const PREF_KEY = 'oracle_ui_preferences_v1'
+
+    useEffect(() => {
+        if (typeof window === 'undefined') return
+        try {
+            const raw = localStorage.getItem(PREF_KEY)
+            if (!raw) return
+            const parsed = JSON.parse(raw) as { mode?: AppMode, chatModelPreference?: ChatModelPreference }
+            if (parsed.mode && ['check', 'chat', 'postman'].includes(parsed.mode)) {
+                setMode(parsed.mode)
+            }
+            if (parsed.chatModelPreference && ['fast', 'quality'].includes(parsed.chatModelPreference)) {
+                setModelPreference(parsed.chatModelPreference)
+            }
+        } catch {
+            // no-op
+        }
+    }, [])
+
+    useEffect(() => {
+        if (typeof window === 'undefined') return
+        localStorage.setItem(PREF_KEY, JSON.stringify({ mode, chatModelPreference: modelPreference }))
+    }, [mode, modelPreference])
 
     useEffect(() => {
         const container = chatContainerRef.current
         const content = chatContentRef.current
         if (!container || !content) return
         const resizeObserver = new ResizeObserver(() => {
+            if (!autoScrollRef.current) return
             const targetTop = container.scrollHeight - container.clientHeight
-            if (targetTop > 0) container.scrollTo({ top: targetTop, behavior: 'smooth' })
+            if (targetTop > 0) container.scrollTo({ top: targetTop, behavior: 'auto' })
         })
         resizeObserver.observe(content)
         return () => resizeObserver.disconnect()
     }, [hasMessages])
 
+    const handleScroll = () => {
+        const container = chatContainerRef.current
+        if (!container) return
+        const distanceFromBottom = container.scrollHeight - container.scrollTop - container.clientHeight
+        autoScrollRef.current = distanceFromBottom < 120
+    }
+
     const processingRef = useRef(false)
+
+    useEffect(() => {
+        if (mode !== 'postman' && editorOpen) {
+            setEditorOpen(false)
+        }
+    }, [mode, editorOpen])
 
 
     const executePostmanRequest = async (config: RequestConfig): Promise<ResponseData> => {
@@ -140,6 +184,7 @@ export default function Dashboard() {
 
     const handleEditorSend = async (config: RequestConfig) => {
         setLoading(true)
+        autoScrollRef.current = true
         setEditorConfig(config)
         setMessages(prev => [...prev, { id: Date.now().toString(), role: 'user', content: `${config.method} ${config.url}` }])
 
@@ -158,6 +203,7 @@ export default function Dashboard() {
     const handleSend = async (inputText: string) => {
         if (processingRef.current || loading) return
         processingRef.current = true
+        autoScrollRef.current = true
 
         setMessages(prev => [...prev, { id: Date.now().toString(), role: 'user', content: inputText }])
         setLoading(true)
@@ -184,12 +230,33 @@ export default function Dashboard() {
             try {
                 const allResults = messages.flatMap(m => m.results || [])
                 const validKeys = allResults.filter(r => r.status === 'valid')
-                const encryptedBody = encryptData(JSON.stringify({ message: inputText, context: validKeys }))
-                const res = await fetch('/api/chat', { method: 'POST', headers: { 'Content-Type': 'application/json' }, body: JSON.stringify({ payload: encryptedBody, isEncrypted: true }) })
+                const encryptionEnabled = isEncryptionAvailable()
+                const requestBody = encryptionEnabled
+                    ? {
+                        payload: encryptData(JSON.stringify({ message: inputText, context: validKeys, modelPreference })),
+                        isEncrypted: true
+                    }
+                    : {
+                        message: inputText,
+                        context: validKeys,
+                        modelPreference,
+                        isEncrypted: false
+                    }
+
+                const res = await fetch('/api/chat', {
+                    method: 'POST',
+                    headers: { 'Content-Type': 'application/json' },
+                    body: JSON.stringify(requestBody)
+                })
                 const rawData = await res.json()
                 const data = rawData.isEncrypted ? JSON.parse(decryptData(rawData.payload)) : rawData
                 if (!res.ok) throw new Error(data.message || res.statusText)
-                setMessages(prev => [...prev, { id: Date.now().toString(), role: 'assistant', content: data.reply || "I'm having trouble connecting right now." }])
+                setMessages(prev => [...prev, {
+                    id: Date.now().toString(),
+                    role: 'assistant',
+                    content: data.reply || "I'm having trouble connecting right now.",
+                    modelUsed: data.modelUsed
+                }])
             } catch (e) {
                 setMessages(prev => [...prev, { id: Date.now().toString(), role: 'assistant', content: `Error: ${e instanceof Error ? e.message : 'Unknown error'}` }])
             }
@@ -199,17 +266,37 @@ export default function Dashboard() {
         }
 
 
-        const extractKeys = (line: string): { key: string, hint?: string }[] => {
-            const patternSource = "\\b(AIza[a-zA-Z0-9-_]{35}|sk-proj-[a-zA-Z0-9-_]+|gsk_[a-zA-Z0-9]+|sk-ant-[a-zA-Z0-9-_]+|sk[_\\-][a-zA-Z0-9._-]+|pk[_\\-][a-zA-Z0-9._-]+|ghp_[a-zA-Z0-9]+|github_pat_[a-zA-Z0-9_]+|xox[bp]-[a-zA-Z0-9-]+|SG\\.[a-zA-Z0-9_\\-\\.]+|npm_[a-zA-Z0-9]+|glpat-[a-zA-Z0-9-]+|hf_[a-zA-Z0-9]+|AKIA[a-zA-Z0-9]{16}|[a-zA-Z0-9_\\-]{32,})";
-            const regex = new RegExp(patternSource, 'g');
-            const results: { key: string, hint?: string }[] = [];
-            let match;
-            while ((match = regex.exec(line)) !== null) results.push({ key: match[1], hint: undefined });
-            return results;
+        const keyRegex = /\b(AIza[a-zA-Z0-9-_]{35}|sk-proj-[a-zA-Z0-9-_]{20,}|gsk_[a-zA-Z0-9]{20,}|sk-ant-[a-zA-Z0-9-_]{20,}|sk[_\-][a-zA-Z0-9._-]{20,}|pk[_\-][a-zA-Z0-9._-]{20,}|ghp_[a-zA-Z0-9]{20,}|github_pat_[a-zA-Z0-9_]{20,}|xox[baprs]-[a-zA-Z0-9-]{10,}|SG\.[a-zA-Z0-9_\-\.]{20,}|npm_[a-zA-Z0-9]{20,}|glpat-[a-zA-Z0-9-]{20,}|hf_[a-zA-Z0-9]{20,}|AKIA[a-zA-Z0-9]{16})\b/g
+        const envLineRegex = /^\s*(?:export\s+)?([A-Za-z_][A-Za-z0-9_]*)\s*[:=]\s*(.+?)\s*$/
+
+        const extractKeys = (line: string): { key: string, providerHint?: string }[] => {
+            const envMatch = line.match(envLineRegex)
+            const providerHint = envMatch?.[1]
+            const content = envMatch?.[2] || line
+            const results: { key: string, providerHint?: string }[] = []
+
+            keyRegex.lastIndex = 0
+            let match: RegExpExecArray | null
+            while ((match = keyRegex.exec(content)) !== null) {
+                results.push({
+                    key: match[1],
+                    providerHint
+                })
+            }
+
+            return results
         }
 
-        const extractedItems = inputText.split('\n').flatMap(extractKeys).filter(Boolean);
-        const uniqueItems = Array.from(new Map(extractedItems.map(item => [item.key, item])).values());
+        const extractedItems = inputText.split('\n').flatMap(extractKeys).filter(Boolean)
+        const uniqueItems = Array.from(
+            extractedItems.reduce((acc, item) => {
+                const existing = acc.get(item.key)
+                if (!existing || (!existing.providerHint && item.providerHint)) {
+                    acc.set(item.key, item)
+                }
+                return acc
+            }, new Map<string, { key: string, providerHint?: string }>())
+        ).map(([, value]) => value)
 
         if (uniqueItems.length === 0) {
             setMessages(prev => [...prev, { id: Date.now().toString(), role: 'assistant', content: "No valid API key formats found. Switch to Chat Mode to talk." }])
@@ -218,21 +305,64 @@ export default function Dashboard() {
             return
         }
 
-        const results = await Promise.all(uniqueItems.map(async ({ key, hint }) => {
+        const results = await Promise.all(uniqueItems.map(async ({ key, providerHint }) => {
             try {
-                const encryptedPayload = encryptData(JSON.stringify({ content: key, timestamp: Date.now() }));
-                const res = await fetch('/api/check', { method: 'POST', headers: { 'Content-Type': 'application/json' }, body: JSON.stringify({ key: encryptedPayload, hint, isEncrypted: true }) })
+                const encryptionEnabled = isEncryptionAvailable()
+                const requestBody = encryptionEnabled
+                    ? {
+                        key: encryptData(JSON.stringify({ content: key, timestamp: Date.now() })),
+                        providerHint: providerHint ? { variableName: providerHint, source: 'env_line' } : undefined,
+                        hint: providerHint,
+                        isEncrypted: true
+                    }
+                    : {
+                        key,
+                        providerHint: providerHint ? { variableName: providerHint, source: 'env_line' } : undefined,
+                        hint: providerHint,
+                        isEncrypted: false
+                    }
+
+                const res = await fetch('/api/check', {
+                    method: 'POST',
+                    headers: { 'Content-Type': 'application/json' },
+                    body: JSON.stringify(requestBody)
+                })
                 const rawData = await res.json()
                 const data = rawData.isEncrypted ? JSON.parse(decryptData(rawData.payload)) : rawData
-                return { key, provider: data.provider || 'Unknown', status: (data.valid ? 'valid' : 'invalid') as 'valid' | 'invalid', details: data.message, premium: data.premium }
+                const verificationLevel = (data.verificationLevel || (data.valid ? 'verified' : 'unknown')) as 'verified' | 'format_only' | 'unknown'
+                const status: KeyResult['status'] = data.valid
+                    ? 'valid'
+                    : verificationLevel === 'format_only'
+                        ? 'unverified'
+                        : 'invalid'
+                const warnings = Array.isArray(data.warnings) ? data.warnings : []
+                const details = [data.message, ...warnings].filter(Boolean).join('\n')
+
+                return {
+                    key,
+                    provider: data.provider || 'Unknown',
+                    status,
+                    details,
+                    premium: data.premium,
+                    confidenceScore: data.confidenceScore,
+                    trustLevel: data.trustLevel,
+                    verificationLevel,
+                    warnings
+                }
             } catch {
-                return { key, provider: 'Unknown', status: 'invalid' as 'valid' | 'invalid', details: 'Network Error' }
+                return {
+                    key,
+                    provider: 'Unknown',
+                    status: 'invalid' as KeyResult['status'],
+                    details: 'Network Error',
+                    verificationLevel: 'unknown' as const
+                }
             }
         }))
 
         setMessages(prev => [...prev, {
             id: Date.now().toString(), role: 'assistant',
-            content: `Found ${results.filter(r => r.status === 'valid').length} working, ${results.filter(r => r.status === 'invalid').length} invalid.`,
+            content: `Found ${results.filter(r => r.status === 'valid').length} working, ${results.filter(r => r.status === 'unverified').length} unverified, ${results.filter(r => r.status === 'invalid').length} invalid.`,
             results
         }])
         setLoading(false)
@@ -257,30 +387,12 @@ export default function Dashboard() {
                 logo={messages.length > 0 || mode === 'postman' ? (mode === 'postman' ? "Oracle API Tester" : "Oracle Intelligent Check") : null}
                 rightElement={
                     (messages.length > 0 || mode === 'postman') ? (
-                        <div style={{ display: 'flex', alignItems: 'center', gap: '12px' }}>
+                        <div className={styles.menuRightActions}>
 
                             {mode === 'postman' && (
                                 <button
                                     onClick={() => setEditorOpen(!editorOpen)}
-                                    style={{
-                                        display: 'flex',
-                                        alignItems: 'center',
-                                        gap: '8px',
-                                        padding: '10px 18px',
-                                        background: editorOpen
-                                            ? 'linear-gradient(135deg, #FF6C37, #FF4F1F)'
-                                            : 'rgba(255,108,55,0.1)',
-                                        border: editorOpen
-                                            ? 'none'
-                                            : '1px solid rgba(255,108,55,0.3)',
-                                        borderRadius: '10px',
-                                        color: '#fff',
-                                        fontSize: '0.85rem',
-                                        fontWeight: 600,
-                                        cursor: 'pointer',
-                                        transition: 'all 0.3s cubic-bezier(0.25, 0.8, 0.25, 1)',
-                                        boxShadow: editorOpen ? '0 4px 20px rgba(255, 108, 55, 0.3)' : 'none'
-                                    }}
+                                    className={`${styles.editorToggleBtn} ${editorOpen ? styles.editorToggleBtnActive : ''}`}
                                 >
                                     <svg width="16" height="16" viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="2">
                                         {editorOpen ? (
@@ -300,7 +412,7 @@ export default function Dashboard() {
                             )}
                             <div
                                 onClick={() => { setMessages([]); setEditorOpen(false); }}
-                                style={{ display: 'flex', alignItems: 'center', cursor: 'pointer' }}
+                                className={styles.newSessionIconBtn}
                             >
                                 <Image src="/assets/branding/oracle-iconLogo.png" alt="New Chat" width={35} height={35} className="hover:opacity-80 transition-opacity" />
                             </div>
@@ -314,55 +426,50 @@ export default function Dashboard() {
 
 
             <div
-                className={styles.backgroundGlow}
-                style={
-                    messages.length > 0
-                        ? { opacity: 0.5 }
-                        : mode === 'postman'
-                            ? { background: `radial-gradient(circle at 50% 0%, rgba(255, 108, 55, 0.35) 0%, transparent 60%), radial-gradient(circle at 50% 100%, rgba(255, 80, 30, 0.25) 0%, transparent 60%)` }
-                            : undefined
-                }
+                className={`${styles.backgroundGlow} ${messages.length > 0 ? styles.backgroundGlowSubtle : ''} ${mode === 'postman' ? styles.backgroundGlowPostman : ''}`}
             />
 
 
-            <div style={{
-                display: 'flex',
-                width: '100%',
-                height: '100vh',
-                transition: 'all 0.4s cubic-bezier(0.25, 0.8, 0.25, 1)'
-            }}>
+            <div className={styles.workspaceShell}>
 
-                <div style={{
-                    flex: editorOpen ? '0 0 50%' : '1',
-                    transition: 'all 0.4s cubic-bezier(0.25, 0.8, 0.25, 1)',
-                    overflow: 'hidden',
-                    display: 'flex',
-                    flexDirection: 'column'
-                }}>
+                <div className={`${styles.mainPane} ${editorOpen ? styles.mainPaneEditorOpen : ''}`}>
                     {messages.length === 0 ? (
                         <div className={styles.centeredContent}>
-                            <div className={styles.pillBadge} style={mode === 'postman' ? { borderColor: 'rgba(255, 108, 55, 0.3)' } : {}}>
-                                <span style={mode === 'postman' ? { background: 'linear-gradient(135deg, #FF6C37, #FF4F1F)' } : {}}>{heroContent.badge}</span> {heroContent.badgeText}
+                            <div className={`${styles.pillBadge} ${mode === 'postman' ? styles.postmanBadge : ''}`}>
+                                <span>{heroContent.badge}</span> {heroContent.badgeText}
                             </div>
-                            <h1 className={styles.heroTitle} style={{ display: 'flex', alignItems: 'center', justifyContent: 'center', gap: '0px', paddingLeft: '160px' }}>
+                            <h1 className={`${styles.heroTitle} ${styles.heroTitleRow}`}>
                                 {heroContent.title}
-                                <span style={{ display: 'flex', alignItems: 'center', marginLeft: '-160px' }}>
+                                <span className={styles.heroLogoMark}>
                                     <Image src="/assets/branding/oracle-logo.png" alt="Oracle Logo" width={550} height={176} objectFit="contain" priority />
                                 </span>
                             </h1>
                             <p className={styles.heroSubtitle}>{heroContent.subtitle}</p>
-                            <div style={{ width: '100%', maxWidth: '700px' }}>
-                                <ChatInput onSend={handleSend} disabled={loading} isCentered={true} mode={mode} onModeChange={handleModeChange} />
+                            <div className={styles.heroInputWrap}>
+                                <ChatInput
+                                    onSend={handleSend}
+                                    disabled={loading}
+                                    isCentered={true}
+                                    mode={mode}
+                                    onModeChange={handleModeChange}
+                                    modelPreference={modelPreference}
+                                    onModelPreferenceChange={setModelPreference}
+                                />
                             </div>
                         </div>
                     ) : (
                         <div className={styles.chatLayout}>
-                            <div className={styles.chatScrollArea} ref={chatContainerRef}>
+                            <div className={styles.chatScrollArea} ref={chatContainerRef} onScroll={handleScroll}>
                                 <div className={styles.chatContentInner} ref={chatContentRef}>
                                     {messages.map((msg) => (
                                         <div key={msg.id} className={`${styles.messageRow} ${styles[msg.role]}`}>
                                             <div className={styles.messageBubble}>
-                                                <div className={styles.senderName}>{msg.role === 'user' ? 'You' : 'Oracle'}</div>
+                                                <div className={styles.senderName}>
+                                                    {msg.role === 'user' ? 'You' : 'Oracle'}
+                                                    {msg.role === 'assistant' && msg.modelUsed && (
+                                                        <span className={styles.modelUsedTag}>{msg.modelUsed}</span>
+                                                    )}
+                                                </div>
                                                 {msg.content && <div className={styles.messageText}><ReactMarkdown remarkPlugins={[remarkGfm]}>{msg.content}</ReactMarkdown></div>}
                                                 {msg.results && <ResultMessage results={msg.results} />}
                                                 {msg.postmanResult && (
@@ -375,21 +482,7 @@ export default function Dashboard() {
                                                         {mode === 'postman' && (
                                                             <button
                                                                 onClick={() => { setEditorConfig(msg.postmanResult!.request); setEditorOpen(true); }}
-                                                                style={{
-                                                                    marginTop: '10px',
-                                                                    padding: '10px 16px',
-                                                                    background: 'rgba(255, 108, 55, 0.1)',
-                                                                    border: '1px solid rgba(255, 108, 55, 0.3)',
-                                                                    borderRadius: '10px',
-                                                                    color: '#FF6C37',
-                                                                    fontSize: '0.85rem',
-                                                                    fontWeight: 600,
-                                                                    cursor: 'pointer',
-                                                                    display: 'inline-flex',
-                                                                    alignItems: 'center',
-                                                                    gap: '8px',
-                                                                    transition: 'all 0.2s'
-                                                                }}
+                                                                className={styles.editInEditorBtn}
                                                             >
                                                                 <svg width="14" height="14" viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="2">
                                                                     <path d="M11 4H4a2 2 0 0 0-2 2v14a2 2 0 0 0 2 2h14a2 2 0 0 0 2-2v-7" />
@@ -407,8 +500,8 @@ export default function Dashboard() {
                                         <div className={`${styles.messageRow} ${styles.assistant}`}>
                                             <div className={styles.messageBubble}>
                                                 <div className={styles.senderName}>Oracle</div>
-                                                <div className={styles.messageText} style={{ display: 'flex', alignItems: 'center', gap: '8px' }}>
-                                                    <span style={{ width: '8px', height: '8px', background: mode === 'postman' ? '#FF6C37' : '#3b82f6', borderRadius: '50%', animation: 'pulse 1s infinite' }} />
+                                                <div className={`${styles.messageText} ${styles.loadingTextRow}`}>
+                                                    <span className={`${styles.loadingPulseDot} ${mode === 'postman' ? styles.loadingPulseDotPostman : ''}`} />
                                                     {getLoadingText()}
                                                 </div>
                                             </div>
@@ -416,12 +509,19 @@ export default function Dashboard() {
                                     )}
                                 </div>
                             </div>
-                            <div className={styles.floatingInput} style={{ flexDirection: 'column', alignItems: 'center', gap: '10px' }}>
-                                <div style={{ width: '100%', maxWidth: editorOpen ? '100%' : '800px', padding: editorOpen ? '0 20px' : '0' }}>
-                                    <ChatInput onSend={handleSend} disabled={loading} mode={mode} onModeChange={handleModeChange} />
+                            <div className={styles.floatingInput}>
+                                <div className={`${styles.floatingInputInner} ${editorOpen ? styles.floatingInputInnerEditorOpen : ''}`}>
+                                    <ChatInput
+                                        onSend={handleSend}
+                                        disabled={loading}
+                                        mode={mode}
+                                        onModeChange={handleModeChange}
+                                        modelPreference={modelPreference}
+                                        onModelPreferenceChange={setModelPreference}
+                                    />
                                 </div>
-                                <div style={{ fontSize: '0.7rem', color: 'rgba(255,255,255,0.3)', textAlign: 'center' }}>
-                                    {mode === 'postman' ? 'Tip: Click "Open Editor" for full control →' : <>By using Oracle, you agree to our <Link href="/docs#legal"><a style={{ textDecoration: 'underline', color: 'rgba(255,255,255,0.4)' }}>Terms</a></Link>.</>}
+                                <div className={styles.floatingInputHint}>
+                                    {mode === 'postman' ? 'Tip: Click "Open Editor" for full control →' : <>By using Oracle, you agree to our <Link href="/docs#legal"><a className={styles.floatingInputHintLink}>Terms</a></Link>.</>}
                                 </div>
                             </div>
                         </div>
@@ -429,103 +529,26 @@ export default function Dashboard() {
                 </div>
 
 
-                <div style={{
-                    position: 'fixed',
-                    top: 0,
-                    right: 0,
-                    width: '50%',
-                    height: '100vh',
-                    background: 'linear-gradient(145deg, rgba(15, 15, 15, 0.98), rgba(8, 8, 8, 0.99))',
-                    backdropFilter: 'blur(40px) saturate(180%)',
-                    WebkitBackdropFilter: 'blur(40px) saturate(180%)',
-                    borderLeft: '1px solid rgba(255, 108, 55, 0.15)',
-                    transform: editorOpen ? 'translateX(0)' : 'translateX(100%)',
-                    opacity: editorOpen ? 1 : 0,
-                    transition: 'all 0.5s cubic-bezier(0.16, 1, 0.3, 1)',
-                    zIndex: 100,
-                    display: 'flex',
-                    flexDirection: 'column',
-                    boxShadow: editorOpen
-                        ? '-30px 0 80px rgba(0, 0, 0, 0.6), 0 0 60px rgba(255, 108, 55, 0.08) inset'
-                        : 'none'
-                }}>
+                <div className={`${styles.editorCanvas} ${editorOpen ? styles.editorCanvasOpen : ''}`}>
 
-                    <div style={{
-                        position: 'absolute',
-                        left: 0,
-                        top: 0,
-                        width: '2px',
-                        height: '100%',
-                        background: 'linear-gradient(to bottom, #FF6C37, transparent 30%, transparent 70%, #FF6C37)',
-                        opacity: editorOpen ? 0.6 : 0,
-                        transition: 'opacity 0.5s'
-                    }} />
+                    <div className={styles.editorCanvasGlow} />
 
 
-                    <div style={{
-                        padding: '18px 24px',
-                        borderBottom: '1px solid rgba(255, 255, 255, 0.06)',
-                        display: 'flex',
-                        alignItems: 'center',
-                        justifyContent: 'space-between',
-                        background: 'linear-gradient(135deg, rgba(255, 108, 55, 0.08), rgba(255, 80, 30, 0.03), transparent)'
-                    }}>
-                        <div style={{ display: 'flex', alignItems: 'center', gap: '12px' }}>
-                            <div style={{
-                                width: '38px',
-                                height: '38px',
-                                display: 'flex',
-                                alignItems: 'center',
-                                justifyContent: 'center',
-                                background: 'linear-gradient(135deg, rgba(255, 108, 55, 0.2), rgba(255, 80, 30, 0.1))',
-                                borderRadius: '12px',
-                                border: '1px solid rgba(255, 108, 55, 0.2)'
-                            }}>
+                    <div className={styles.editorCanvasHeader}>
+                        <div className={styles.editorCanvasHeaderLeft}>
+                            <div className={styles.editorCanvasIconBox}>
                                 <svg width="18" height="18" viewBox="0 0 24 24" fill="none" stroke="#FF6C37" strokeWidth="2.5">
                                     <polygon points="22 2 15 22 11 13 2 9 22 2" />
                                 </svg>
                             </div>
                             <div>
-                                <span style={{
-                                    fontWeight: 700,
-                                    color: '#fff',
-                                    fontSize: '1rem',
-                                    display: 'block'
-                                }}>Request Editor</span>
-                                <span style={{
-                                    fontSize: '0.72rem',
-                                    color: 'rgba(255, 108, 55, 0.7)',
-                                    fontWeight: 500,
-                                    textTransform: 'uppercase',
-                                    letterSpacing: '1px'
-                                }}>Canvas Mode</span>
+                                <span className={styles.editorCanvasTitle}>Request Editor</span>
+                                <span className={styles.editorCanvasSubtitle}>Canvas Mode</span>
                             </div>
                         </div>
                         <button
                             onClick={() => setEditorOpen(false)}
-                            style={{
-                                width: '38px',
-                                height: '38px',
-                                display: 'flex',
-                                alignItems: 'center',
-                                justifyContent: 'center',
-                                background: 'rgba(255, 255, 255, 0.03)',
-                                border: '1px solid rgba(255, 255, 255, 0.08)',
-                                borderRadius: '12px',
-                                color: 'rgba(255, 255, 255, 0.5)',
-                                cursor: 'pointer',
-                                transition: 'all 0.2s'
-                            }}
-                            onMouseEnter={(e) => {
-                                e.currentTarget.style.background = 'rgba(229, 57, 53, 0.1)'
-                                e.currentTarget.style.borderColor = 'rgba(229, 57, 53, 0.3)'
-                                e.currentTarget.style.color = '#E53935'
-                            }}
-                            onMouseLeave={(e) => {
-                                e.currentTarget.style.background = 'rgba(255, 255, 255, 0.03)'
-                                e.currentTarget.style.borderColor = 'rgba(255, 255, 255, 0.08)'
-                                e.currentTarget.style.color = 'rgba(255, 255, 255, 0.5)'
-                            }}
+                            className={styles.editorCanvasCloseBtn}
                         >
                             <svg width="18" height="18" viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="2">
                                 <line x1="18" y1="6" x2="6" y2="18" />
@@ -535,12 +558,7 @@ export default function Dashboard() {
                     </div>
 
 
-                    <div style={{
-                        flex: 1,
-                        overflowY: 'auto',
-                        padding: '24px',
-                        background: 'linear-gradient(to bottom, transparent, rgba(0,0,0,0.2))'
-                    }}>
+                    <div className={styles.editorCanvasBody}>
                         <RequestBuilder
                             onSend={handleEditorSend}
                             loading={loading}
@@ -549,48 +567,17 @@ export default function Dashboard() {
                     </div>
 
 
-                    <div style={{
-                        padding: '14px 24px',
-                        borderTop: '1px solid rgba(255, 255, 255, 0.06)',
-                        background: 'rgba(0, 0, 0, 0.3)',
-                        display: 'flex',
-                        alignItems: 'center',
-                        justifyContent: 'space-between'
-                    }}>
-                        <span style={{ fontSize: '0.75rem', color: 'rgba(255, 255, 255, 0.35)' }}>
-                            Press <kbd style={{
-                                padding: '3px 8px',
-                                background: 'rgba(255,255,255,0.06)',
-                                borderRadius: '6px',
-                                border: '1px solid rgba(255,255,255,0.08)',
-                                fontFamily: 'inherit',
-                                fontSize: '0.7rem'
-                            }}>⌘</kbd> + <kbd style={{
-                                padding: '3px 8px',
-                                background: 'rgba(255,255,255,0.06)',
-                                borderRadius: '6px',
-                                border: '1px solid rgba(255,255,255,0.08)',
-                                fontFamily: 'inherit',
-                                fontSize: '0.7rem'
-                            }}>Enter</kbd> to send
+                    <div className={styles.editorCanvasFooter}>
+                        <span className={styles.editorCanvasFooterHint}>
+                            Press <kbd className={styles.editorCanvasKbd}>⌘</kbd> + <kbd className={styles.editorCanvasKbd}>Enter</kbd> to send
                         </span>
-                        <span style={{
-                            fontSize: '0.7rem',
-                            color: 'rgba(255, 108, 55, 0.5)',
-                            fontWeight: 500
-                        }}>
+                        <span className={styles.editorCanvasFooterBrand}>
                             Powered by Oracle
                         </span>
                     </div>
                 </div>
             </div>
 
-            <style jsx global>{`
-                @keyframes pulse {
-                    0%, 100% { opacity: 1; transform: scale(1); }
-                    50% { opacity: 0.5; transform: scale(1.2); }
-                }
-            `}</style>
         </div>
     )
 }
