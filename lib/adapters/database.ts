@@ -16,9 +16,10 @@ export const DatabaseAdapter: ProviderAdapter = {
             // Mask password
 
             return {
-                valid: true,
+                valid: false,
                 provider: `Database (${protocol})`,
-                message: `Format Valid (Host: ${host})`,
+                message: `Format Recognized (Host: ${host})`,
+                verificationLevel: 'format_only',
                 metadata: {
                     user: user || 'None',
                     host: host,
@@ -33,6 +34,7 @@ export const DatabaseAdapter: ProviderAdapter = {
                 valid: false,
                 provider: 'Database',
                 message: 'Invalid Connection String Format',
+                verificationLevel: 'unknown',
                 confidenceScore: 1.0,
                 trustLevel: 'Low'
             };
