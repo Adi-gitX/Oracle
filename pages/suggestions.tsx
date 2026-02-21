@@ -82,7 +82,7 @@ export default function Suggestions() {
 
             <div className={styles.scrollArea}>
                 <div className={styles.centeredContent} style={{ paddingTop: '100px', animation: 'fadeIn 0.5s ease-out' }}>
-                    <div className={styles.pillBadge} style={{ marginBottom: '2rem' }}>
+                    <div className={`${styles.pillBadge} ${styles.pillBadgeInternalFix}`} style={{ marginBottom: '2rem' }}>
                         <span>Beta</span> Help us improve
                     </div>
 

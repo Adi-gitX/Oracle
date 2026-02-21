@@ -435,7 +435,7 @@ export default function Dashboard() {
                 <div className={`${styles.mainPane} ${editorOpen ? styles.mainPaneEditorOpen : ''}`}>
                     {messages.length === 0 ? (
                         <div className={styles.centeredContent}>
-                            <div className={`${styles.pillBadge} ${mode === 'postman' ? styles.postmanBadge : ''}`}>
+                            <div className={`${styles.pillBadge} ${styles.pillBadgeInternalFix} ${mode === 'postman' ? styles.postmanBadge : ''}`}>
                                 <span>{heroContent.badge}</span> {heroContent.badgeText}
                             </div>
                             <h1 className={`${styles.heroTitle} ${styles.heroTitleRow}`}>

@@ -133,6 +133,16 @@
     transition: border-color 0.25s ease, background-color 0.25s ease;
 }
 
+.pillBadgeInternalFix {
+    padding: 6px 12px 6px 8px;
+    gap: 8px;
+}
+
+.pillBadgeInternalFix span {
+    line-height: 1;
+    padding: 4px 11px;
+}
+
 .pillBadge span {
     background: linear-gradient(135deg, #4285f4, #2b6cd4);
     color: #fff;
@@ -946,6 +956,11 @@
 }
 
 @media (max-width: 768px) {
+    .pillBadgeInternalFix {
+        padding: 6px 10px 6px 8px;
+        gap: 7px;
+    }
+
     .heroTitle {
         font-size: 2.5rem;
     }

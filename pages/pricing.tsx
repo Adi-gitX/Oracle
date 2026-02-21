@@ -51,7 +51,7 @@ export default function Pricing() {
             <div className={styles.scrollArea}>
                 <div className={styles.pricingContent}>
                     <div className={styles.pricingHeader}>
-                        <div className={styles.pillBadge} style={{ margin: '0 auto 2rem' }}>
+                        <div className={`${styles.pillBadge} ${styles.pillBadgeInternalFix}`} style={{ margin: '0 auto 2rem' }}>
                             <span>Free Forever</span> Developer Friendly
                         </div>
                         <h1 className={styles.heroTitle}>
