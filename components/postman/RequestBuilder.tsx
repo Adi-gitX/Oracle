@@ -38,16 +38,23 @@ export default function RequestBuilder({ onSend, loading, initialConfig }: Reque
 
 
     useEffect(() => {
-        try {
-            const url = new URL(config.url)
-            const urlParams: KeyValue[] = []
-            url.searchParams.forEach((value, key) => {
-                urlParams.push({ key, value, enabled: true })
-            })
-            if (urlParams.length > 0 && config.params.length === 0) {
-                setConfig(prev => ({ ...prev, params: urlParams }))
+        setConfig(prev => {
+            try {
+                const url = new URL(prev.url)
+                const urlParams: KeyValue[] = []
+                url.searchParams.forEach((value, key) => {
+                    urlParams.push({ key, value, enabled: true })
+                })
+
+                if (urlParams.length === 0 || prev.params.length > 0) {
+                    return prev
+                }
+
+                return { ...prev, params: urlParams }
+            } catch {
+                return prev
             }
-        } catch { }
+        })
     }, [config.url])
 
     const handleSend = () => {
