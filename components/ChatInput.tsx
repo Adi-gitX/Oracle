@@ -1,8 +1,8 @@
 import { useState, useRef, useEffect } from 'react'
 import styles from '../styles/Dashboard.module.css'
-import postmanStyles from '../styles/Postman.module.css'
 
 export type AppMode = 'check' | 'chat' | 'postman'
+export type ChatModelPreference = 'fast' | 'quality'
 
 interface ChatInputProps {
     onSend: (message: string) => void
@@ -10,9 +10,19 @@ interface ChatInputProps {
     isCentered?: boolean
     mode: AppMode
     onModeChange: (mode: AppMode) => void
+    modelPreference?: ChatModelPreference
+    onModelPreferenceChange?: (preference: ChatModelPreference) => void
 }
 
-export default function ChatInput({ onSend, disabled, isCentered = false, mode, onModeChange }: ChatInputProps) {
+export default function ChatInput({
+    onSend,
+    disabled,
+    isCentered = false,
+    mode,
+    onModeChange,
+    modelPreference = 'fast',
+    onModelPreferenceChange
+}: ChatInputProps) {
     const [input, setInput] = useState('')
     const [showModeMenu, setShowModeMenu] = useState(false)
     const textareaRef = useRef<HTMLTextAreaElement>(null)
@@ -251,6 +261,27 @@ export default function ChatInput({ onSend, disabled, isCentered = false, mode, 
                             </div>
                         )}
                     </div>
+
+                    {mode === 'chat' && (
+                        <div className={styles.modelSelector}>
+                            <button
+                                type="button"
+                                className={`${styles.modelBtn} ${modelPreference === 'fast' ? styles.modelBtnActive : ''}`}
+                                onClick={() => onModelPreferenceChange?.('fast')}
+                                aria-label="Use fast chat model"
+                            >
+                                Fast
+                            </button>
+                            <button
+                                type="button"
+                                className={`${styles.modelBtn} ${modelPreference === 'quality' ? styles.modelBtnActive : ''}`}
+                                onClick={() => onModelPreferenceChange?.('quality')}
+                                aria-label="Use quality chat model"
+                            >
+                                Quality
+                            </button>
+                        </div>
+                    )}
                 </div>
 
                 <div className={styles.actionRight}>
