@@ -106,6 +106,7 @@ export interface EnvironmentVariable {
 }
 
 export interface PostmanSettings {
+    historyEnabled: boolean;
     followRedirects: boolean;
     timeout: number;
     sslVerification: boolean;
@@ -130,6 +131,7 @@ export const defaultRequestConfig: RequestConfig = {
 };
 
 export const defaultSettings: PostmanSettings = {
+    historyEnabled: false,
     followRedirects: true,
     timeout: 30000,
     sslVerification: true
