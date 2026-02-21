@@ -1,0 +1,22 @@
+{
+  "extends": "./tsconfig.json",
+  "compilerOptions": {
+    "noEmit": false,
+    "outDir": ".tmp-test-dist",
+    "module": "commonjs",
+    "target": "es2019",
+    "incremental": false,
+    "isolatedModules": false
+  },
+  "include": [
+    "tests/**/*.ts",
+    "pages/api/check.ts",
+    "pages/api/postman.ts",
+    "pages/api/chat.ts",
+    "lib/postman/storage.ts",
+    "lib/postman/types.ts",
+    "lib/ui/preferences.ts",
+    "lib/adapters/types.ts",
+    "utils/encryption.ts"
+  ]
+}
