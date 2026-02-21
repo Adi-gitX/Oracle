@@ -10,9 +10,10 @@ export const PusherAdapter: ProviderAdapter = {
         // But we can identify the format.
 
         return {
-            valid: true,
+            valid: false,
             provider: 'Pusher',
-            message: 'Format Valid',
+            message: 'Format Recognized (Needs App Context)',
+            verificationLevel: 'format_only',
             confidenceScore: 0.7,
             trustLevel: 'Medium',
             metadata: { note: 'Format Check Only' }
