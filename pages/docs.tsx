@@ -212,13 +212,14 @@ GROQ_API_KEY="AIzaSyB..."  <-- This is actually a Google Key!
                         <section id="security" className={docStyles.section}>
                             <h2 className={docStyles.subtitle}>Security Architecture</h2>
                             <p className={docStyles.text}>
-                                We employ a <strong>Zero-Trust, Zero-Retention</strong> architecture designed for maximum security.
+                                Oracle uses a defense-in-depth model with strict verification semantics and production-safe defaults.
                             </p>
                             <ul style={{ color: '#a1a1aa', lineHeight: '1.8', paddingLeft: '1.5rem', marginBottom: '1.5rem' }}>
-                                <li><strong>Client-Side Encryption:</strong> Keys are encrypted with AES-256 GCM <em>before</em> leaving your browser. The plain-text key is never visible to the network.</li>
-                                <li><strong>Ephemeral Processing:</strong> Keys are decrypted in volatile memory (RAM) only for the microseconds required to validate them against the provider.</li>
-                                <li><strong>Immediate Sanitization:</strong> Variables holding credentials are strictly nullified and garbage-collected immediately after use.</li>
-                                <li><strong>No Persistence:</strong> We do not use a database for credentials. There are no logs, no caches, and no backups of your keys.</li>
+                                <li><strong>Strict Verification Levels:</strong> Every result includes <code>verificationLevel</code> (<code>verified</code>, <code>format_only</code>, <code>unknown</code>). Format-only matches are treated as unverified, not working.</li>
+                                <li><strong>Transport Security:</strong> API requests are expected over HTTPS. Optional payload encryption is available when <code>NEXT_PUBLIC_ENCRYPTION_KEY</code> is configured.</li>
+                                <li><strong>Privacy-Safe Leak Handling:</strong> Oracle does not send raw keys to third-party code-search providers for leak checks.</li>
+                                <li><strong>Safe Local History Defaults:</strong> Postman-style request history is disabled by default. If enabled, sensitive headers/auth fields are redacted before localStorage persistence.</li>
+                                <li><strong>No Credential Database:</strong> Oracle does not persist credentials server-side in an application database.</li>
                             </ul>
                         </section>
 
@@ -237,10 +238,10 @@ GROQ_API_KEY="AIzaSyB..."  <-- This is actually a Google Key!
 
                             <h3 className={docStyles.subtitle} style={{ fontSize: '1.2rem', marginTop: '2rem' }}>3. Zero Retention Policy</h3>
                             <p className={docStyles.text}>
-                                Oracle operates on a strict &quot;Zero Retention&quot; basis. We do not store, log, or persist your API keys continuously. Keys are processed in-memory for the duration of the verification request and are immediately discarded.
+                                Oracle is designed to avoid server-side credential persistence. Verification requests are processed in-memory for request handling and are not written to an Oracle credential database.
                             </p>
                             <p className={docStyles.text}>
-                                While we employ industry-standard encryption (AES-256) for transmission, you acknowledge that you are using this service at your own risk. We serve as a passthrough verification tool only.
+                                Optional payload encryption is supported when configured, and HTTPS transport is required in production. Local client-side history is user-controlled and redacted by default behavior.
                             </p>
 
                             <h3 className={docStyles.subtitle} style={{ fontSize: '1.2rem', marginTop: '2rem' }}>4. User Responsibility</h3>
