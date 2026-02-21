@@ -195,7 +195,7 @@
 .heroSubtitle {
     font-size: 1.2rem;
     color: rgba(255, 255, 255, 0.5);
-    margin-bottom: 2rem;
+    margin: 0.45rem 0 1.6rem;
     font-weight: 400;
     max-width: 500px;
     line-height: 1.6;
@@ -206,13 +206,14 @@
     align-items: center;
     justify-content: center;
     gap: 0;
-    padding-left: 130px;
+    padding-left: 120px;
 }
 
 .heroLogoMark {
     display: flex;
     align-items: center;
-    margin-left: -130px;
+    margin-left: -145px;
+    transform: none;
 }
 
 .heroInputWrap {
