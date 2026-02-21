@@ -8,8 +8,8 @@ export const GenericSecretAdapter: ProviderAdapter = {
         // Exclude keys that look like malformed API keys from known providers
         // These should be caught by their specific adapters or marked invalid
         const looksLikeAPIKey =
-            key.includes('Iza') ||  // Partial Google key
-            key.startsWith('k-') || // Partial OpenAI  
+            key.includes('AIza') ||  // Partial Google key
+            key.startsWith('sk-') || // Common API token prefix
             key.startsWith('sk-ant') || // Partial Anthropic
             key.startsWith('gsk') || // Partial Groq
             key.length === 40; // Many API keys are exactly 40 chars (Cohere, etc.)
@@ -22,10 +22,12 @@ export const GenericSecretAdapter: ProviderAdapter = {
     },
     check: async (key: string): Promise<CheckResult> => {
         // We cannot validate generic secrets, but we can acknowledge they look like secrets.
+        void key;
         return {
-            valid: true,
+            valid: false,
             provider: 'Secret Key',
-            message: 'Format Valid',
+            message: 'Format Recognized (Cannot Verify Ownership)',
+            verificationLevel: 'format_only',
             confidenceScore: 0.5,
             trustLevel: 'Low',
             metadata: { note: 'Cannot verify ownership' }
