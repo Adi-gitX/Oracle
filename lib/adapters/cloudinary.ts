@@ -7,9 +7,10 @@ export const CloudinaryAdapter: ProviderAdapter = {
     check: async (key: string): Promise<CheckResult> => {
         if (/^[0-9]{15}$/.test(key)) {
             return {
-                valid: true,
+                valid: false,
                 provider: 'Cloudinary',
-                message: 'Format Valid (API Key)',
+                message: 'Format Recognized (API Key)',
+                verificationLevel: 'format_only',
                 confidenceScore: 0.8,
                 trustLevel: 'Medium',
                 metadata: { note: 'Requires Secret for full access' }
@@ -18,9 +19,10 @@ export const CloudinaryAdapter: ProviderAdapter = {
 
         if (key.startsWith('cloudinary://')) {
             return {
-                valid: true,
+                valid: false,
                 provider: 'Cloudinary',
-                message: 'Format Valid (Connection String)',
+                message: 'Format Recognized (Connection String)',
+                verificationLevel: 'format_only',
                 confidenceScore: 0.9,
                 trustLevel: 'Medium'
             };
@@ -30,6 +32,7 @@ export const CloudinaryAdapter: ProviderAdapter = {
             valid: false,
             provider: 'Cloudinary',
             message: 'Invalid Format',
+            verificationLevel: 'unknown',
             confidenceScore: 0.0,
             trustLevel: 'Low'
         };
