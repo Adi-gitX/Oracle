@@ -2,6 +2,8 @@ export interface CheckResult {
     valid: boolean;
     provider: string; // 'OpenAI' | 'Anthropic' | 'Google Gemini' | etc.
     message: string;
+    verificationLevel?: 'verified' | 'format_only' | 'unknown';
+    warnings?: string[];
     premium?: boolean;
     models?: string[];
     usage?: { limit: number; used: number; };
