@@ -1,0 +1,182 @@
+/* Mode Selector - seamless, responsive dropdown */
+.modeWrap {
+    position: relative;
+    display: inline-flex;
+}
+
+.modeTrigger {
+    display: inline-flex;
+    align-items: center;
+    gap: 8px;
+    padding: 8px 12px;
+    border-radius: 10px;
+    border: 1px solid transparent;
+    background: rgba(255, 255, 255, 0.03);
+    color: rgba(255, 255, 255, 0.55);
+    font-size: 0.82rem;
+    font-weight: 600;
+    cursor: pointer;
+    transition: background 0.2s ease, border-color 0.2s ease, color 0.2s ease, transform 0.15s ease;
+    white-space: nowrap;
+}
+
+.modeTrigger:hover {
+    background: rgba(255, 255, 255, 0.07);
+    color: rgba(255, 255, 255, 0.9);
+}
+
+.modeTrigger:active {
+    transform: scale(0.98);
+}
+
+.modeChevron {
+    opacity: 0.7;
+    transition: transform 0.2s ease;
+}
+
+.modeTriggerOpen .modeChevron {
+    transform: rotate(180deg);
+}
+
+.modeMenu {
+    position: absolute;
+    top: calc(100% + 8px);
+    left: 0;
+    width: 260px;
+    max-width: calc(100vw - 32px);
+    background: rgba(14, 14, 14, 0.96);
+    backdrop-filter: blur(22px) saturate(140%);
+    -webkit-backdrop-filter: blur(22px) saturate(140%);
+    border: 1px solid rgba(255, 255, 255, 0.08);
+    border-radius: 14px;
+    padding: 6px;
+    box-shadow:
+        0 20px 48px rgba(0, 0, 0, 0.55),
+        0 0 0 1px rgba(255, 255, 255, 0.04) inset;
+    z-index: 9999;
+    transform-origin: top left;
+    animation: menuIn 0.18s cubic-bezier(0.16, 1, 0.3, 1);
+}
+
+.modeMenuUp {
+    top: auto;
+    bottom: calc(100% + 8px);
+    transform-origin: bottom left;
+}
+
+@keyframes menuIn {
+    from {
+        opacity: 0;
+        transform: translateY(-6px) scale(0.97);
+    }
+    to {
+        opacity: 1;
+        transform: translateY(0) scale(1);
+    }
+}
+
+.modeMenuUp {
+    animation: menuInUp 0.18s cubic-bezier(0.16, 1, 0.3, 1);
+}
+
+@keyframes menuInUp {
+    from {
+        opacity: 0;
+        transform: translateY(6px) scale(0.97);
+    }
+    to {
+        opacity: 1;
+        transform: translateY(0) scale(1);
+    }
+}
+
+.modeItem {
+    display: flex;
+    align-items: center;
+    gap: 12px;
+    width: 100%;
+    padding: 10px 12px;
+    background: transparent;
+    border: 1px solid transparent;
+    border-radius: 10px;
+    color: rgba(255, 255, 255, 0.85);
+    font-size: 0.88rem;
+    text-align: left;
+    cursor: pointer;
+    transition: background 0.15s ease, border-color 0.15s ease, color 0.15s ease;
+    margin-bottom: 2px;
+}
+
+.modeItem:last-child {
+    margin-bottom: 0;
+}
+
+.modeItem:hover {
+    background: rgba(255, 255, 255, 0.05);
+    border-color: rgba(255, 255, 255, 0.07);
+}
+
+.modeItemIcon {
+    display: flex;
+    align-items: center;
+    justify-content: center;
+    width: 32px;
+    height: 32px;
+    border-radius: 9px;
+    flex-shrink: 0;
+}
+
+.modeItemText {
+    flex: 1;
+    min-width: 0;
+    display: flex;
+    flex-direction: column;
+    gap: 2px;
+}
+
+.modeItemLabel {
+    font-weight: 600;
+    font-size: 0.88rem;
+    line-height: 1.1;
+}
+
+.modeItemDesc {
+    font-size: 0.72rem;
+    color: rgba(255, 255, 255, 0.45);
+    line-height: 1.2;
+}
+
+.modeItemCheck {
+    flex-shrink: 0;
+    opacity: 1;
+}
+
+@media (max-width: 560px) {
+    .modeMenu {
+        left: 50%;
+        transform: translateX(-50%);
+        transform-origin: top center;
+        min-width: 240px;
+        width: min(88vw, 300px);
+    }
+
+    .modeMenuUp {
+        transform-origin: bottom center;
+    }
+
+    @keyframes menuIn {
+        from {
+            opacity: 0;
+            transform: translateX(-50%) translateY(-6px) scale(0.97);
+        }
+        to {
+            opacity: 1;
+            transform: translateX(-50%) translateY(0) scale(1);
+        }
+    }
+
+    .modeTrigger {
+        padding: 7px 10px;
+        font-size: 0.78rem;
+    }
+}

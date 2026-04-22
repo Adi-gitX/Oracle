@@ -1,106 +1,94 @@
-/* Oracle Postman Mode Styles - Premium Edition */
+/* =============================================================
+   Oracle Postman Mode — Professional Redesign
+   Dark, spacious, subtle orange accent. No AI slop.
+   ============================================================= */
 
-/* ============================================
-   Request Builder Container
-   ============================================ */
+/* ---------- Request Builder shell ---------- */
 .requestBuilder {
-    background: linear-gradient(145deg, rgba(20, 20, 20, 0.9), rgba(15, 15, 15, 0.95));
+    background: linear-gradient(160deg, rgba(22, 22, 22, 0.92) 0%, rgba(14, 14, 14, 0.96) 100%);
     border: 1px solid rgba(255, 255, 255, 0.06);
-    border-radius: 20px;
+    border-radius: 18px;
     overflow: hidden;
     box-shadow:
-        0 4px 24px rgba(0, 0, 0, 0.4),
-        0 0 0 1px rgba(255, 255, 255, 0.03) inset,
-        0 1px 0 rgba(255, 255, 255, 0.05) inset;
-    backdrop-filter: blur(40px);
-    -webkit-backdrop-filter: blur(40px);
+        0 1px 0 rgba(255, 255, 255, 0.04) inset,
+        0 24px 60px -20px rgba(0, 0, 0, 0.6);
 }
 
-/* ============================================
-   URL Bar - Premium
-   ============================================ */
+/* ---------- URL Bar ---------- */
 .urlBar {
     display: flex;
-    align-items: center;
+    align-items: stretch;
     gap: 10px;
-    padding: 14px 18px;
-    background: linear-gradient(to right, rgba(255, 108, 55, 0.03), transparent);
-    border-bottom: 1px solid rgba(255, 255, 255, 0.04);
+    padding: 14px;
+    background: rgba(255, 255, 255, 0.015);
+    border-bottom: 1px solid rgba(255, 255, 255, 0.05);
 }
 
 .methodSelector {
-    display: flex;
+    display: inline-flex;
     align-items: center;
-    gap: 8px;
-    padding: 12px 16px;
-    background: linear-gradient(135deg, rgba(97, 175, 254, 0.12), rgba(97, 175, 254, 0.06));
-    border: 1px solid rgba(97, 175, 254, 0.2);
-    border-radius: 12px;
-    font-size: 0.8rem;
+    gap: 6px;
+    padding: 0 14px;
+    height: 40px;
+    background: rgba(255, 255, 255, 0.04);
+    border: 1px solid rgba(255, 255, 255, 0.08);
+    border-radius: 10px;
+    font-size: 0.78rem;
     font-weight: 700;
     font-family: 'SF Mono', 'Geist Mono', 'JetBrains Mono', monospace;
     cursor: pointer;
-    transition: all 0.25s cubic-bezier(0.25, 0.8, 0.25, 1);
-    min-width: 100px;
+    transition: background 0.2s ease, border-color 0.2s ease;
+    min-width: 96px;
     justify-content: center;
     text-transform: uppercase;
-    letter-spacing: 0.5px;
+    letter-spacing: 0.04em;
+    white-space: nowrap;
 }
 
 .methodSelector:hover {
-    transform: translateY(-1px);
-    box-shadow: 0 4px 12px rgba(97, 175, 254, 0.2);
+    background: rgba(255, 255, 255, 0.06);
+    border-color: rgba(255, 255, 255, 0.14);
 }
 
 .methodDropdown {
     position: absolute;
     top: calc(100% + 6px);
     left: 0;
-    background: rgba(20, 20, 20, 0.98);
-    backdrop-filter: blur(30px);
-    -webkit-backdrop-filter: blur(30px);
+    background: rgba(16, 16, 16, 0.98);
+    backdrop-filter: blur(24px) saturate(140%);
+    -webkit-backdrop-filter: blur(24px) saturate(140%);
     border: 1px solid rgba(255, 255, 255, 0.08);
-    border-radius: 14px;
-    padding: 6px;
-    min-width: 120px;
-    box-shadow:
-        0 12px 40px rgba(0, 0, 0, 0.6),
-        0 0 0 1px rgba(255, 255, 255, 0.05) inset;
+    border-radius: 12px;
+    padding: 5px;
+    min-width: 130px;
+    box-shadow: 0 16px 40px rgba(0, 0, 0, 0.55);
     z-index: 100;
-    animation: dropdownFade 0.2s ease-out;
+    animation: dropdownFade 0.18s cubic-bezier(0.16, 1, 0.3, 1);
 }
 
 @keyframes dropdownFade {
-    from {
-        opacity: 0;
-        transform: translateY(-8px);
-    }
-
-    to {
-        opacity: 1;
-        transform: translateY(0);
-    }
+    from { opacity: 0; transform: translateY(-6px) scale(0.98); }
+    to { opacity: 1; transform: translateY(0) scale(1); }
 }
 
 .methodDropdown button {
     width: 100%;
-    padding: 10px 14px;
+    padding: 9px 12px;
     background: transparent;
     border: none;
     border-radius: 8px;
-    font-size: 0.8rem;
+    font-size: 0.78rem;
     font-weight: 700;
     font-family: 'SF Mono', 'Geist Mono', monospace;
     text-align: left;
     cursor: pointer;
-    transition: all 0.15s;
+    transition: background 0.15s ease;
     text-transform: uppercase;
-    letter-spacing: 0.5px;
+    letter-spacing: 0.04em;
 }
 
 .methodDropdown button:hover {
     background: rgba(255, 255, 255, 0.06);
-    transform: translateX(2px);
 }
 
 .methodDropdown button.methodActive {
@@ -109,68 +97,50 @@
 
 .urlInput {
     flex: 1;
-    padding: 12px 18px;
-    background: rgba(0, 0, 0, 0.4);
+    min-width: 0;
+    padding: 0 16px;
+    height: 40px;
+    background: rgba(0, 0, 0, 0.35);
     border: 1px solid rgba(255, 255, 255, 0.06);
-    border-radius: 12px;
+    border-radius: 10px;
     color: #fff;
-    font-size: 0.9rem;
-    font-family: 'SF Mono', 'Geist Mono', monospace;
+    font-size: 0.88rem;
+    font-family: 'SF Mono', 'Geist Mono', 'JetBrains Mono', monospace;
     outline: none;
-    transition: all 0.3s cubic-bezier(0.25, 0.8, 0.25, 1);
+    transition: border-color 0.2s ease, box-shadow 0.2s ease, background 0.2s ease;
 }
 
 .urlInput:focus {
-    border-color: rgba(255, 108, 55, 0.5);
-    background: rgba(0, 0, 0, 0.5);
-    box-shadow:
-        0 0 0 3px rgba(255, 108, 55, 0.1),
-        0 0 20px rgba(255, 108, 55, 0.1);
+    border-color: rgba(255, 108, 55, 0.45);
+    background: rgba(0, 0, 0, 0.45);
+    box-shadow: 0 0 0 3px rgba(255, 108, 55, 0.1);
 }
 
 .urlInput::placeholder {
-    color: rgba(255, 255, 255, 0.3);
+    color: rgba(255, 255, 255, 0.28);
 }
 
 .sendButton {
-    display: flex;
+    display: inline-flex;
     align-items: center;
     gap: 8px;
-    padding: 12px 24px;
-    background: linear-gradient(135deg, #FF6C37 0%, #FF4F1F 50%, #E5451A 100%);
+    padding: 0 20px;
+    height: 40px;
+    background: linear-gradient(135deg, #FF6C37 0%, #FF4F1F 100%);
     border: none;
-    border-radius: 12px;
+    border-radius: 10px;
     color: #fff;
-    font-size: 0.85rem;
+    font-size: 0.82rem;
     font-weight: 700;
     cursor: pointer;
-    transition: all 0.3s cubic-bezier(0.25, 0.8, 0.25, 1);
-    text-transform: uppercase;
-    letter-spacing: 0.5px;
-    position: relative;
-    overflow: hidden;
-}
-
-.sendButton::before {
-    content: '';
-    position: absolute;
-    top: 0;
-    left: -100%;
-    width: 100%;
-    height: 100%;
-    background: linear-gradient(90deg, transparent, rgba(255, 255, 255, 0.2), transparent);
-    transition: left 0.5s;
-}
-
-.sendButton:hover:not(:disabled)::before {
-    left: 100%;
+    transition: transform 0.15s ease, box-shadow 0.2s ease, opacity 0.2s ease;
+    letter-spacing: 0.02em;
+    white-space: nowrap;
 }
 
 .sendButton:hover:not(:disabled) {
-    transform: translateY(-2px);
-    box-shadow:
-        0 6px 20px rgba(255, 108, 55, 0.4),
-        0 0 40px rgba(255, 108, 55, 0.2);
+    transform: translateY(-1px);
+    box-shadow: 0 8px 22px -6px rgba(255, 108, 55, 0.55);
 }
 
 .sendButton:active:not(:disabled) {
@@ -178,13 +148,13 @@
 }
 
 .sendButton:disabled {
-    opacity: 0.5;
+    opacity: 0.4;
     cursor: not-allowed;
 }
 
 .spinner {
-    width: 16px;
-    height: 16px;
+    width: 14px;
+    height: 14px;
     border: 2px solid rgba(255, 255, 255, 0.3);
     border-top-color: white;
     border-radius: 50%;
@@ -192,121 +162,121 @@
 }
 
 @keyframes spin {
-    to {
-        transform: rotate(360deg);
-    }
+    to { transform: rotate(360deg); }
 }
 
-/* ============================================
-   Tab Bar - Premium
-   ============================================ */
+/* ---------- Tab Bar ---------- */
 .tabBar {
     display: flex;
     align-items: center;
-    gap: 4px;
-    padding: 10px 14px;
-    background: rgba(0, 0, 0, 0.3);
-    border-bottom: 1px solid rgba(255, 255, 255, 0.04);
+    gap: 2px;
+    padding: 0 12px;
+    background: rgba(0, 0, 0, 0.2);
+    border-bottom: 1px solid rgba(255, 255, 255, 0.05);
+    overflow-x: auto;
+    scrollbar-width: none;
+}
+
+.tabBar::-webkit-scrollbar {
+    display: none;
 }
 
 .tab {
-    display: flex;
+    position: relative;
+    display: inline-flex;
     align-items: center;
-    gap: 6px;
-    padding: 10px 16px;
+    gap: 8px;
+    padding: 14px 14px;
     background: transparent;
     border: none;
-    border-radius: 10px;
     color: rgba(255, 255, 255, 0.45);
-    font-size: 0.85rem;
+    font-size: 0.82rem;
     font-weight: 500;
     cursor: pointer;
-    transition: all 0.2s cubic-bezier(0.25, 0.8, 0.25, 1);
-    position: relative;
+    transition: color 0.15s ease;
+    white-space: nowrap;
 }
 
 .tab:hover {
-    color: rgba(255, 255, 255, 0.8);
-    background: rgba(255, 255, 255, 0.04);
+    color: rgba(255, 255, 255, 0.85);
 }
 
 .tabActive {
-    color: #FF6C37 !important;
-    background: rgba(255, 108, 55, 0.1) !important;
+    color: #fff !important;
 }
 
 .tabActive::after {
     content: '';
     position: absolute;
-    bottom: -10px;
-    left: 50%;
-    transform: translateX(-50%);
-    width: 20px;
+    bottom: -1px;
+    left: 10px;
+    right: 10px;
     height: 2px;
     background: #FF6C37;
-    border-radius: 2px;
+    border-radius: 2px 2px 0 0;
+    box-shadow: 0 0 12px rgba(255, 108, 55, 0.6);
 }
 
 .tabBadge {
-    padding: 2px 7px;
-    background: rgba(255, 108, 55, 0.15);
+    padding: 1px 7px;
+    background: rgba(255, 108, 55, 0.14);
     color: #FF6C37;
-    border-radius: 6px;
-    font-size: 0.7rem;
+    border-radius: 999px;
+    font-size: 0.68rem;
     font-weight: 700;
+    font-family: 'SF Mono', 'Geist Mono', monospace;
+    line-height: 1.4;
 }
 
 .tabBadgeActive {
     color: #FF6C37;
-    font-size: 0.5rem;
+    font-size: 0.55rem;
+    line-height: 1;
 }
 
 .tabAction {
-    display: flex;
+    display: inline-flex;
     align-items: center;
     gap: 6px;
-    padding: 8px 12px;
-    background: rgba(255, 255, 255, 0.02);
+    padding: 7px 11px;
+    background: rgba(255, 255, 255, 0.03);
     border: 1px solid rgba(255, 255, 255, 0.06);
     border-radius: 8px;
-    color: rgba(255, 255, 255, 0.45);
-    font-size: 0.75rem;
+    color: rgba(255, 255, 255, 0.55);
+    font-size: 0.74rem;
     cursor: pointer;
-    transition: all 0.2s;
+    transition: background 0.15s ease, color 0.15s ease, border-color 0.15s ease;
+    white-space: nowrap;
 }
 
 .tabAction:hover {
-    background: rgba(255, 255, 255, 0.05);
-    color: rgba(255, 255, 255, 0.8);
-    border-color: rgba(255, 255, 255, 0.1);
+    background: rgba(255, 255, 255, 0.06);
+    color: rgba(255, 255, 255, 0.9);
+    border-color: rgba(255, 255, 255, 0.12);
 }
 
-/* ============================================
-   Tab Content - Premium
-   ============================================ */
+/* ---------- Tab Content ---------- */
 .tabContent {
-    padding: 18px;
-    max-height: 280px;
+    padding: 16px;
+    max-height: 320px;
     overflow-y: auto;
-    background: rgba(0, 0, 0, 0.2);
+    background: rgba(0, 0, 0, 0.15);
 }
 
-/* ============================================
-   Key-Value Editor - Premium
-   ============================================ */
+/* ---------- Key/Value Editor ---------- */
 .kvEditor {
     display: flex;
     flex-direction: column;
-    gap: 8px;
+    gap: 6px;
 }
 
 .kvRow {
     display: flex;
     align-items: center;
-    gap: 10px;
+    gap: 8px;
     padding: 4px;
-    border-radius: 10px;
-    transition: background 0.2s;
+    border-radius: 9px;
+    transition: background 0.15s;
 }
 
 .kvRow:hover {
@@ -314,208 +284,212 @@
 }
 
 .kvCheckbox {
-    width: 18px;
-    height: 18px;
+    width: 16px;
+    height: 16px;
     accent-color: #FF6C37;
     cursor: pointer;
     border-radius: 4px;
+    flex-shrink: 0;
 }
 
 .kvInput {
     flex: 1;
-    padding: 10px 14px;
-    background: rgba(0, 0, 0, 0.4);
+    min-width: 0;
+    padding: 9px 12px;
+    background: rgba(0, 0, 0, 0.35);
     border: 1px solid rgba(255, 255, 255, 0.06);
-    border-radius: 10px;
+    border-radius: 8px;
     color: #fff;
-    font-size: 0.85rem;
+    font-size: 0.82rem;
     font-family: 'SF Mono', 'Geist Mono', monospace;
     outline: none;
-    transition: all 0.2s;
+    transition: border-color 0.2s ease, box-shadow 0.2s ease;
 }
 
 .kvInput:focus {
     border-color: rgba(255, 108, 55, 0.4);
-    box-shadow: 0 0 0 2px rgba(255, 108, 55, 0.1);
+    box-shadow: 0 0 0 2px rgba(255, 108, 55, 0.08);
 }
 
 .kvInput::placeholder {
-    color: rgba(255, 255, 255, 0.25);
+    color: rgba(255, 255, 255, 0.22);
 }
 
 .kvDisabled {
-    opacity: 0.35;
+    opacity: 0.4;
 }
 
 .kvDelete {
-    display: flex;
+    display: inline-flex;
     align-items: center;
     justify-content: center;
-    width: 32px;
-    height: 32px;
+    width: 30px;
+    height: 30px;
     background: transparent;
     border: none;
-    border-radius: 8px;
-    color: rgba(255, 255, 255, 0.25);
+    border-radius: 7px;
+    color: rgba(255, 255, 255, 0.3);
     cursor: pointer;
-    transition: all 0.2s;
+    transition: background 0.15s, color 0.15s;
+    flex-shrink: 0;
 }
 
 .kvDelete:hover {
-    background: rgba(229, 57, 53, 0.15);
+    background: rgba(229, 57, 53, 0.14);
     color: #E53935;
 }
 
 .addRowBtn {
-    display: flex;
+    display: inline-flex;
     align-items: center;
     justify-content: center;
     gap: 8px;
-    padding: 12px 16px;
+    align-self: flex-start;
+    padding: 9px 14px;
     background: transparent;
     border: 1px dashed rgba(255, 255, 255, 0.12);
-    border-radius: 10px;
-    color: rgba(255, 255, 255, 0.4);
-    font-size: 0.85rem;
+    border-radius: 9px;
+    color: rgba(255, 255, 255, 0.45);
+    font-size: 0.8rem;
     cursor: pointer;
-    transition: all 0.2s;
-    margin-top: 6px;
+    transition: background 0.15s, border-color 0.15s, color 0.15s;
+    margin-top: 4px;
 }
 
 .addRowBtn:hover {
     background: rgba(255, 255, 255, 0.03);
-    border-color: rgba(255, 255, 255, 0.2);
-    color: rgba(255, 255, 255, 0.7);
+    border-color: rgba(255, 108, 55, 0.35);
+    color: #FF6C37;
 }
 
 .presetButtons {
     display: flex;
-    gap: 8px;
-    margin-bottom: 14px;
+    gap: 6px;
+    margin-bottom: 12px;
     flex-wrap: wrap;
 }
 
 .presetButton {
-    padding: 6px 12px;
-    background: linear-gradient(135deg, rgba(255, 108, 55, 0.08), rgba(255, 108, 55, 0.04));
-    border: 1px solid rgba(255, 108, 55, 0.15);
-    border-radius: 8px;
-    color: rgba(255, 108, 55, 0.8);
-    font-size: 0.75rem;
+    padding: 5px 11px;
+    background: rgba(255, 108, 55, 0.06);
+    border: 1px solid rgba(255, 108, 55, 0.18);
+    border-radius: 999px;
+    color: rgba(255, 108, 55, 0.85);
+    font-size: 0.72rem;
     font-weight: 500;
     cursor: pointer;
-    transition: all 0.2s;
+    transition: background 0.15s, color 0.15s, border-color 0.15s;
 }
 
 .presetButton:hover {
-    background: rgba(255, 108, 55, 0.15);
-    border-color: rgba(255, 108, 55, 0.3);
+    background: rgba(255, 108, 55, 0.14);
+    border-color: rgba(255, 108, 55, 0.35);
     color: #FF6C37;
-    transform: translateY(-1px);
 }
 
-/* ============================================
-   Auth Editor - Premium
-   ============================================ */
+/* ---------- Auth Editor ---------- */
 .authEditor {
     display: flex;
     flex-direction: column;
-    gap: 18px;
+    gap: 16px;
 }
 
 .authTypes {
     display: flex;
-    gap: 8px;
+    gap: 6px;
     flex-wrap: wrap;
 }
 
 .authTypeBtn {
-    padding: 10px 18px;
+    padding: 8px 14px;
     background: rgba(255, 255, 255, 0.02);
     border: 1px solid rgba(255, 255, 255, 0.06);
-    border-radius: 10px;
+    border-radius: 8px;
     color: rgba(255, 255, 255, 0.55);
-    font-size: 0.85rem;
+    font-size: 0.8rem;
     font-weight: 500;
     cursor: pointer;
-    transition: all 0.2s;
+    transition: background 0.15s, color 0.15s, border-color 0.15s;
 }
 
 .authTypeBtn:hover {
     background: rgba(255, 255, 255, 0.05);
-    color: rgba(255, 255, 255, 0.8);
+    color: rgba(255, 255, 255, 0.85);
 }
 
 .authTypeActive {
-    background: linear-gradient(135deg, rgba(255, 108, 55, 0.15), rgba(255, 108, 55, 0.08)) !important;
+    background: rgba(255, 108, 55, 0.12) !important;
     border-color: rgba(255, 108, 55, 0.3) !important;
     color: #FF6C37 !important;
-    box-shadow: 0 2px 12px rgba(255, 108, 55, 0.15);
 }
 
 .authContent {
     display: flex;
     flex-direction: column;
-    gap: 14px;
+    gap: 12px;
 }
 
 .authField {
     display: flex;
     flex-direction: column;
-    gap: 8px;
+    gap: 6px;
 }
 
 .authField label {
-    font-size: 0.8rem;
+    font-size: 0.72rem;
     color: rgba(255, 255, 255, 0.5);
     font-weight: 600;
     text-transform: uppercase;
-    letter-spacing: 0.5px;
+    letter-spacing: 0.06em;
 }
 
 .authField input {
-    padding: 12px 16px;
-    background: rgba(0, 0, 0, 0.4);
+    padding: 10px 14px;
+    background: rgba(0, 0, 0, 0.35);
     border: 1px solid rgba(255, 255, 255, 0.06);
-    border-radius: 10px;
+    border-radius: 9px;
     color: #fff;
-    font-size: 0.9rem;
+    font-size: 0.86rem;
     outline: none;
-    transition: all 0.2s;
+    transition: border-color 0.2s, box-shadow 0.2s;
+    width: 100%;
+    box-sizing: border-box;
 }
 
 .authField input:focus {
     border-color: rgba(255, 108, 55, 0.4);
-    box-shadow: 0 0 0 2px rgba(255, 108, 55, 0.1);
+    box-shadow: 0 0 0 2px rgba(255, 108, 55, 0.08);
 }
 
 .authHint {
-    font-size: 0.75rem;
+    font-size: 0.72rem;
     color: rgba(255, 255, 255, 0.3);
-    font-style: italic;
 }
 
 .authEmpty {
-    padding: 32px;
+    padding: 28px 16px;
     text-align: center;
     color: rgba(255, 255, 255, 0.35);
-    font-size: 0.9rem;
+    font-size: 0.86rem;
+    background: rgba(255, 255, 255, 0.015);
+    border: 1px dashed rgba(255, 255, 255, 0.08);
+    border-radius: 10px;
 }
 
 .authToggle {
     display: flex;
-    gap: 8px;
+    gap: 6px;
 }
 
 .authToggle button {
-    padding: 10px 16px;
+    padding: 9px 14px;
     background: rgba(255, 255, 255, 0.02);
     border: 1px solid rgba(255, 255, 255, 0.06);
     border-radius: 8px;
     color: rgba(255, 255, 255, 0.55);
-    font-size: 0.85rem;
+    font-size: 0.8rem;
     cursor: pointer;
-    transition: all 0.2s;
+    transition: background 0.15s, color 0.15s, border-color 0.15s;
 }
 
 .authToggle button.active {
@@ -526,46 +500,47 @@
 
 .passwordToggle {
     position: absolute;
-    right: 12px;
+    right: 10px;
     top: 50%;
     transform: translateY(-50%);
     background: transparent;
     border: none;
     cursor: pointer;
-    font-size: 1rem;
-    opacity: 0.5;
-    transition: opacity 0.2s;
+    padding: 4px;
+    color: rgba(255, 255, 255, 0.4);
+    transition: color 0.15s;
+    display: inline-flex;
+    align-items: center;
+    justify-content: center;
 }
 
 .passwordToggle:hover {
-    opacity: 0.8;
+    color: rgba(255, 255, 255, 0.85);
 }
 
-/* ============================================
-   Body Editor - Premium
-   ============================================ */
+/* ---------- Body Editor ---------- */
 .bodyEditor {
     display: flex;
     flex-direction: column;
-    gap: 14px;
+    gap: 12px;
 }
 
 .bodyTypes {
     display: flex;
-    gap: 6px;
+    gap: 5px;
     flex-wrap: wrap;
 }
 
 .bodyTypeBtn {
-    padding: 8px 14px;
+    padding: 7px 12px;
     background: rgba(255, 255, 255, 0.02);
     border: 1px solid rgba(255, 255, 255, 0.06);
-    border-radius: 8px;
+    border-radius: 7px;
     color: rgba(255, 255, 255, 0.55);
-    font-size: 0.8rem;
+    font-size: 0.75rem;
     font-weight: 500;
     cursor: pointer;
-    transition: all 0.2s;
+    transition: background 0.15s, color 0.15s, border-color 0.15s;
 }
 
 .bodyTypeBtn:hover {
@@ -581,7 +556,7 @@
 .bodyContent {
     display: flex;
     flex-direction: column;
-    gap: 10px;
+    gap: 8px;
 }
 
 .bodyActions {
@@ -591,20 +566,22 @@
 }
 
 .bodyActions span {
-    font-size: 0.75rem;
-    color: rgba(255, 255, 255, 0.35);
+    font-size: 0.72rem;
+    color: rgba(255, 255, 255, 0.4);
     font-family: 'SF Mono', 'Geist Mono', monospace;
+    text-transform: uppercase;
+    letter-spacing: 0.04em;
 }
 
 .bodyActions button {
-    padding: 6px 12px;
+    padding: 5px 11px;
     background: rgba(255, 255, 255, 0.03);
     border: 1px solid rgba(255, 255, 255, 0.06);
     border-radius: 6px;
-    color: rgba(255, 255, 255, 0.5);
-    font-size: 0.75rem;
+    color: rgba(255, 255, 255, 0.55);
+    font-size: 0.72rem;
     cursor: pointer;
-    transition: all 0.2s;
+    transition: background 0.15s, color 0.15s;
 }
 
 .bodyActions button:hover {
@@ -616,106 +593,98 @@
     width: 100%;
     min-height: 180px;
     padding: 14px 16px;
-    background: rgba(0, 0, 0, 0.5);
+    background: rgba(0, 0, 0, 0.45);
     border: 1px solid rgba(255, 255, 255, 0.06);
-    border-radius: 12px;
+    border-radius: 10px;
     color: #e0e0e0;
-    font-size: 0.85rem;
+    font-size: 0.84rem;
     font-family: 'SF Mono', 'Geist Mono', 'JetBrains Mono', monospace;
     line-height: 1.6;
     resize: vertical;
     outline: none;
-    transition: all 0.2s;
+    transition: border-color 0.2s, box-shadow 0.2s;
+    box-sizing: border-box;
 }
 
 .bodyTextarea:focus {
     border-color: rgba(255, 108, 55, 0.4);
-    box-shadow: 0 0 0 3px rgba(255, 108, 55, 0.1);
+    box-shadow: 0 0 0 2px rgba(255, 108, 55, 0.08);
 }
 
 .bodyError {
     border-color: rgba(229, 57, 53, 0.5) !important;
-    box-shadow: 0 0 0 3px rgba(229, 57, 53, 0.1) !important;
+    box-shadow: 0 0 0 2px rgba(229, 57, 53, 0.08) !important;
 }
 
 .jsonError {
-    padding: 10px 14px;
-    background: rgba(229, 57, 53, 0.1);
+    padding: 9px 12px;
+    background: rgba(229, 57, 53, 0.08);
     border: 1px solid rgba(229, 57, 53, 0.2);
-    border-radius: 8px;
-    color: #E53935;
-    font-size: 0.8rem;
+    border-radius: 7px;
+    color: #ff7961;
+    font-size: 0.78rem;
 }
 
-/* ============================================
-   Modal - Premium
-   ============================================ */
+/* ---------- Modal ---------- */
 .modal {
     position: fixed;
     inset: 0;
-    background: rgba(0, 0, 0, 0.8);
-    backdrop-filter: blur(8px);
+    background: rgba(0, 0, 0, 0.72);
+    backdrop-filter: blur(10px);
+    -webkit-backdrop-filter: blur(10px);
     display: flex;
     align-items: center;
     justify-content: center;
+    padding: 20px;
     z-index: 10000;
-    animation: modalFade 0.3s ease-out;
+    animation: modalFade 0.22s ease-out;
 }
 
 @keyframes modalFade {
-    from {
-        opacity: 0;
-    }
-
-    to {
-        opacity: 1;
-    }
+    from { opacity: 0; }
+    to { opacity: 1; }
 }
 
 .modalContent {
     background: linear-gradient(145deg, #1a1a1a, #0f0f0f);
     border: 1px solid rgba(255, 255, 255, 0.08);
-    border-radius: 20px;
-    padding: 28px;
-    width: 90%;
+    border-radius: 18px;
+    padding: 24px;
+    width: 100%;
     max-width: 600px;
     box-shadow:
-        0 24px 80px rgba(0, 0, 0, 0.6),
-        0 0 0 1px rgba(255, 255, 255, 0.05) inset;
-    animation: modalSlide 0.3s ease-out;
+        0 24px 60px rgba(0, 0, 0, 0.6),
+        0 0 0 1px rgba(255, 255, 255, 0.04) inset;
+    animation: modalSlide 0.25s cubic-bezier(0.16, 1, 0.3, 1);
 }
 
 @keyframes modalSlide {
-    from {
-        opacity: 0;
-        transform: scale(0.95) translateY(20px);
-    }
-
-    to {
-        opacity: 1;
-        transform: scale(1) translateY(0);
-    }
+    from { opacity: 0; transform: scale(0.96) translateY(14px); }
+    to { opacity: 1; transform: scale(1) translateY(0); }
 }
 
 .modalContent h3 {
-    margin: 0 0 20px 0;
-    font-size: 1.15rem;
+    margin: 0 0 16px 0;
+    font-size: 1.05rem;
     font-weight: 700;
     color: #fff;
+    letter-spacing: -0.01em;
 }
 
 .curlTextarea {
     width: 100%;
-    padding: 16px;
-    background: rgba(0, 0, 0, 0.5);
+    min-height: 140px;
+    padding: 14px;
+    background: rgba(0, 0, 0, 0.45);
     border: 1px solid rgba(255, 255, 255, 0.08);
-    border-radius: 12px;
+    border-radius: 10px;
     color: #e0e0e0;
-    font-size: 0.85rem;
+    font-size: 0.82rem;
     font-family: 'SF Mono', 'Geist Mono', monospace;
     line-height: 1.6;
     resize: vertical;
     outline: none;
+    box-sizing: border-box;
     transition: border-color 0.2s;
 }
 
@@ -726,24 +695,25 @@
 .modalActions {
     display: flex;
     justify-content: flex-end;
-    gap: 12px;
-    margin-top: 20px;
+    gap: 10px;
+    margin-top: 18px;
 }
 
 .modalActions button {
-    padding: 12px 20px;
-    background: rgba(255, 255, 255, 0.05);
+    padding: 10px 18px;
+    background: rgba(255, 255, 255, 0.04);
     border: 1px solid rgba(255, 255, 255, 0.08);
-    border-radius: 10px;
-    color: rgba(255, 255, 255, 0.7);
-    font-size: 0.9rem;
+    border-radius: 9px;
+    color: rgba(255, 255, 255, 0.75);
+    font-size: 0.85rem;
     font-weight: 500;
     cursor: pointer;
-    transition: all 0.2s;
+    transition: background 0.15s, border-color 0.15s;
 }
 
 .modalActions button:hover {
     background: rgba(255, 255, 255, 0.08);
+    border-color: rgba(255, 255, 255, 0.14);
 }
 
 .primaryBtn {
@@ -754,50 +724,314 @@
 }
 
 .primaryBtn:hover {
-    box-shadow: 0 4px 16px rgba(255, 108, 55, 0.3) !important;
+    box-shadow: 0 6px 18px -4px rgba(255, 108, 55, 0.5) !important;
     transform: translateY(-1px);
 }
 
-/* ============================================
-   Scrollbar Styles - Premium
-   ============================================ */
-.tabContent::-webkit-scrollbar {
-    width: 8px;
+/* ---------- Scrollbars ---------- */
+.tabContent::-webkit-scrollbar,
+.bodyTextarea::-webkit-scrollbar {
+    width: 6px;
+    height: 6px;
 }
 
-.tabContent::-webkit-scrollbar-track {
+.tabContent::-webkit-scrollbar-track,
+.bodyTextarea::-webkit-scrollbar-track {
     background: transparent;
 }
 
-.tabContent::-webkit-scrollbar-thumb {
-    background: rgba(255, 108, 55, 0.2);
-    border-radius: 4px;
+.tabContent::-webkit-scrollbar-thumb,
+.bodyTextarea::-webkit-scrollbar-thumb {
+    background: rgba(255, 255, 255, 0.1);
+    border-radius: 3px;
 }
 
-.tabContent::-webkit-scrollbar-thumb:hover {
-    background: rgba(255, 108, 55, 0.3);
+.tabContent::-webkit-scrollbar-thumb:hover,
+.bodyTextarea::-webkit-scrollbar-thumb:hover {
+    background: rgba(255, 108, 55, 0.35);
 }
 
-/* ============================================
-   Response Card Enhancements
-   ============================================ */
+/* =============================================================
+   Response Card — Professional
+   ============================================================= */
 .responseCard {
-    background: linear-gradient(145deg, rgba(20, 20, 20, 0.95), rgba(12, 12, 12, 0.98));
+    background: linear-gradient(160deg, rgba(20, 20, 20, 0.95), rgba(12, 12, 12, 0.98));
     border: 1px solid rgba(255, 255, 255, 0.06);
     border-radius: 16px;
     overflow: hidden;
-    box-shadow: 0 4px 24px rgba(0, 0, 0, 0.3);
-    animation: cardSlide 0.4s ease-out;
+    box-shadow: 0 20px 50px -20px rgba(0, 0, 0, 0.6);
+    margin-top: 12px;
+    animation: cardSlide 0.35s cubic-bezier(0.16, 1, 0.3, 1);
 }
 
 @keyframes cardSlide {
-    from {
-        opacity: 0;
-        transform: translateY(10px);
+    from { opacity: 0; transform: translateY(10px); }
+    to { opacity: 1; transform: translateY(0); }
+}
+
+.respTopBar {
+    display: flex;
+    align-items: center;
+    justify-content: space-between;
+    gap: 12px;
+    padding: 12px 16px;
+    background: rgba(255, 255, 255, 0.015);
+    border-bottom: 1px solid rgba(255, 255, 255, 0.05);
+    flex-wrap: wrap;
+}
+
+.respMethodTag {
+    display: inline-flex;
+    align-items: center;
+    padding: 4px 9px;
+    border-radius: 6px;
+    font-size: 0.7rem;
+    font-weight: 700;
+    font-family: 'SF Mono', 'Geist Mono', monospace;
+    text-transform: uppercase;
+    letter-spacing: 0.05em;
+    flex-shrink: 0;
+}
+
+.respUrl {
+    flex: 1;
+    min-width: 0;
+    color: rgba(255, 255, 255, 0.7);
+    font-size: 0.82rem;
+    font-family: 'SF Mono', 'Geist Mono', monospace;
+    overflow: hidden;
+    text-overflow: ellipsis;
+    white-space: nowrap;
+}
+
+.respStatsRow {
+    display: flex;
+    align-items: center;
+    gap: 12px;
+    padding: 10px 16px;
+    background: rgba(0, 0, 0, 0.22);
+    border-bottom: 1px solid rgba(255, 255, 255, 0.05);
+    flex-wrap: wrap;
+}
+
+.respStatusPill {
+    display: inline-flex;
+    align-items: center;
+    gap: 8px;
+    padding: 6px 12px;
+    border-radius: 9px;
+    font-size: 0.82rem;
+    font-weight: 700;
+    font-family: 'SF Mono', 'Geist Mono', monospace;
+}
+
+.respStatusPill::before {
+    content: '';
+    width: 7px;
+    height: 7px;
+    border-radius: 50%;
+    background: currentColor;
+    box-shadow: 0 0 8px currentColor;
+}
+
+.respMeta {
+    display: inline-flex;
+    align-items: center;
+    gap: 6px;
+    color: rgba(255, 255, 255, 0.5);
+    font-size: 0.76rem;
+    font-family: 'SF Mono', 'Geist Mono', monospace;
+}
+
+.respMeta svg {
+    opacity: 0.7;
+}
+
+.respTabBar {
+    display: flex;
+    gap: 0;
+    padding: 0 14px;
+    background: rgba(0, 0, 0, 0.28);
+    border-bottom: 1px solid rgba(255, 255, 255, 0.05);
+}
+
+.respTab {
+    position: relative;
+    padding: 12px 16px;
+    background: transparent;
+    border: none;
+    color: rgba(255, 255, 255, 0.45);
+    font-size: 0.82rem;
+    font-weight: 500;
+    cursor: pointer;
+    transition: color 0.15s ease;
+}
+
+.respTab:hover {
+    color: rgba(255, 255, 255, 0.85);
+}
+
+.respTabActive {
+    color: #fff !important;
+}
+
+.respTabActive::after {
+    content: '';
+    position: absolute;
+    bottom: -1px;
+    left: 12px;
+    right: 12px;
+    height: 2px;
+    background: #FF6C37;
+    border-radius: 2px 2px 0 0;
+}
+
+.respBodyWrap {
+    max-height: 320px;
+    overflow: auto;
+    background: rgba(0, 0, 0, 0.3);
+}
+
+.respBodyWrap::-webkit-scrollbar {
+    width: 6px;
+    height: 6px;
+}
+
+.respBodyWrap::-webkit-scrollbar-thumb {
+    background: rgba(255, 255, 255, 0.1);
+    border-radius: 3px;
+}
+
+.respBodyWrap::-webkit-scrollbar-thumb:hover {
+    background: rgba(255, 108, 55, 0.35);
+}
+
+.respBodyPre {
+    margin: 0;
+    padding: 16px;
+    color: #e0e0e0;
+    font-size: 0.8rem;
+    font-family: 'SF Mono', 'Geist Mono', 'JetBrains Mono', monospace;
+    line-height: 1.65;
+    white-space: pre-wrap;
+    word-break: break-word;
+}
+
+.respHeadersList {
+    padding: 6px 16px;
+}
+
+.respHeaderRow {
+    display: flex;
+    gap: 16px;
+    padding: 10px 0;
+    border-bottom: 1px solid rgba(255, 255, 255, 0.04);
+}
+
+.respHeaderRow:last-child {
+    border-bottom: none;
+}
+
+.respHeaderKey {
+    color: #FF6C37;
+    font-weight: 600;
+    font-size: 0.8rem;
+    min-width: 180px;
+    font-family: 'SF Mono', 'Geist Mono', monospace;
+    word-break: break-word;
+}
+
+.respHeaderValue {
+    color: rgba(255, 255, 255, 0.75);
+    font-size: 0.8rem;
+    font-family: 'SF Mono', 'Geist Mono', monospace;
+    word-break: break-word;
+}
+
+.respActions {
+    display: flex;
+    gap: 8px;
+    flex-wrap: wrap;
+    padding: 12px 16px;
+    border-top: 1px solid rgba(255, 255, 255, 0.05);
+    background: rgba(0, 0, 0, 0.2);
+}
+
+.respActionBtn {
+    display: inline-flex;
+    align-items: center;
+    gap: 6px;
+    padding: 8px 14px;
+    background: rgba(255, 255, 255, 0.03);
+    border: 1px solid rgba(255, 255, 255, 0.06);
+    border-radius: 9px;
+    color: rgba(255, 255, 255, 0.65);
+    font-size: 0.78rem;
+    font-weight: 500;
+    cursor: pointer;
+    transition: background 0.15s, color 0.15s, border-color 0.15s;
+}
+
+.respActionBtn:hover {
+    background: rgba(255, 255, 255, 0.06);
+    color: #fff;
+    border-color: rgba(255, 255, 255, 0.12);
+}
+
+.respActionCopied {
+    color: #00E676 !important;
+    border-color: rgba(0, 230, 118, 0.3) !important;
+    background: rgba(0, 230, 118, 0.08) !important;
+}
+
+.respActionPrimary {
+    margin-left: auto;
+    background: rgba(255, 108, 55, 0.1);
+    border-color: rgba(255, 108, 55, 0.25);
+    color: #FF6C37;
+    font-weight: 600;
+}
+
+.respActionPrimary:hover {
+    background: rgba(255, 108, 55, 0.16);
+    border-color: rgba(255, 108, 55, 0.4);
+    color: #FF6C37;
+}
+
+/* ---------- Responsive ---------- */
+@media (max-width: 640px) {
+    .urlBar {
+        flex-wrap: wrap;
     }
 
-    to {
-        opacity: 1;
-        transform: translateY(0);
+    .methodSelector {
+        min-width: 84px;
+    }
+
+    .urlInput {
+        flex-basis: 100%;
+        order: 3;
+    }
+
+    .sendButton {
+        padding: 0 16px;
+    }
+
+    .tabContent {
+        padding: 12px;
+    }
+
+    .respHeaderKey {
+        min-width: 120px;
+    }
+
+    .respActions {
+        padding: 10px 12px;
+    }
+
+    .respActionPrimary {
+        margin-left: 0;
+        width: 100%;
+        justify-content: center;
     }
 }
