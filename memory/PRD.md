@@ -1,57 +1,74 @@
 # Oracle — Product Requirements (PRD)
 
 ## Original Problem Statement
-> Fix layout issues overall — make the design more seamless and modern. Specific pain points:
-> 1. Chat button dropdown (mode selector) had layout/responsiveness issues
-> 2. Postman feature felt "AI-generic" — needs a complete professional makeover
+> Fix layout issues, make the design more seamless and modern. Redesign Postman feature (felt "AI-generic"). Postman side panel felt bad — user wants a beautiful floating window with smooth transitions (like a macOS window). Complete the app end-to-end, no dead buttons, Postman fully working. Hide internal model-name tags in chat.
 > 
-> Constraints: Do NOT change any external things, config, or env — app is already deployed on Vercel; zero deployment risk. Keep existing color theme (dark + orange + blue/green accents). Enhance design, don't completely rebuild.
+> Constraints: Do NOT change external config, env, or Vercel deployment setup. Keep existing color theme (dark + orange + blue/green). Enhance, don't rebuild.
 
 ## Stack
 - Next.js 12.3.4 (pages router) + React 17 + TypeScript
-- CSS Modules + global styles
+- CSS Modules, native http/https for outbound requests
 - Deployed on Vercel (unchanged)
 
 ## What's been implemented (Jan 2026)
 
 ### Chat mode dropdown (ChatInput.tsx)
-- Extracted all inline styles into `/app/styles/ChatInput.module.css`
-- Smart vertical flip: if there's not enough space below, dropdown opens upward
-- Mobile (<560px): menu auto-centers under trigger, never overflows viewport
-- Smooth scale + translate animation (cubic-bezier, 180ms)
-- Added `data-testid` on trigger/menu/options
-- Chevron rotates when open for micro-delight
+- Extracted inline styles to `/app/styles/ChatInput.module.css`
+- Auto-flips direction when near viewport bottom
+- Mobile-centered with viewport clamping
+- Smooth scale + translate animation (cubic-bezier)
 
-### Postman redesign (Postman.module.css + components)
-- Full stylesheet rewrite for a professional look — no AI slop
-- URL bar: cleaner 40px-high elements, subtle focus ring
-- Method selector pill: refined, monospace, uppercase, colored by HTTP method
-- Tabs: clean underline-indicator (no glow), horizontal scroll on mobile
-- Preset header chips: pill-shaped with orange accent
-- Auth editor: uppercase labels, proper focus states
-- Password toggle: replaced 👁️ emoji with proper SVG eye icons
-- Response card: rewritten to use CSS module (was inline styles). Status pill with glow dot, clean meta stats, slide-in animation
-- Modal: refined shadows, smoother slide-in, viewport-safe padding
-- Scrollbars: thin, themed
+### Postman — IDE/Terminal-native redesign (Postman.module.css)
+- Complete rewrite for a pro developer tool feel — flat surfaces, thin borders, JetBrains Mono typography, dense but breathable
+- Method selector: left-stripe colored pill (like breakpoints in IDEs)
+- URL bar: flat, transparent, focus-highlight
+- Send button: solid orange with dark text, monospace uppercase
+- Tabs: segmented with top-border indicator (not underline)
+- Key/value rows: grid-based IDE table with checkbox column, thin dividers
+- Auth: connected button group (no gaps)
+- Body editor: textarea with mono font + tab-size 2
+- Response card: flat, terminal-output style — left-stripe method tag, glow-dot status, meta row, actions bar
 
-### Responsive polish
-- Mobile breakpoints tuned for all new components
-- Editor canvas is already fullscreen on mobile (existing behavior preserved)
-- Dropdown menu clamps to viewport width on small screens
+### Postman — Floating window (replaces side panel)
+- `editorCanvas` is now a centered floating window (`min(920px, 100vw-48px)` × `min(720px, 100vh-48px)`)
+- Backdrop blur overlay + click-outside to close
+- macOS traffic-light dots (red/yellow/green) in header
+- Monospace title `request_editor.tsx` + `CANVAS` badge
+- Smooth scale+fade animation (0.94 → 1) on open, cubic-bezier
+- ESC key closes it
+- Mobile: fills viewport with small padding
+
+### Postman API proxy (pages/api/postman.ts) — FIXED
+- **Root cause**: Next.js 12's fetch polyfill threw `Illegal invocation` on Node 20
+- **Fix**: Replaced `fetch()` entirely with Node's native `http`/`https` modules wrapped in `nativeHttpRequest()` helper
+- Supports: redirects (max 5), timeout, body size cap (1MB), cookie extraction, SSRF protection (kept existing)
+- Verified: `curl POST /api/postman` returns 200 OK with live JSONPlaceholder response
+
+### Chat UI
+- Removed internal `modelUsed` tag (e.g., "gemini-2.5-flash") from Oracle messages
+- Kept all existing chat logic untouched
+
+### Dashboard polish
+- Removed the 50% pane-shift that used to happen when editor opened (floating window overlays instead)
+- `mainPaneEditorOpen` / `floatingInputInnerEditorOpen` neutralized
+- Editor canvas header: macOS-style chrome with traffic-light dots
 
 ## Verification
-- `npx tsc --noEmit` passes cleanly
 - `npx next build` passes with 0 errors
-- Visual verification: screenshots confirm dropdown, editor tabs, headers presets, auth panel, and mobile layout
+- End-to-end Postman flow verified via screenshot: Send URL → 200 OK response card with body, headers tab, copy/retry actions
+- Floating window opens centered with smooth animation, backdrop blurs, ESC closes
 
 ## What's NOT changed
-- No env changes (`.env`, `next.config.js`, `package.json` — untouched)
-- No API route changes
-- No feature changes — all existing flows preserved
-- Color palette preserved: `#FF6C37` orange, `#3b82f6` blue, `#00E676` green
-- Dashboard logic (`pages/dashboard.tsx`) untouched
+- No `.env`, `next.config.js`, `package.json` changes
+- No API route contracts changed (still flat `{method, url, headers, body}` JSON)
+- All existing flows preserved
+
+## Known limitations
+- AI chat needs `GOOGLE_API_KEY` / `GEMINI_API_KEY` env var (already set on Vercel deployment, not in preview)
+- Emergent LLM key is Python-only (emergentintegrations library) — not compatible with this app's `@google/genai` JS SDK
 
 ## Backlog / Future
-- P1: Further visual polish for Docs + Pricing pages (only Dashboard + Postman + Chat touched in this pass)
-- P2: Consider keyboard navigation in the mode dropdown (Arrow keys)
-- P2: Response card syntax highlighting for JSON body
+- P2: Syntax highlighting for JSON response body
+- P2: Keyboard navigation for mode dropdown
+- P2: Docs + Pricing pages polish pass
+- P2: Request history / saved collections

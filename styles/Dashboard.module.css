@@ -54,7 +54,7 @@
 }
 
 .mainPaneEditorOpen {
-    flex: 0 0 50%;
+    /* Floating window now overlays — don't shrink the chat pane */
 }
 
 .menuRightActions {
@@ -785,8 +785,7 @@
 }
 
 .floatingInputInnerEditorOpen {
-    max-width: none;
-    padding: 0 20px;
+    /* Floating window overlays — keep input width normal */
 }
 
 .floatingInputHint {
@@ -802,47 +801,66 @@
 
 .editorCanvas {
     position: fixed;
-    top: 0;
-    right: 0;
-    width: 50%;
-    height: 100dvh;
-    background: linear-gradient(145deg, rgba(15, 15, 15, 0.98), rgba(8, 8, 8, 0.99));
-    backdrop-filter: blur(20px) saturate(130%);
-    -webkit-backdrop-filter: blur(20px) saturate(130%);
-    border-left: 1px solid rgba(255, 108, 55, 0.15);
-    transform: translateX(100%);
+    top: 50%;
+    left: 50%;
+    transform: translate(-50%, -50%) scale(0.94);
+    width: min(920px, calc(100vw - 48px));
+    height: min(720px, calc(100vh - 48px));
+    background: #0a0a0b;
+    border: 1px solid #26262d;
+    border-radius: 14px;
     opacity: 0;
-    transition: transform 0.45s cubic-bezier(0.16, 1, 0.3, 1), opacity 0.45s ease;
-    z-index: 100;
+    transition: transform 0.32s cubic-bezier(0.16, 1, 0.3, 1), opacity 0.25s ease;
+    z-index: 200;
     display: flex;
     flex-direction: column;
     pointer-events: none;
+    overflow: hidden;
+    box-shadow:
+        0 0 0 1px rgba(255, 255, 255, 0.02) inset,
+        0 40px 120px rgba(0, 0, 0, 0.75),
+        0 10px 30px rgba(0, 0, 0, 0.55);
+    font-family: 'JetBrains Mono', 'SF Mono', monospace;
 }
 
 .editorCanvasOpen {
-    transform: translateX(0);
+    transform: translate(-50%, -50%) scale(1);
     opacity: 1;
-    box-shadow: -30px 0 60px rgba(0, 0, 0, 0.52), 0 0 30px rgba(255, 108, 55, 0.06) inset;
     pointer-events: auto;
 }
 
-.editorCanvasGlow {
-    position: absolute;
-    left: 0;
-    top: 0;
-    width: 2px;
-    height: 100%;
-    background: linear-gradient(to bottom, #FF6C37, transparent 30%, transparent 70%, #FF6C37);
-    opacity: 0.6;
+/* Backdrop for floating window */
+.editorCanvasBackdrop {
+    position: fixed;
+    inset: 0;
+    background: rgba(0, 0, 0, 0.55);
+    backdrop-filter: blur(8px);
+    -webkit-backdrop-filter: blur(8px);
+    opacity: 0;
+    pointer-events: none;
+    transition: opacity 0.25s ease;
+    z-index: 199;
 }
 
+.editorCanvasBackdropOpen {
+    opacity: 1;
+    pointer-events: auto;
+}
+
+.editorCanvasGlow { display: none; }
+
+/* Window chrome header with traffic-light dots */
 .editorCanvasHeader {
-    padding: 18px 24px;
-    border-bottom: 1px solid rgba(255, 255, 255, 0.06);
+    padding: 0 14px;
+    height: 38px;
+    border-bottom: 1px solid #1d1d22;
     display: flex;
     align-items: center;
     justify-content: space-between;
-    background: linear-gradient(135deg, rgba(255, 108, 55, 0.08), rgba(255, 80, 30, 0.03), transparent);
+    background: linear-gradient(to bottom, #16161a, #111113);
+    flex-shrink: 0;
+    cursor: grab;
+    user-select: none;
 }
 
 .editorCanvasHeaderLeft {
@@ -851,86 +869,125 @@
     gap: 12px;
 }
 
-.editorCanvasIconBox {
-    width: 38px;
-    height: 38px;
-    display: flex;
+.editorCanvasDots {
+    display: inline-flex;
     align-items: center;
-    justify-content: center;
-    background: linear-gradient(135deg, rgba(255, 108, 55, 0.2), rgba(255, 80, 30, 0.1));
-    border-radius: 12px;
-    border: 1px solid rgba(255, 108, 55, 0.2);
+    gap: 6px;
 }
 
+.editorCanvasDot {
+    width: 11px;
+    height: 11px;
+    border-radius: 50%;
+    display: inline-block;
+}
+
+.editorCanvasDotRed { background: #FF5F57; }
+.editorCanvasDotYellow { background: #FEBC2E; }
+.editorCanvasDotGreen { background: #28C840; }
+
+.editorCanvasIconBox { display: none; }
+
 .editorCanvasTitle {
-    font-weight: 700;
-    color: #fff;
-    font-size: 1rem;
-    display: block;
+    font-weight: 600;
+    color: #e6e6e9;
+    font-size: 0.74rem;
+    display: inline-flex;
+    align-items: center;
+    gap: 8px;
+    letter-spacing: 0.02em;
+    font-family: 'JetBrains Mono', 'SF Mono', monospace;
+}
+
+.editorCanvasTitle::before {
+    content: '';
+    width: 5px;
+    height: 5px;
+    border-radius: 50%;
+    background: #FF6C37;
+    box-shadow: 0 0 6px #FF6C37;
 }
 
 .editorCanvasSubtitle {
-    font-size: 0.72rem;
-    color: rgba(255, 108, 55, 0.7);
-    font-weight: 500;
+    font-size: 0.6rem;
+    color: #55555c;
+    font-weight: 600;
     text-transform: uppercase;
-    letter-spacing: 1px;
+    letter-spacing: 0.16em;
+    margin-left: 4px;
+    font-family: 'JetBrains Mono', 'SF Mono', monospace;
 }
 
 .editorCanvasCloseBtn {
-    width: 38px;
-    height: 38px;
+    width: 26px;
+    height: 26px;
     display: flex;
     align-items: center;
     justify-content: center;
-    background: rgba(255, 255, 255, 0.03);
-    border: 1px solid rgba(255, 255, 255, 0.08);
-    border-radius: 12px;
-    color: rgba(255, 255, 255, 0.5);
+    background: transparent;
+    border: 1px solid #26262d;
+    border-radius: 5px;
+    color: #8b8b93;
     cursor: pointer;
-    transition: background 0.2s ease, border-color 0.2s ease, color 0.2s ease;
+    transition: border-color 0.15s, color 0.15s, background 0.15s;
 }
 
 .editorCanvasCloseBtn:hover {
-    background: rgba(229, 57, 53, 0.1);
-    border-color: rgba(229, 57, 53, 0.3);
-    color: #E53935;
+    background: #1d1d22;
+    border-color: #FF5F57;
+    color: #FF5F57;
 }
 
 .editorCanvasBody {
     flex: 1;
     overflow-y: auto;
-    padding: 24px;
-    background: linear-gradient(to bottom, transparent, rgba(0, 0, 0, 0.2));
+    padding: 14px;
+    background: #0a0a0b;
+    min-height: 0;
 }
 
 .editorCanvasFooter {
-    padding: 14px 24px;
-    border-top: 1px solid rgba(255, 255, 255, 0.06);
-    background: rgba(0, 0, 0, 0.3);
+    padding: 7px 14px;
+    border-top: 1px solid #1d1d22;
+    background: #111113;
     display: flex;
     align-items: center;
     justify-content: space-between;
+    flex-shrink: 0;
+    font-family: 'JetBrains Mono', 'SF Mono', monospace;
 }
 
 .editorCanvasFooterHint {
-    font-size: 0.75rem;
-    color: rgba(255, 255, 255, 0.35);
+    font-size: 0.62rem;
+    color: #55555c;
+    letter-spacing: 0.04em;
 }
 
 .editorCanvasKbd {
-    padding: 3px 8px;
-    background: rgba(255, 255, 255, 0.06);
-    border-radius: 6px;
-    border: 1px solid rgba(255, 255, 255, 0.08);
-    font-family: inherit;
-    font-size: 0.7rem;
+    padding: 1px 5px;
+    background: #16161a;
+    border-radius: 3px;
+    border: 1px solid #26262d;
+    font-family: 'JetBrains Mono', 'SF Mono', monospace;
+    font-size: 0.6rem;
+    color: #e6e6e9;
 }
 
 .editorCanvasFooterBrand {
-    font-size: 0.7rem;
-    color: rgba(255, 108, 55, 0.5);
-    font-weight: 500;
+    font-size: 0.58rem;
+    color: #55555c;
+    font-weight: 600;
+    text-transform: uppercase;
+    letter-spacing: 0.16em;
+}
+
+/* Mobile: fullscreen the floating window */
+@media (max-width: 720px) {
+    .editorCanvas {
+        width: calc(100vw - 16px);
+        height: calc(100vh - 16px);
+        border-radius: 10px;
+    }
 }
 
 /* Animations Logic */

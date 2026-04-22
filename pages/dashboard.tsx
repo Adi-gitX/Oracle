@@ -135,6 +135,14 @@ export default function Dashboard() {
         }
     }, [mode, editorOpen])
 
+    // ESC to close floating editor
+    useEffect(() => {
+        if (!editorOpen) return
+        const onKey = (e: KeyboardEvent) => { if (e.key === 'Escape') setEditorOpen(false) }
+        window.addEventListener('keydown', onKey)
+        return () => window.removeEventListener('keydown', onKey)
+    }, [editorOpen])
+
 
     const executePostmanRequest = async (config: RequestConfig): Promise<ResponseData> => {
         const headers: Record<string, string> = {}
@@ -466,9 +474,6 @@ export default function Dashboard() {
                                             <div className={styles.messageBubble}>
                                                 <div className={styles.senderName}>
                                                     {msg.role === 'user' ? 'You' : 'Oracle'}
-                                                    {msg.role === 'assistant' && msg.modelUsed && (
-                                                        <span className={styles.modelUsedTag}>{msg.modelUsed}</span>
-                                                    )}
                                                 </div>
                                                 {msg.content && <div className={styles.messageText}><ReactMarkdown remarkPlugins={[remarkGfm]}>{msg.content}</ReactMarkdown></div>}
                                                 {msg.results && <ResultMessage results={msg.results} />}
@@ -529,28 +534,35 @@ export default function Dashboard() {
                 </div>
 
 
-                <div className={`${styles.editorCanvas} ${editorOpen ? styles.editorCanvasOpen : ''}`}>
+                <div
+                    className={`${styles.editorCanvasBackdrop} ${editorOpen ? styles.editorCanvasBackdropOpen : ''}`}
+                    onClick={() => setEditorOpen(false)}
+                    aria-hidden="true"
+                />
+
+                <div className={`${styles.editorCanvas} ${editorOpen ? styles.editorCanvasOpen : ''}`} role="dialog" aria-modal="true">
 
                     <div className={styles.editorCanvasGlow} />
 
 
                     <div className={styles.editorCanvasHeader}>
                         <div className={styles.editorCanvasHeaderLeft}>
-                            <div className={styles.editorCanvasIconBox}>
-                                <svg width="18" height="18" viewBox="0 0 24 24" fill="none" stroke="#FF6C37" strokeWidth="2.5">
-                                    <polygon points="22 2 15 22 11 13 2 9 22 2" />
-                                </svg>
+                            <div className={styles.editorCanvasDots}>
+                                <span className={`${styles.editorCanvasDot} ${styles.editorCanvasDotRed}`} />
+                                <span className={`${styles.editorCanvasDot} ${styles.editorCanvasDotYellow}`} />
+                                <span className={`${styles.editorCanvasDot} ${styles.editorCanvasDotGreen}`} />
                             </div>
-                            <div>
-                                <span className={styles.editorCanvasTitle}>Request Editor</span>
-                                <span className={styles.editorCanvasSubtitle}>Canvas Mode</span>
-                            </div>
+                            <span className={styles.editorCanvasTitle}>
+                                request_editor.tsx
+                            </span>
+                            <span className={styles.editorCanvasSubtitle}>CANVAS</span>
                         </div>
                         <button
                             onClick={() => setEditorOpen(false)}
                             className={styles.editorCanvasCloseBtn}
+                            aria-label="Close editor"
                         >
-                            <svg width="18" height="18" viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="2">
+                            <svg width="13" height="13" viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="2.2">
                                 <line x1="18" y1="6" x2="6" y2="18" />
                                 <line x1="6" y1="6" x2="18" y2="18" />
                             </svg>

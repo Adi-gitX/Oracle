@@ -1,3 +1,5 @@
+@import url('https://fonts.googleapis.com/css2?family=JetBrains+Mono:wght@400;500;600;700;800&display=swap');
+
 :root {
   --geist-foreground: #fff;
   --geist-background: #000;
@@ -14,6 +16,23 @@
   --geist-warning: #f5a623;
   --font-sans: "Inter", -apple-system, BlinkMacSystemFont, "Segoe UI", "Roboto", "Oxygen", "Ubuntu", "Cantarell", "Fira Sans", "Droid Sans", "Helvetica Neue", sans-serif;
   --gap: 24px;
+
+  /* Postman IDE theme */
+  --pm-bg: #0a0a0b;
+  --pm-surface: #111113;
+  --pm-surface-2: #16161a;
+  --pm-line: #1d1d22;
+  --pm-line-2: #26262d;
+  --pm-text: #e6e6e9;
+  --pm-text-dim: #8b8b93;
+  --pm-text-mute: #55555c;
+  --pm-accent: #FF6C37;
+  --pm-accent-soft: rgba(255, 108, 55, 0.10);
+  --pm-green: #00E676;
+  --pm-yellow: #FFC107;
+  --pm-red: #FF5252;
+  --pm-blue: #61afff;
+  --pm-mono: 'JetBrains Mono', 'SF Mono', 'Geist Mono', ui-monospace, Menlo, monospace;
 
   /* Postman Theme Colors */
   --postman-orange: #FF6C37;
