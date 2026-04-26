@@ -47,7 +47,7 @@ export const StaggeredMenu: React.FC<StaggeredMenuProps> = ({
     logoUrl,
     menuButtonColor = '#fff',
     openMenuButtonColor = '#fff',
-    accentColor = '#0070f3',
+    accentColor = '#FF6C37',
     changeMenuColorOnOpen = true,
     isFixed = false,
     closeOnClickAway = true,
@@ -245,8 +245,8 @@ export const StaggeredMenu: React.FC<StaggeredMenuProps> = ({
         const offscreen = position === 'left' ? -100 : 100;
         closeTweenRef.current = gsap.to(all, {
             xPercent: offscreen,
-            duration: 0.32,
-            ease: 'power3.in',
+            duration: 0.28,
+            ease: 'power2.in',
             overwrite: 'auto',
             onComplete: () => {
                 const itemEls = Array.from(panel.querySelectorAll('.sm-panel-itemLabel'));

@@ -1,8 +1,14 @@
+/* ===============================================================
+   StaggeredMenu — Modernized to match Oracle IDE aesthetic
+   Flat dark, JetBrains Mono accents, orange accent, smooth motion
+   =============================================================== */
+
 .staggered-menu-wrapper {
     position: relative;
     width: 100%;
     height: 100%;
     z-index: 40;
+    --sm-accent: #FF6C37;
 }
 
 .staggered-menu-wrapper.fixed-wrapper {
@@ -16,33 +22,27 @@
     pointer-events: none;
 }
 
-/* Enable pointer events only on header and panel when open */
 .staggered-menu-wrapper[data-open="true"] {
     pointer-events: auto;
 }
 
+/* ---------- Header ---------- */
 .staggered-menu-header {
     position: fixed;
     top: 0;
     left: 0;
     width: 100%;
     height: 80px;
-    /* Match Home navbar height */
     display: flex;
     align-items: center;
     justify-content: center;
-    /* Center the logo/title */
     padding: 0 3rem;
-    /* Match Home padding */
     background: transparent;
-    backdrop-filter: none;
-    -webkit-backdrop-filter: none;
     pointer-events: none;
     z-index: 50;
-    transition: none;
 }
 
-.staggered-menu-header>* {
+.staggered-menu-header > * {
     pointer-events: auto;
 }
 
@@ -51,11 +51,12 @@
     align-items: center;
     justify-content: center;
     user-select: none;
-    font-weight: 500;
-    font-size: 0.9rem;
-    color: rgba(255, 255, 255, 0.5);
-    /* Match chat header style */
-    font-family: var(--font-sans);
+    font-family: 'JetBrains Mono', 'SF Mono', monospace;
+    font-weight: 600;
+    font-size: 0.72rem;
+    letter-spacing: 0.12em;
+    text-transform: uppercase;
+    color: #8b8b93;
     pointer-events: auto;
 }
 
@@ -66,33 +67,40 @@
     object-fit: contain;
 }
 
-/* Toggle Button Styling - Absolute Left */
+/* ---------- Toggle Button (MENU/CLOSE) ---------- */
 .sm-toggle {
     position: absolute;
-    /* Take out of flow to keep logo centered */
     left: 3rem;
-    /* Match padding */
     display: inline-flex;
     align-items: center;
     gap: 0.6rem;
-    background: rgba(255, 255, 255, 0.08);
-    border: 1px solid rgba(255, 255, 255, 0.1);
-    border-radius: 99px;
-    ;
-    padding: 10px 20px;
+    background: rgba(17, 17, 19, 0.85);
+    border: 1px solid #26262d;
+    border-radius: 7px;
+    padding: 9px 14px;
     cursor: pointer;
-    color: #fff;
+    color: #e6e6e9;
+    font-family: 'JetBrains Mono', 'SF Mono', monospace;
     font-weight: 600;
     line-height: 1;
     overflow: visible;
-    font-family: inherit;
-    font-size: 0.85rem;
+    font-size: 0.72rem;
     text-transform: uppercase;
-    letter-spacing: 0.05em;
-    transition: background 0.25s ease, border-color 0.25s ease, transform 0.25s ease, box-shadow 0.25s ease;
-    backdrop-filter: blur(3px);
+    letter-spacing: 0.12em;
+    transition: background 0.2s ease, border-color 0.2s ease, color 0.2s ease;
+    backdrop-filter: blur(8px);
+    -webkit-backdrop-filter: blur(8px);
     z-index: 51;
-    /* Ensure above header layer */
+}
+
+.sm-toggle:hover {
+    background: #16161a;
+    border-color: #FF6C37;
+    color: #FF6C37;
+}
+
+.sm-toggle:active {
+    transform: translateY(0);
 }
 
 .sm-right-element {
@@ -100,36 +108,15 @@
     right: 3rem;
     display: flex;
     align-items: center;
+    gap: 0.5rem;
     pointer-events: auto;
     z-index: 51;
 }
 
 @media (max-width: 768px) {
-    .sm-right-element {
-        right: 1.5rem;
-    }
-}
-
-/* Adjust for mobile padding */
-@media (max-width: 768px) {
-    .staggered-menu-header {
-        padding: 0 1.5rem;
-    }
-
-    .sm-toggle {
-        left: 1.5rem;
-    }
-}
-
-.sm-toggle:hover {
-    background: rgba(255, 255, 255, 0.15);
-    border-color: rgba(255, 255, 255, 0.3);
-    transform: translateY(-1px);
-    box-shadow: 0 4px 12px rgba(0, 0, 0, 0.2);
-}
-
-.sm-toggle:active {
-    transform: translateY(0);
+    .staggered-menu-header { padding: 0 1.5rem; }
+    .sm-toggle { left: 1.5rem; }
+    .sm-right-element { right: 1.5rem; }
 }
 
 .sm-toggle-textWrap {
@@ -154,11 +141,12 @@
     line-height: 1;
 }
 
+/* Plus/Close icon */
 .sm-icon {
     position: relative;
-    width: 14px;
-    height: 14px;
-    flex: 0 0 14px;
+    width: 12px;
+    height: 12px;
+    flex: 0 0 12px;
     display: inline-flex;
     align-items: center;
     justify-content: center;
@@ -169,7 +157,7 @@
     left: 50%;
     top: 50%;
     width: 100%;
-    height: 2px;
+    height: 1.5px;
     background: currentColor;
     border-radius: 2px;
     transform: translate(-50%, -50%);
@@ -180,53 +168,16 @@
     transform: translate(-50%, -50%) rotate(90deg);
 }
 
-/* Panel Styling - Refined for seamless integration */
-.staggered-menu-panel {
-    position: absolute;
-    top: 0;
-    left: 0;
-    width: clamp(260px, 20vw, 320px);
-    /* Reverted to compact width */
-    height: 100%;
-    background: rgba(8, 8, 8, 0.88);
-    backdrop-filter: blur(14px);
-    -webkit-backdrop-filter: blur(14px);
-    border-right: 1px solid rgba(255, 255, 255, 0.06);
-    display: flex;
-    flex-direction: column;
-    padding: 7rem 2rem 3rem 2rem;
-    /* Reverted padding */
-    overflow-y: auto;
-    z-index: 45;
-    transform: translateX(-100%);
-    pointer-events: auto;
-    box-shadow: 20px 0 50px rgba(0, 0, 0, 0.5);
-    transition: transform 0.45s cubic-bezier(0.16, 1, 0.3, 1);
-}
-
-/* Right alignment support */
-[data-position='right'] .staggered-menu-panel {
-    left: auto;
-    right: 0;
-    border-right: none;
-    border-left: 1px solid rgba(255, 255, 255, 0.06);
-    transform: translateX(100%);
-    box-shadow: -20px 0 50px rgba(0, 0, 0, 0.5);
-}
-
-.staggered-menu-wrapper[data-open="true"] .staggered-menu-panel {
-    transform: translateX(0) !important;
-}
-
-/* Pre-layers - Subtle depth */
+/* ---------- Pre-layers — MUTED to eliminate visible lag ---------- */
 .sm-prelayers {
     position: absolute;
     top: 0;
     left: 0;
     bottom: 0;
-    width: clamp(260px, 20vw, 320px);
+    width: clamp(280px, 22vw, 340px);
     pointer-events: none;
     z-index: 44;
+    visibility: hidden; /* GSAP needs them, but they should not paint */
 }
 
 [data-position='right'] .sm-prelayers {
@@ -241,26 +192,72 @@
     height: 100%;
     width: 100%;
     transform: translateX(0);
+    background: transparent !important; /* Override inline color — no grey slider */
 }
 
-/* Content Layout */
+/* ---------- Side Panel ---------- */
+.staggered-menu-panel {
+    position: absolute;
+    top: 0;
+    left: 0;
+    width: clamp(280px, 22vw, 340px);
+    height: 100%;
+    background: rgba(10, 10, 11, 0.95);
+    backdrop-filter: blur(20px) saturate(140%);
+    -webkit-backdrop-filter: blur(20px) saturate(140%);
+    border-right: 1px solid #1d1d22;
+    display: flex;
+    flex-direction: column;
+    padding: 6.5rem 1.75rem 2rem 1.75rem;
+    overflow-y: auto;
+    z-index: 45;
+    transform: translateX(-100%);
+    pointer-events: auto;
+    box-shadow: 24px 0 60px rgba(0, 0, 0, 0.6);
+}
+
+[data-position='right'] .staggered-menu-panel {
+    left: auto;
+    right: 0;
+    border-right: none;
+    border-left: 1px solid #1d1d22;
+    transform: translateX(100%);
+    box-shadow: -24px 0 60px rgba(0, 0, 0, 0.6);
+}
+
+.staggered-menu-wrapper[data-open="true"] .staggered-menu-panel {
+    transform: translateX(0) !important;
+}
+
+/* ---------- Panel Inner ---------- */
 .sm-panel-inner {
     flex: 1;
     display: flex;
     flex-direction: column;
     justify-content: flex-start;
-    padding-top: 1.5rem;
+    padding-top: 0.5rem;
 }
 
-/* Items List */
+/* ---------- Items List ---------- */
 .sm-panel-list {
     list-style: none;
     padding: 0;
     margin: 0;
     display: flex;
     flex-direction: column;
-    gap: 1.5rem;
-    /* Increased gap */
+    gap: 0.75rem;
+    border-top: 1px solid #1d1d22;
+    padding-top: 1.25rem;
+}
+
+.sm-panel-list-label {
+    font-family: 'JetBrains Mono', 'SF Mono', monospace;
+    font-size: 0.6rem;
+    letter-spacing: 0.16em;
+    text-transform: uppercase;
+    color: #55555c;
+    font-weight: 600;
+    margin-bottom: 0.5rem;
 }
 
 .sm-panel-itemWrap {
@@ -268,27 +265,48 @@
     position: relative;
     display: flex;
     align-items: center;
-    /* Center numbering vertically */
 }
 
 .sm-panel-item {
-    display: inline-block;
-    font-size: 2.5rem;
-    /* Increased font size as requested */
-    font-weight: 600;
-    color: #a1a1aa;
+    position: relative;
+    display: inline-flex;
+    align-items: baseline;
+    gap: 0.85rem;
+    padding: 0.45rem 0;
+    font-size: 1.6rem;
+    font-weight: 500;
+    color: #e6e6e9;
     text-decoration: none;
-    line-height: 1.1;
-    /* Tighter line height for larger text */
-    letter-spacing: -0.02em;
+    line-height: 1.15;
+    letter-spacing: -0.01em;
     text-transform: capitalize;
-    transition: color 0.2s ease;
-    font-family: var(--font-sans);
+    transition: color 0.2s ease, padding-left 0.25s cubic-bezier(0.16, 1, 0.3, 1);
+    font-family: 'Inter', system-ui, sans-serif;
+    width: 100%;
+}
+
+.sm-panel-item::after {
+    content: '→';
+    position: absolute;
+    right: 0;
+    top: 50%;
+    transform: translate(-12px, -50%);
+    color: var(--sm-accent);
+    opacity: 0;
+    font-size: 1.1rem;
+    transition: transform 0.25s cubic-bezier(0.16, 1, 0.3, 1), opacity 0.2s ease;
 }
 
 .sm-panel-item:hover,
 .sm-panel-item:focus {
-    color: #fff;
+    color: var(--sm-accent);
+    padding-left: 4px;
+}
+
+.sm-panel-item:hover::after,
+.sm-panel-item:focus::after {
+    opacity: 1;
+    transform: translate(0, -50%);
 }
 
 .sm-panel-itemLabel {
@@ -296,7 +314,7 @@
     will-change: transform;
 }
 
-/* Numbering Style - Minimalist */
+/* ---------- Numbering Style ---------- */
 .sm-panel-list[data-numbering] {
     counter-reset: smItem;
 }
@@ -305,41 +323,36 @@
     counter-increment: smItem;
     content: counter(smItem, decimal-leading-zero);
     display: inline-block;
-    margin-right: 1rem;
-    font-size: 0.75rem;
-    font-weight: 400;
-    color: #3b82f6;
-    font-family: 'Geist Mono', monospace;
-    opacity: 0.5;
-    transform: translateY(0);
+    font-size: 0.65rem;
+    font-weight: 600;
+    color: var(--sm-accent);
+    font-family: 'JetBrains Mono', 'SF Mono', monospace;
+    opacity: var(--sm-num-opacity, 0.55);
+    letter-spacing: 0.04em;
+    transform: translateY(-3px);
+    flex-shrink: 0;
 }
 
-/* Remove old suffix numbering */
-.sm-panel-list[data-numbering] .sm-panel-item::after {
-    content: none;
-}
-
-/* Socials Section - Minimalist Footer */
+/* ---------- Socials Section ---------- */
 .sm-socials {
     margin-top: auto;
-    padding-top: 2rem;
+    padding-top: 1.5rem;
     display: flex;
     flex-direction: column;
-    gap: 1.5rem;
-    border-top: 1px solid rgba(255, 255, 255, 0.05);
-    /* Separator */
+    gap: 0.85rem;
+    border-top: 1px solid #1d1d22;
     width: 100%;
 }
 
 .sm-socials-title {
     display: block;
-    /* Show title again to fill space */
-    font-size: 0.85rem;
-    letter-spacing: 0.1em;
+    margin: 0;
+    font-size: 0.6rem;
+    letter-spacing: 0.16em;
     text-transform: uppercase;
-    color: #555;
-    font-family: 'Geist Mono', monospace;
-    margin-bottom: 0.5rem;
+    color: #55555c;
+    font-family: 'JetBrains Mono', 'SF Mono', monospace;
+    font-weight: 600;
 }
 
 .sm-socials-list {
@@ -349,24 +362,24 @@
     display: flex;
     flex-direction: row;
     align-items: center;
-    gap: 2rem;
+    gap: 1.25rem;
     flex-wrap: wrap;
 }
 
 .sm-socials-link {
-    font-size: 1rem;
+    font-size: 0.82rem;
     font-weight: 500;
-    color: #888;
+    color: #8b8b93;
     text-decoration: none;
     transition: color 0.2s ease;
-    font-family: var(--font-sans);
+    font-family: 'Inter', system-ui, sans-serif;
 }
 
 .sm-socials-link:hover {
-    color: #fff;
+    color: var(--sm-accent);
 }
 
-/* Scrollbar */
+/* ---------- Scrollbar ---------- */
 .staggered-menu-panel::-webkit-scrollbar {
     width: 4px;
 }
@@ -376,15 +389,27 @@
 }
 
 .staggered-menu-panel::-webkit-scrollbar-thumb {
-    background: rgba(255, 255, 255, 0.1);
+    background: #26262d;
     border-radius: 4px;
 }
 
-/* Mobile Responsive */
+.staggered-menu-panel::-webkit-scrollbar-thumb:hover {
+    background: #FF6C37;
+}
+
+/* ---------- Mobile ---------- */
 @media (max-width: 768px) {
     .staggered-menu-panel {
         width: 100%;
         border-right: none;
-        padding: 6rem 2rem 2rem 2rem;
+        padding: 5.5rem 1.5rem 2rem 1.5rem;
+    }
+
+    .sm-panel-item {
+        font-size: 1.45rem;
+    }
+
+    .sm-prelayers {
+        width: 100%;
     }
 }

@@ -452,6 +452,7 @@ export default function Dashboard() {
                 }
                 position="left"
                 isFixed={true}
+                accentColor="#FF6C37"
             />
             <Head><title>{getPageTitle()}</title></Head>
 
