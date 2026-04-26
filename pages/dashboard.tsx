@@ -8,6 +8,8 @@ import ResultMessage from '../components/ResultMessage'
 import StaggeredMenu from '../components/StaggeredMenu/StaggeredMenu'
 import RequestBuilder from '../components/postman/RequestBuilder'
 import PostmanResponseCard from '../components/postman/PostmanResponseCard'
+import PostmanLoader from '../components/postman/PostmanLoader'
+import HistoryPanel from '../components/postman/HistoryPanel'
 import CommandPalette, { CommandItem } from '../components/CommandPalette'
 import BYOKSettingsModal from '../components/BYOKSettingsModal'
 import { useRouter } from 'next/router'
@@ -45,14 +47,6 @@ interface Message {
     isError?: boolean
 }
 
-const menuItems = [
-    { label: 'Home', link: '/' },
-    { label: 'Dashboard', link: '/dashboard' },
-    { label: 'Pricing', link: '/pricing' },
-    { label: 'Docs', link: '/docs' },
-    { label: 'Suggestions', link: '/suggestions' },
-];
-
 const socialItems = [
     { label: 'LinkedIn', link: 'https://www.linkedin.com/in/kammatiaditya/' },
     { label: 'GitHub', link: 'https://github.com/Adi-gitX' },
@@ -62,6 +56,7 @@ const socialItems = [
 export default function Dashboard() {
     const [messages, setMessages] = useState<Message[]>([])
     const [loading, setLoading] = useState(false)
+    const [lastPostmanInFlight, setLastPostmanInFlight] = useState<{ method: string; url: string } | null>(null)
     const [mode, setMode] = useState<AppMode>('check')
     const [modelPreference, setModelPreference] = useState<ChatModelPreference>('fast')
     const chatContainerRef = useRef<HTMLDivElement>(null)
@@ -175,6 +170,18 @@ export default function Dashboard() {
     // Cmd+K / Ctrl+K command palette
     const [paletteOpen, setPaletteOpen] = useState(false)
     const [byokOpen, setByokOpen] = useState(false)
+    const [historyOpen, setHistoryOpen] = useState(false)
+
+    // Menu items — declared inside so the API Key Settings entry can open the BYOK modal
+    const menuItems = [
+        { label: 'Home', link: '/' },
+        { label: 'Dashboard', link: '/dashboard' },
+        { label: 'Pricing', link: '/pricing' },
+        { label: 'Docs', link: '/docs' },
+        { label: 'Suggestions', link: '/suggestions' },
+        { label: 'Request History', link: '#', onClick: () => setHistoryOpen(true) },
+        { label: 'API Key Settings', link: '#', onClick: () => setByokOpen(true) }
+    ]
     useEffect(() => {
         const onKey = (e: KeyboardEvent) => {
             if ((e.metaKey || e.ctrlKey) && e.key.toLowerCase() === 'k') {
@@ -187,6 +194,17 @@ export default function Dashboard() {
         window.addEventListener('keydown', onKey)
         return () => window.removeEventListener('keydown', onKey)
     }, [paletteOpen])
+
+    // Auto-open BYOK modal when navigated with ?settings=byok (from sidebar on other pages)
+    useEffect(() => {
+        if (typeof window === 'undefined') return
+        const url = new URL(window.location.href)
+        if (url.searchParams.get('settings') === 'byok') {
+            setByokOpen(true)
+            url.searchParams.delete('settings')
+            try { history.replaceState(null, '', url.pathname + (url.search || '') + url.hash) } catch { /* noop */ }
+        }
+    }, [])
 
 
     const executePostmanRequest = async (config: RequestConfig): Promise<ResponseData> => {
@@ -244,6 +262,7 @@ export default function Dashboard() {
 
     const handleEditorSend = async (config: RequestConfig) => {
         setLoading(true)
+        setLastPostmanInFlight({ method: config.method, url: config.url })
         autoScrollRef.current = true
         setEditorConfig(config)
         setMessages(prev => [...prev, { id: Date.now().toString(), role: 'user', content: `${config.method} ${config.url}` }])
@@ -256,6 +275,7 @@ export default function Dashboard() {
             setMessages(prev => [...prev, { id: Date.now().toString(), role: 'assistant', content: e instanceof Error ? e.message : 'Unknown error', isError: true }])
         } finally {
             setLoading(false)
+            setLastPostmanInFlight(null)
         }
     }
 
@@ -274,6 +294,7 @@ export default function Dashboard() {
             try {
                 const parsed = parseUserInput(inputText)
                 setEditorConfig(parsed.config)
+                setLastPostmanInFlight({ method: parsed.config.method, url: parsed.config.url })
                 const response = await executePostmanRequest(parsed.config)
                 addToHistory({ id: generateId(), timestamp: Date.now(), request: parsed.config, response })
                 setMessages(prev => [...prev, { id: Date.now().toString(), role: 'assistant', content: '', postmanResult: { request: parsed.config, response } }])
@@ -281,6 +302,7 @@ export default function Dashboard() {
                 setMessages(prev => [...prev, { id: Date.now().toString(), role: 'assistant', content: e instanceof Error ? e.message : 'Unknown error', isError: true }])
             }
             setLoading(false)
+            setLastPostmanInFlight(null)
             processingRef.current = false
             return
         }
@@ -612,10 +634,14 @@ export default function Dashboard() {
                                         <div className={`${styles.messageRow} ${styles.assistant}`}>
                                             <div className={styles.messageBubble}>
                                                 <div className={styles.senderName}>Oracle</div>
-                                                <div className={`${styles.messageText} ${styles.loadingTextRow}`}>
-                                                    <span className={`${styles.loadingPulseDot} ${mode === 'postman' ? styles.loadingPulseDotPostman : ''}`} />
-                                                    {getLoadingText()}
-                                                </div>
+                                                {mode === 'postman' && lastPostmanInFlight ? (
+                                                    <PostmanLoader method={lastPostmanInFlight.method} url={lastPostmanInFlight.url} />
+                                                ) : (
+                                                    <div className={`${styles.messageText} ${styles.loadingTextRow}`}>
+                                                        <span className={`${styles.loadingPulseDot} ${mode === 'postman' ? styles.loadingPulseDotPostman : ''}`} />
+                                                        {getLoadingText()}
+                                                    </div>
+                                                )}
                                             </div>
                                         </div>
                                     )}
@@ -714,6 +740,7 @@ export default function Dashboard() {
                     } },
                     { id: 'toggle-model', group: 'Settings', label: modelPreference === 'fast' ? 'Switch to Quality Model' : 'Switch to Fast Model', hint: 'Toggle Gemini Flash / Pro', onSelect: () => setModelPreference(p => p === 'fast' ? 'quality' : 'fast') },
                     { id: 'byok-settings', group: 'Settings', label: 'API Key Settings (BYOK)', hint: 'Use your own Gemini key — encrypted locally', shortcut: 'S', onSelect: () => setByokOpen(true) },
+                    { id: 'history', group: 'Actions', label: 'Open Request History', hint: 'See and replay your last 100 requests', shortcut: 'H', onSelect: () => { setMode('postman'); setHistoryOpen(true) } },
                     { id: 'nav-home', group: 'Navigate', label: 'Home', hint: '/', onSelect: () => router.push('/') },
                     { id: 'nav-docs', group: 'Navigate', label: 'Documentation', hint: '/docs', onSelect: () => router.push('/docs') },
                     { id: 'nav-pricing', group: 'Navigate', label: 'Pricing', hint: '/pricing', onSelect: () => router.push('/pricing') },
@@ -722,6 +749,15 @@ export default function Dashboard() {
             />
 
             <BYOKSettingsModal open={byokOpen} onClose={() => setByokOpen(false)} />
+            <HistoryPanel
+                open={historyOpen}
+                onClose={() => setHistoryOpen(false)}
+                onLoad={(cfg) => {
+                    setEditorConfig(cfg)
+                    setMode('postman')
+                    setEditorOpen(true)
+                }}
+            />
 
         </div>
     )

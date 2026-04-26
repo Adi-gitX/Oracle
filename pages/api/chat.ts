@@ -234,12 +234,34 @@ export default async function handler(req: NextApiRequest, res: NextApiResponse)
   const isValidByok = /^AIza[A-Za-z0-9_-]{20,}$/.test(byokKey)
   const effectiveKeys = isValidByok ? [byokKey] : apiKeys
 
+  // Rate limit: ONLY for users on the shared server key. BYOK users are unlimited.
+  if (!isValidByok) {
+    const { rateLimit, getClientIp } = await import('../../lib/RateLimit')
+    const ip = getClientIp(req)
+    const FREE_LIMIT = parseInt(process.env.ORACLE_CHAT_FREE_LIMIT || '15', 10)
+    const FREE_WINDOW_MS = parseInt(process.env.ORACLE_CHAT_FREE_WINDOW_MS || `${60 * 60 * 1000}`, 10) // 1h default
+    const rl = rateLimit(`chat:${ip}`, FREE_LIMIT, FREE_WINDOW_MS)
+    res.setHeader('X-RateLimit-Limit', String(rl.limit))
+    res.setHeader('X-RateLimit-Remaining', String(rl.remaining))
+    res.setHeader('X-RateLimit-Reset', String(Math.floor(rl.resetAt / 1000)))
+    if (!rl.ok) {
+      res.setHeader('Retry-After', String(rl.retryAfterSec))
+      const minutes = Math.max(1, Math.ceil(rl.retryAfterSec / 60))
+      return jsonError(
+        res,
+        429,
+        'RATE_LIMITED',
+        `You've hit the free limit (${FREE_LIMIT} chats/hour on the shared key). Add your own free Gemini key via Settings (⌘K → "API Key Settings") for unlimited use, or try again in ~${minutes} min.`
+      )
+    }
+  }
+
   if (effectiveKeys.length === 0) {
     return jsonError(
       res,
       503,
       'MISSING_API_KEYS',
-      'AI chat is currently unavailable. Either the server admin needs to configure GOOGLE_API_KEY or you can paste your own Gemini key via the Settings panel (⌘K → Settings).'
+      'AI chat is currently unavailable. Either the server admin needs to configure GOOGLE_API_KEY or you can paste your own Gemini key via Settings (⌘K → "API Key Settings").'
     )
   }
 

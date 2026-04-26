@@ -960,6 +960,131 @@
     color: var(--pm-accent);
 }
 
+/* =============================================================
+   Loader Card — phased progression while request is in flight
+   ============================================================= */
+.loaderCard {
+    background: var(--pm-bg);
+    border: 1px solid var(--pm-line);
+    border-radius: 10px;
+    overflow: hidden;
+    margin-top: 10px;
+    font-family: var(--pm-mono);
+    animation: cardSlide 0.25s ease-out;
+}
+
+.loaderHeader {
+    display: flex;
+    align-items: center;
+    gap: 12px;
+    padding: 10px 14px;
+    background: var(--pm-surface);
+    border-bottom: 1px solid var(--pm-line);
+    flex-wrap: wrap;
+}
+
+.loaderMethod {
+    color: var(--pm-accent);
+    font-size: 0.66rem;
+    font-weight: 800;
+    letter-spacing: 0.12em;
+    text-transform: uppercase;
+}
+
+.loaderUrl {
+    flex: 1;
+    min-width: 0;
+    color: var(--pm-text-dim);
+    font-size: 0.76rem;
+    overflow: hidden;
+    text-overflow: ellipsis;
+    white-space: nowrap;
+}
+
+.loaderTime {
+    color: var(--pm-text-mute);
+    font-size: 0.68rem;
+    letter-spacing: 0.04em;
+    font-variant-numeric: tabular-nums;
+}
+
+.loaderPhases {
+    display: flex;
+    flex-direction: column;
+    gap: 0;
+    padding: 0;
+}
+
+.loaderPhase {
+    display: flex;
+    align-items: center;
+    gap: 14px;
+    padding: 12px 14px;
+    border-bottom: 1px solid var(--pm-line);
+    transition: background 0.2s ease, color 0.2s ease;
+}
+
+.loaderPhase:last-child { border-bottom: none; }
+
+.loaderPhase_pending { color: var(--pm-text-mute); }
+.loaderPhase_active {
+    color: var(--pm-text);
+    background: rgba(255, 108, 55, 0.04);
+}
+.loaderPhase_done { color: var(--pm-text-dim); }
+
+.loaderDot {
+    width: 18px;
+    height: 18px;
+    border-radius: 50%;
+    display: inline-flex;
+    align-items: center;
+    justify-content: center;
+    flex-shrink: 0;
+    border: 1.5px solid currentColor;
+    color: var(--pm-text-mute);
+    transition: color 0.2s ease, border-color 0.2s ease;
+}
+
+.loaderPhase_active .loaderDot {
+    color: var(--pm-accent);
+    border-color: var(--pm-accent);
+}
+
+.loaderPhase_done .loaderDot {
+    color: var(--pm-green);
+    border-color: var(--pm-green);
+    background: rgba(0, 230, 118, 0.08);
+}
+
+.loaderSpin {
+    width: 8px;
+    height: 8px;
+    border: 1.5px solid currentColor;
+    border-top-color: transparent;
+    border-radius: 50%;
+    animation: spin 0.7s linear infinite;
+}
+
+.loaderText {
+    display: flex;
+    flex-direction: column;
+    gap: 2px;
+    min-width: 0;
+}
+
+.loaderLabel {
+    font-size: 0.78rem;
+    font-weight: 600;
+    letter-spacing: 0.04em;
+}
+
+.loaderDetail {
+    font-size: 0.66rem;
+    color: var(--pm-text-mute);
+    letter-spacing: 0.04em;
+}
+
 /* ---------- Responsive ---------- */
 @media (max-width: 640px) {
     .urlBar { grid-template-columns: 1fr; }

@@ -12,6 +12,7 @@ const menuItems = [
     { label: 'Pricing', link: '/pricing' },
     { label: 'Docs', link: '/docs' },
     { label: 'Suggestions', link: '/suggestions' },
+    { label: 'API Key Settings', link: '/dashboard?settings=byok' }
 ];
 
 const socialItems = [
