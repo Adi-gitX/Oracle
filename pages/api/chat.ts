@@ -226,12 +226,20 @@ export default async function handler(req: NextApiRequest, res: NextApiResponse)
   }
 
   const apiKeys = getApiKeys()
-  if (apiKeys.length === 0) {
+
+  // BYOK: user can supply their own Gemini key via X-Oracle-LLM-Key header.
+  // We prefer the user's key if present, falling back to the server's key list.
+  const rawByok = req.headers['x-oracle-llm-key']
+  const byokKey = (Array.isArray(rawByok) ? rawByok[0] : rawByok || '').trim()
+  const isValidByok = /^AIza[A-Za-z0-9_-]{20,}$/.test(byokKey)
+  const effectiveKeys = isValidByok ? [byokKey] : apiKeys
+
+  if (effectiveKeys.length === 0) {
     return jsonError(
       res,
       503,
       'MISSING_API_KEYS',
-      'AI chat is currently unavailable in this environment. The server admin needs to configure GOOGLE_API_KEY to enable Gemini-powered responses. You can still use Postman mode and Check mode normally.'
+      'AI chat is currently unavailable. Either the server admin needs to configure GOOGLE_API_KEY or you can paste your own Gemini key via the Settings panel (⌘K → Settings).'
     )
   }
 
@@ -303,7 +311,7 @@ INSTRUCTIONS:
 
   let lastError: unknown = null
 
-  keyLoop: for (const key of apiKeys) {
+  keyLoop: for (const key of effectiveKeys) {
     const genAI = new GoogleGenerativeAI(key)
     const modelChain = [modelSelection.primary, modelSelection.fallback].filter(Boolean) as string[]
 

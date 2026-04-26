@@ -9,6 +9,7 @@ import StaggeredMenu from '../components/StaggeredMenu/StaggeredMenu'
 import RequestBuilder from '../components/postman/RequestBuilder'
 import PostmanResponseCard from '../components/postman/PostmanResponseCard'
 import CommandPalette, { CommandItem } from '../components/CommandPalette'
+import BYOKSettingsModal from '../components/BYOKSettingsModal'
 import { useRouter } from 'next/router'
 import ReactMarkdown from 'react-markdown'
 import remarkGfm from 'remark-gfm'
@@ -173,6 +174,7 @@ export default function Dashboard() {
 
     // Cmd+K / Ctrl+K command palette
     const [paletteOpen, setPaletteOpen] = useState(false)
+    const [byokOpen, setByokOpen] = useState(false)
     useEffect(() => {
         const onKey = (e: KeyboardEvent) => {
             if ((e.metaKey || e.ctrlKey) && e.key.toLowerCase() === 'k') {
@@ -301,9 +303,15 @@ export default function Dashboard() {
                         isEncrypted: false
                     }
 
+                // BYOK: fetch user's encrypted Gemini key (decrypted in-browser only)
+                const { secureGet, BYOK_GEMINI_KEY_STORAGE } = await import('../lib/SecureStore')
+                const userKey = await secureGet(BYOK_GEMINI_KEY_STORAGE)
+                const headers: Record<string, string> = { 'Content-Type': 'application/json' }
+                if (userKey) headers['X-Oracle-LLM-Key'] = userKey
+
                 const res = await fetch('/api/chat', {
                     method: 'POST',
-                    headers: { 'Content-Type': 'application/json' },
+                    headers,
                     body: JSON.stringify(requestBody)
                 })
                 const rawText = await res.text()
@@ -691,7 +699,6 @@ export default function Dashboard() {
                 </div>
             </div>
 
-            {/* Cmd+K Command Palette */}
             <CommandPalette
                 open={paletteOpen}
                 onClose={() => setPaletteOpen(false)}
@@ -706,12 +713,15 @@ export default function Dashboard() {
                         ta?.focus()
                     } },
                     { id: 'toggle-model', group: 'Settings', label: modelPreference === 'fast' ? 'Switch to Quality Model' : 'Switch to Fast Model', hint: 'Toggle Gemini Flash / Pro', onSelect: () => setModelPreference(p => p === 'fast' ? 'quality' : 'fast') },
+                    { id: 'byok-settings', group: 'Settings', label: 'API Key Settings (BYOK)', hint: 'Use your own Gemini key — encrypted locally', shortcut: 'S', onSelect: () => setByokOpen(true) },
                     { id: 'nav-home', group: 'Navigate', label: 'Home', hint: '/', onSelect: () => router.push('/') },
                     { id: 'nav-docs', group: 'Navigate', label: 'Documentation', hint: '/docs', onSelect: () => router.push('/docs') },
                     { id: 'nav-pricing', group: 'Navigate', label: 'Pricing', hint: '/pricing', onSelect: () => router.push('/pricing') },
                     { id: 'nav-suggestions', group: 'Navigate', label: 'Suggestions', hint: '/suggestions', onSelect: () => router.push('/suggestions') }
                 ]}
             />
+
+            <BYOKSettingsModal open={byokOpen} onClose={() => setByokOpen(false)} />
 
         </div>
     )

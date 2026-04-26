@@ -294,6 +294,19 @@ https://oracle.app/dashboard#r=eyJ2IjoxLCJtIjoiR0VUIiwidS...
                             <p className={docStyles.text}>
                                 Auth headers, query params, and bodies are properly resolved into each language&apos;s idioms — no manual translation needed.
                             </p>
+
+                            <h3 style={{ color: '#fff', fontSize: '1.05rem', marginTop: '1.75rem', fontFamily: "'JetBrains Mono', monospace", letterSpacing: '0.04em' }}>
+                                Bring Your Own Key (BYOK)
+                            </h3>
+                            <p className={docStyles.text}>
+                                Open the command palette (<kbd className={docStyles.kbd}>⌘K</kbd>) and select <strong>API Key Settings</strong> to paste your own Google Gemini API key. The key is encrypted with <strong>AES-GCM</strong> in your browser using a per-device key derived via PBKDF2 + Web Crypto. It is never sent to Oracle servers — only attached as a header to the chat request you initiate.
+                            </p>
+                            <ul style={{ color: '#a1a1aa', lineHeight: '1.8', paddingLeft: '1.5rem' }}>
+                                <li><strong>Storage:</strong> Encrypted in <code>localStorage</code> only on this device.</li>
+                                <li><strong>Transport:</strong> Sent as <code>X-Oracle-LLM-Key</code> header on chat calls; never logged.</li>
+                                <li><strong>Fallback:</strong> If you don&apos;t set a personal key, Oracle uses the server key (if configured).</li>
+                                <li><strong>Get a key:</strong> <a href="https://aistudio.google.com/apikey" target="_blank" rel="noopener noreferrer" style={{ color: '#FF6C37' }}>aistudio.google.com/apikey</a> — free, 30 seconds.</li>
+                            </ul>
                         </section>
 
                         <section id="providers" className={docStyles.section}>
