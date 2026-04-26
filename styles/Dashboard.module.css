@@ -92,6 +92,56 @@
     color: #FF6C37;
 }
 
+/* ⌘K header badge — discoverable shortcut button */
+.cmdKBadge {
+    display: inline-flex;
+    align-items: center;
+    gap: 7px;
+    padding: 8px 11px;
+    background: transparent;
+    border: 1px solid #26262d;
+    border-radius: 7px;
+    color: #8b8b93;
+    font-family: 'JetBrains Mono', 'SF Mono', monospace;
+    font-size: 0.7rem;
+    font-weight: 600;
+    letter-spacing: 0.06em;
+    cursor: pointer;
+    transition: background 0.15s ease, border-color 0.15s ease, color 0.15s ease;
+}
+
+.cmdKBadge:hover {
+    background: #16161a;
+    border-color: #FF6C37;
+    color: #FF6C37;
+}
+
+.cmdKBadge svg {
+    opacity: 0.85;
+}
+
+@media (max-width: 720px) {
+    .cmdKBadge span { display: none; }
+    .cmdKBadge { padding: 8px; }
+}
+
+/* Inline keyboard hint */
+.kbd {
+    display: inline-flex;
+    align-items: center;
+    padding: 1px 6px;
+    margin: 0 2px;
+    background: #16161a;
+    border: 1px solid #26262d;
+    border-radius: 4px;
+    font-family: 'JetBrains Mono', 'SF Mono', monospace;
+    font-size: 0.62rem;
+    color: #e6e6e9;
+    letter-spacing: 0.02em;
+    font-weight: 600;
+    line-height: 1.4;
+}
+
 .newSessionIconBtn {
     display: flex;
     align-items: center;

@@ -129,6 +129,11 @@ export default function Docs() {
                                 className={`${docStyles.navLink} ${activeSection === 'mode-postman' ? docStyles.active : ''}`}>
                                 Postman Mode
                             </a>
+                            <a href="#power-features"
+                                onClick={(e) => handleScrollTo(e, 'power-features')}
+                                className={`${docStyles.navLink} ${activeSection === 'power-features' ? docStyles.active : ''}`}>
+                                Power Features
+                            </a>
                         </div>
                         <div>
                             <div className={docStyles.sidebarTitle}>Reference</div>
@@ -178,6 +183,9 @@ export default function Docs() {
                                 <li><strong>Granular Error Reporting:</strong> Distinguishes between <code>Invalid (401)</code>, <code>Forbidden (403)</code>, and <code>Quota Exceeded (429)</code> instead of returning a generic &quot;failed&quot;.</li>
                                 <li><strong>SSRF-Hardened Postman Proxy:</strong> Outbound HTTP requests run through a sandboxed proxy with DNS rebinding protection, redirect caps, and response-size limits.</li>
                                 <li><strong>Smart Format Fallbacks:</strong> Identifies cross-provider key collisions (e.g. Google / Firebase / Gemini share <code>AIza…</code>; Stripe / Clerk both start with <code>sk_…</code>).</li>
+                                <li><strong>⌘K Command Palette:</strong> Linear-style universal search — switch modes, navigate pages, and run actions without touching the mouse.</li>
+                                <li><strong>Shareable Permalinks:</strong> Encode any Postman request into a URL hash and share it. Opening the link auto-loads the editor — perfect for PR reviews and Slack threads.</li>
+                                <li><strong>5-Language Code Export:</strong> One-click conversion of any request to cURL, JS/fetch, Python, Go, or HTTPie.</li>
                             </ul>
                         </section>
 
@@ -223,11 +231,69 @@ permissions:        chat.completions, embeddings, images`}
                                 A full-featured request builder for any HTTP API — without leaving Oracle. Supports headers, query params, four authorization types (None / Bearer / Basic / API Key), JSON bodies, redirects, and timing metrics.
                             </p>
                             <ul style={{ color: '#a1a1aa', lineHeight: '1.8', paddingLeft: '1.5rem' }}>
-                                <li><strong>cURL import / export</strong> — paste a cURL command to instantly populate the editor, or copy your request out.</li>
+                                <li><strong>cURL import / export</strong> — paste a cURL command to instantly populate the editor.</li>
                                 <li><strong>Floating editor window</strong> — open the macOS-style canvas to edit headers, auth, body, and params with full keyboard support (<code>ESC</code> closes, click-outside to dismiss).</li>
-                                <li><strong>Live response card</strong> — color-coded status pill, response time, payload size, headers tab, and one-click Copy Response / Copy cURL / Retry.</li>
-                                <li><strong>Sandboxed proxy</strong> — all outbound calls flow through <code>/api/postman</code> which blocks private/loopback IPs (<code>127.0.0.0/8</code>, <code>10.0.0.0/8</code>, <code>192.168.0.0/16</code>) and limits responses to 1 MB.</li>
+                                <li><strong>Live response card</strong> — color-coded status pill, response time, payload size, headers tab.</li>
+                                <li><strong>Sandboxed proxy</strong> — all outbound calls flow through <code>/api/postman</code> which blocks private/loopback IPs and limits responses to 1 MB.</li>
                             </ul>
+                        </section>
+
+                        <section id="power-features" className={docStyles.section}>
+                            <h2 className={docStyles.subtitle}>Power Features</h2>
+                            <p className={docStyles.text}>
+                                Three workflow accelerators that make Oracle uniquely fast to use:
+                            </p>
+
+                            <h3 style={{ color: '#fff', fontSize: '1.05rem', marginTop: '1.75rem', fontFamily: "'JetBrains Mono', monospace", letterSpacing: '0.04em' }}>
+                                <kbd className={docStyles.kbd}>⌘K</kbd> Command Palette
+                            </h3>
+                            <p className={docStyles.text}>
+                                Press <kbd className={docStyles.kbd}>⌘K</kbd> (or <kbd className={docStyles.kbd}>Ctrl+K</kbd>) anywhere in the dashboard to open a Linear-style search bar. Switch modes, navigate pages, focus the input, clear the conversation, or toggle Fast/Quality model — all without touching the mouse.
+                            </p>
+                            <ul style={{ color: '#a1a1aa', lineHeight: '1.8', paddingLeft: '1.5rem' }}>
+                                <li><strong>Filter</strong> — type any word to narrow results.</li>
+                                <li><strong>Navigate</strong> — <kbd className={docStyles.kbd}>↑</kbd>/<kbd className={docStyles.kbd}>↓</kbd> to move, <kbd className={docStyles.kbd}>Enter</kbd> to select, <kbd className={docStyles.kbd}>Esc</kbd> to dismiss.</li>
+                                <li><strong>Quick actions</strong> — Switch to Chat / Check / Postman, Open Editor, Clear Conversation, Focus Input.</li>
+                            </ul>
+
+                            <h3 style={{ color: '#fff', fontSize: '1.05rem', marginTop: '1.75rem', fontFamily: "'JetBrains Mono', monospace", letterSpacing: '0.04em' }}>
+                                Shareable Request Permalinks
+                            </h3>
+                            <p className={docStyles.text}>
+                                After running any Postman request, click <strong>Share</strong> in the response card. Oracle generates a URL with the full request encoded in the hash — paste it in Slack, GitHub PRs, or bug reports and anyone who opens it gets the editor auto-populated and ready to send.
+                            </p>
+                            <div className={docStyles.codeBlock}>
+                                {`# Example permalink
+https://oracle.app/dashboard#r=eyJ2IjoxLCJtIjoiR0VUIiwidS...
+
+# What's encoded:
+- Method (GET/POST/...)
+- URL + query params
+- Non-sensitive headers
+- Request body
+
+# What's stripped (security):
+- Authorization headers
+- Cookies, X-API-Key, X-Auth-Token
+- All auth fields (Bearer / Basic / API Key)`}
+                            </div>
+
+                            <h3 style={{ color: '#fff', fontSize: '1.05rem', marginTop: '1.75rem', fontFamily: "'JetBrains Mono', monospace", letterSpacing: '0.04em' }}>
+                                Code Export — Five Languages
+                            </h3>
+                            <p className={docStyles.text}>
+                                Click <strong>Code</strong> in the response card to convert your request into ready-to-paste snippets for:
+                            </p>
+                            <ul style={{ color: '#a1a1aa', lineHeight: '1.8', paddingLeft: '1.5rem' }}>
+                                <li><code>cURL</code> — single-line shell command</li>
+                                <li><code>JS / fetch</code> — modern <code>await fetch(...)</code></li>
+                                <li><code>Python</code> — <code>requests</code> library</li>
+                                <li><code>Go</code> — <code>net/http</code> with imports</li>
+                                <li><code>HTTPie</code> — terminal-friendly format</li>
+                            </ul>
+                            <p className={docStyles.text}>
+                                Auth headers, query params, and bodies are properly resolved into each language&apos;s idioms — no manual translation needed.
+                            </p>
                         </section>
 
                         <section id="providers" className={docStyles.section}>

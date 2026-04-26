@@ -460,38 +460,52 @@ export default function Dashboard() {
                 socialItems={socialItems}
                 logo={messages.length > 0 || mode === 'postman' ? (mode === 'postman' ? "Oracle API Tester" : "Oracle Intelligent Check") : null}
                 rightElement={
-                    (messages.length > 0 || mode === 'postman') ? (
-                        <div className={styles.menuRightActions}>
+                    <div className={styles.menuRightActions}>
+                        <button
+                            onClick={() => setPaletteOpen(true)}
+                            className={styles.cmdKBadge}
+                            title="Open command palette (⌘K)"
+                            aria-label="Open command palette"
+                            data-testid="cmdk-header-btn"
+                        >
+                            <svg width="13" height="13" viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="2">
+                                <circle cx="11" cy="11" r="8" />
+                                <line x1="21" y1="21" x2="16.65" y2="16.65" />
+                            </svg>
+                            <span>⌘K</span>
+                        </button>
 
-                            {mode === 'postman' && (
-                                <button
-                                    onClick={() => setEditorOpen(!editorOpen)}
-                                    className={`${styles.editorToggleBtn} ${editorOpen ? styles.editorToggleBtnActive : ''}`}
-                                >
-                                    <svg width="16" height="16" viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="2">
-                                        {editorOpen ? (
-                                            <>
-                                                <line x1="18" y1="6" x2="6" y2="18" />
-                                                <line x1="6" y1="6" x2="18" y2="18" />
-                                            </>
-                                        ) : (
-                                            <>
-                                                <path d="M11 4H4a2 2 0 0 0-2 2v14a2 2 0 0 0 2 2h14a2 2 0 0 0 2-2v-7" />
-                                                <path d="M18.5 2.5a2.121 2.121 0 0 1 3 3L12 15l-4 1 1-4 9.5-9.5z" />
-                                            </>
-                                        )}
-                                    </svg>
-                                    {editorOpen ? 'Close Editor' : 'Open Editor'}
-                                </button>
-                            )}
+                        {mode === 'postman' && (
+                            <button
+                                onClick={() => setEditorOpen(!editorOpen)}
+                                className={`${styles.editorToggleBtn} ${editorOpen ? styles.editorToggleBtnActive : ''}`}
+                            >
+                                <svg width="16" height="16" viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="2">
+                                    {editorOpen ? (
+                                        <>
+                                            <line x1="18" y1="6" x2="6" y2="18" />
+                                            <line x1="6" y1="6" x2="18" y2="18" />
+                                        </>
+                                    ) : (
+                                        <>
+                                            <path d="M11 4H4a2 2 0 0 0-2 2v14a2 2 0 0 0 2 2h14a2 2 0 0 0 2-2v-7" />
+                                            <path d="M18.5 2.5a2.121 2.121 0 0 1 3 3L12 15l-4 1 1-4 9.5-9.5z" />
+                                        </>
+                                    )}
+                                </svg>
+                                {editorOpen ? 'Close Editor' : 'Open Editor'}
+                            </button>
+                        )}
+                        {(messages.length > 0 || mode === 'postman') && (
                             <div
                                 onClick={() => { setMessages([]); setEditorOpen(false); }}
                                 className={styles.newSessionIconBtn}
+                                title="New session"
                             >
                                 <Image src="/assets/branding/oracle-iconLogo.png" alt="New Chat" width={35} height={35} className="hover:opacity-80 transition-opacity" />
                             </div>
-                        </div>
-                    ) : null
+                        )}
+                    </div>
                 }
                 position="left"
                 isFixed={true}
@@ -611,7 +625,9 @@ export default function Dashboard() {
                                     />
                                 </div>
                                 <div className={styles.floatingInputHint}>
-                                    {mode === 'postman' ? 'Tip: Click "Open Editor" for full control →' : <>By using Oracle, you agree to our <Link href="/docs#legal"><a className={styles.floatingInputHintLink}>Terms</a></Link>.</>}
+                                    {mode === 'postman'
+                                        ? <>Tip: Click <span className={styles.kbd}>Open Editor</span> for full control · Press <span className={styles.kbd}>⌘K</span> for commands</>
+                                        : <>Press <span className={styles.kbd}>⌘K</span> for commands · By using Oracle, you agree to our <Link href="/docs#legal"><a className={styles.floatingInputHintLink}>Terms</a></Link></>}
                                 </div>
                             </div>
                         </div>
