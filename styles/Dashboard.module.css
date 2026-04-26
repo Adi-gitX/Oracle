@@ -11,7 +11,7 @@
     flex-direction: column;
 }
 
-/* Subtle background — flat with minimal hint of warmth at edges only */
+/* Background Gradients - rich ambient color */
 .backgroundGlow {
     position: absolute;
     top: 0;
@@ -21,18 +21,21 @@
     z-index: 0;
     pointer-events: none;
     background:
-        radial-gradient(ellipse 80% 50% at 50% -10%, rgba(255, 108, 55, 0.04) 0%, transparent 60%),
-        radial-gradient(ellipse 60% 40% at 50% 110%, rgba(255, 108, 55, 0.03) 0%, transparent 60%);
+        radial-gradient(circle at 30% 0%, rgba(66, 100, 255, 0.30) 0%, transparent 58%),
+        radial-gradient(circle at 75% 15%, rgba(64, 140, 255, 0.14) 0%, transparent 45%),
+        radial-gradient(circle at 50% 100%, rgba(255, 100, 50, 0.20) 0%, transparent 58%);
+    filter: blur(24px);
 }
 
 .backgroundGlowSubtle {
-    opacity: 0.6;
+    opacity: 0.45;
 }
 
 .backgroundGlowPostman {
     background:
-        radial-gradient(ellipse 70% 40% at 50% -5%, rgba(255, 108, 55, 0.06) 0%, transparent 55%),
-        radial-gradient(ellipse 50% 30% at 50% 105%, rgba(255, 108, 55, 0.04) 0%, transparent 55%);
+        radial-gradient(circle at 50% 0%, rgba(255, 108, 55, 0.28) 0%, transparent 60%),
+        radial-gradient(circle at 50% 100%, rgba(255, 80, 30, 0.18) 0%, transparent 62%);
+    filter: blur(22px);
 }
 
 .workspaceShell {
