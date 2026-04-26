@@ -69,6 +69,19 @@ export default function RequestBuilder({ onSend, loading, initialConfig }: Reque
         onSend({ ...config, url: finalUrl })
     }
 
+    // Window-level ⌘+Enter to send (works regardless of which input has focus)
+    useEffect(() => {
+        const onKey = (e: KeyboardEvent) => {
+            if ((e.metaKey || e.ctrlKey) && e.key === 'Enter' && !loading) {
+                e.preventDefault()
+                handleSend()
+            }
+        }
+        window.addEventListener('keydown', onKey)
+        return () => window.removeEventListener('keydown', onKey)
+        // eslint-disable-next-line react-hooks/exhaustive-deps
+    }, [config.url, config.method, config.headers, config.params, config.body, loading])
+
     const handleKeyDown = (e: React.KeyboardEvent) => {
         if ((e.metaKey || e.ctrlKey) && e.key === 'Enter') {
             e.preventDefault()

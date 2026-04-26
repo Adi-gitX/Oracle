@@ -179,7 +179,6 @@ export default function Dashboard() {
         { label: 'Pricing', link: '/pricing' },
         { label: 'Docs', link: '/docs' },
         { label: 'Suggestions', link: '/suggestions' },
-        { label: 'Request History', link: '#', onClick: () => setHistoryOpen(true) },
         { label: 'API Key Settings', link: '#', onClick: () => setByokOpen(true) }
     ]
     useEffect(() => {
@@ -716,7 +715,12 @@ export default function Dashboard() {
 
                     <div className={styles.editorCanvasFooter}>
                         <span className={styles.editorCanvasFooterHint}>
-                            Press <kbd className={styles.editorCanvasKbd}>⌘</kbd> + <kbd className={styles.editorCanvasKbd}>Enter</kbd> to send
+                            <kbd className={styles.editorCanvasKbd}>⌘</kbd>
+                            <kbd className={styles.editorCanvasKbd}>↵</kbd>
+                            <span style={{ marginLeft: 6 }}>send</span>
+                            <span style={{ margin: '0 10px', opacity: 0.4 }}>·</span>
+                            <kbd className={styles.editorCanvasKbd}>esc</kbd>
+                            <span style={{ marginLeft: 6 }}>close</span>
                         </span>
                         <span className={styles.editorCanvasFooterBrand}>
                             Powered by Oracle

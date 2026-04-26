@@ -29,7 +29,7 @@
     align-items: center;
     gap: 6px;
     height: 44px;
-    padding: 0 14px 0 16px;
+    padding: 0 14px 0 18px;
     background: transparent;
     border: none;
     border-right: 1px solid var(--pm-line);
@@ -38,7 +38,7 @@
     font-weight: 700;
     letter-spacing: 0.1em;
     cursor: pointer;
-    min-width: 96px;
+    min-width: 100px;
     justify-content: flex-start;
     text-transform: uppercase;
     transition: background 0.15s ease;
@@ -47,9 +47,11 @@
 .methodSelector::before {
     content: '';
     position: absolute;
-    left: 0; top: 0; bottom: 0;
-    width: 3px;
+    left: 0; top: 12px; bottom: 12px;
+    width: 2px;
     background: currentColor;
+    border-radius: 2px;
+    opacity: 0.85;
 }
 
 .methodSelector:hover {
@@ -271,7 +273,8 @@
 /* ---------- Tab Content ---------- */
 .tabContent {
     padding: 14px;
-    max-height: 340px;
+    min-height: 120px;
+    max-height: 360px;
     overflow-y: auto;
     background: var(--pm-bg);
 }
