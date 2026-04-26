@@ -39,6 +39,7 @@ interface Message {
     postmanResult?: PostmanResult
     id: string
     modelUsed?: string
+    isError?: boolean
 }
 
 const menuItems = [
@@ -208,7 +209,7 @@ export default function Dashboard() {
             addToHistory({ id: generateId(), timestamp: Date.now(), request: config, response })
             setMessages(prev => [...prev, { id: Date.now().toString(), role: 'assistant', content: '', postmanResult: { request: config, response } }])
         } catch (e) {
-            setMessages(prev => [...prev, { id: Date.now().toString(), role: 'assistant', content: `❌ **Request Failed**: ${e instanceof Error ? e.message : 'Unknown error'}` }])
+            setMessages(prev => [...prev, { id: Date.now().toString(), role: 'assistant', content: e instanceof Error ? e.message : 'Unknown error', isError: true }])
         } finally {
             setLoading(false)
         }
@@ -233,7 +234,7 @@ export default function Dashboard() {
                 addToHistory({ id: generateId(), timestamp: Date.now(), request: parsed.config, response })
                 setMessages(prev => [...prev, { id: Date.now().toString(), role: 'assistant', content: '', postmanResult: { request: parsed.config, response } }])
             } catch (e) {
-                setMessages(prev => [...prev, { id: Date.now().toString(), role: 'assistant', content: `❌ **Request Failed**\n\n${e instanceof Error ? e.message : 'Unknown error'}` }])
+                setMessages(prev => [...prev, { id: Date.now().toString(), role: 'assistant', content: e instanceof Error ? e.message : 'Unknown error', isError: true }])
             }
             setLoading(false)
             processingRef.current = false
@@ -499,7 +500,25 @@ export default function Dashboard() {
                                                 <div className={styles.senderName}>
                                                     {msg.role === 'user' ? 'You' : 'Oracle'}
                                                 </div>
-                                                {msg.content && <div className={styles.messageText}><ReactMarkdown remarkPlugins={[remarkGfm]}>{msg.content}</ReactMarkdown></div>}
+                                                {msg.content && (
+                                                    msg.isError ? (
+                                                        <div className={styles.errorCard} data-testid="chat-error-card">
+                                                            <span className={styles.errorIcon}>
+                                                                <svg width="14" height="14" viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="2.4">
+                                                                    <circle cx="12" cy="12" r="10" />
+                                                                    <line x1="12" y1="8" x2="12" y2="12" />
+                                                                    <line x1="12" y1="16" x2="12.01" y2="16" />
+                                                                </svg>
+                                                            </span>
+                                                            <div className={styles.errorBody}>
+                                                                <div className={styles.errorTitle}>Request Failed</div>
+                                                                <div className={styles.errorMessage}>{msg.content}</div>
+                                                            </div>
+                                                        </div>
+                                                    ) : (
+                                                        <div className={styles.messageText}><ReactMarkdown remarkPlugins={[remarkGfm]}>{msg.content}</ReactMarkdown></div>
+                                                    )
+                                                )}
                                                 {msg.results && <ResultMessage results={msg.results} />}
                                                 {msg.postmanResult && (
                                                     <div>
