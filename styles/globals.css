@@ -60,33 +60,46 @@ body {
   background: var(--geist-background);
   color: var(--geist-foreground);
   -webkit-font-smoothing: antialiased;
-  background-color: #000;
+  -moz-osx-font-smoothing: grayscale;
+  background-color: #0a0a0b;
   scroll-behavior: smooth;
+  text-rendering: optimizeLegibility;
 }
 
-/* Dark Scrollbar Styling */
+html { scroll-behavior: smooth; }
+
+@media (prefers-reduced-motion: reduce) {
+  html { scroll-behavior: auto; }
+}
+
+/* Refined Scrollbar — matches IDE aesthetic */
 ::-webkit-scrollbar {
   width: 8px;
   height: 8px;
 }
 
 ::-webkit-scrollbar-track {
-  background: rgba(255, 255, 255, 0.02);
+  background: transparent;
 }
 
 ::-webkit-scrollbar-thumb {
-  background: rgba(255, 255, 255, 0.15);
+  background: #1d1d22;
   border-radius: 4px;
 }
 
 ::-webkit-scrollbar-thumb:hover {
-  background: rgba(255, 255, 255, 0.25);
+  background: #FF6C37;
 }
 
 /* Firefox */
 * {
   scrollbar-width: thin;
-  scrollbar-color: rgba(255, 255, 255, 0.15) rgba(255, 255, 255, 0.02);
+  scrollbar-color: #1d1d22 transparent;
+}
+
+::selection {
+  background: rgba(255, 108, 55, 0.3);
+  color: #fff;
 }
 
 * {

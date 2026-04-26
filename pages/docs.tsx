@@ -168,7 +168,7 @@ export default function Docs() {
                             <h3 style={{ color: '#fff', fontSize: '1.1rem', marginTop: '1.5rem' }}>AI & LLM Services</h3>
                             <div className={docStyles.providerList}>
                                 {['OpenAI', 'Anthropic', 'Google Gemini', 'Cohere', 'Mistral', 'Groq', 'HuggingFace'].map(p => (
-                                    <div key={p} className={docStyles.providerItem}><span style={{ color: '#3b82f6' }}>●</span> {p}</div>
+                                    <div key={p} className={docStyles.providerItem}><span style={{ color: '#FF6C37' }}>●</span> {p}</div>
                                 ))}
                             </div>
 
