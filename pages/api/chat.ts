@@ -227,7 +227,12 @@ export default async function handler(req: NextApiRequest, res: NextApiResponse)
 
   const apiKeys = getApiKeys()
   if (apiKeys.length === 0) {
-    return jsonError(res, 500, 'MISSING_API_KEYS', 'Server configuration error: GOOGLE_API_KEY is missing.')
+    return jsonError(
+      res,
+      503,
+      'MISSING_API_KEYS',
+      'AI chat is currently unavailable in this environment. The server admin needs to configure GOOGLE_API_KEY to enable Gemini-powered responses. You can still use Postman mode and Check mode normally.'
+    )
   }
 
   const body = (req.body || {}) as ChatBody

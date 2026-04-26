@@ -184,8 +184,15 @@ export default function Dashboard() {
             body: JSON.stringify({ method: config.method, url, headers, body, timeout: 30000 })
         })
 
-        const data = await res.json()
+        const txt = await res.text()
+        let data: any = {}
+        try {
+            data = txt ? JSON.parse(txt) : {}
+        } catch {
+            throw new Error(`Server returned an invalid response (HTTP ${res.status}). Please try again.`)
+        }
         if (data.error) throw new Error(data.error)
+        if (!res.ok) throw new Error(data.message || res.statusText)
         return { status: data.status, statusText: data.statusText, headers: data.headers, body: data.body, time: data.time, size: data.size }
     }
 
@@ -256,9 +263,19 @@ export default function Dashboard() {
                     headers: { 'Content-Type': 'application/json' },
                     body: JSON.stringify(requestBody)
                 })
-                const rawData = await res.json()
+                const rawText = await res.text()
+                let rawData: any = {}
+                try {
+                    rawData = rawText ? JSON.parse(rawText) : {}
+                } catch {
+                    throw new Error(
+                        res.status === 503
+                            ? 'AI chat is unavailable here. Try Postman mode or Check mode.'
+                            : `Server returned an unexpected response (HTTP ${res.status}). Please try again later.`
+                    )
+                }
                 const data = rawData.isEncrypted ? JSON.parse(decryptData(rawData.payload)) : rawData
-                if (!res.ok) throw new Error(data.message || res.statusText)
+                if (!res.ok) throw new Error(data.message || data.error || res.statusText)
                 setMessages(prev => [...prev, {
                     id: Date.now().toString(),
                     role: 'assistant',
@@ -266,7 +283,7 @@ export default function Dashboard() {
                     modelUsed: data.modelUsed
                 }])
             } catch (e) {
-                setMessages(prev => [...prev, { id: Date.now().toString(), role: 'assistant', content: `Error: ${e instanceof Error ? e.message : 'Unknown error'}` }])
+                setMessages(prev => [...prev, { id: Date.now().toString(), role: 'assistant', content: `${e instanceof Error ? e.message : 'Unknown error'}` }])
             }
             setLoading(false)
             processingRef.current = false
@@ -335,7 +352,13 @@ export default function Dashboard() {
                     headers: { 'Content-Type': 'application/json' },
                     body: JSON.stringify(requestBody)
                 })
-                const rawData = await res.json()
+                const checkText = await res.text()
+                let rawData: any = {}
+                try {
+                    rawData = checkText ? JSON.parse(checkText) : {}
+                } catch {
+                    rawData = { valid: false, message: `Server returned an unexpected response (HTTP ${res.status}).` }
+                }
                 const data = rawData.isEncrypted ? JSON.parse(decryptData(rawData.payload)) : rawData
                 const verificationLevel = (data.verificationLevel || (data.valid ? 'verified' : 'unknown')) as 'verified' | 'format_only' | 'unknown'
                 const status: KeyResult['status'] = data.valid
