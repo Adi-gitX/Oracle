@@ -2,6 +2,8 @@ import { useState } from 'react'
 import styles from '../../styles/Postman.module.css'
 import { RequestConfig, ResponseData, methodColors } from '../../lib/postman/types'
 import { exportToCurl } from '../../lib/postman/CurlParser'
+import { buildShareUrl } from '../../lib/postman/Permalink'
+import CodeExportModal from './CodeExportModal'
 
 interface PostmanResponseCardProps {
     request: RequestConfig
@@ -12,6 +14,7 @@ interface PostmanResponseCardProps {
 export default function PostmanResponseCard({ request, response, onRetry }: PostmanResponseCardProps) {
     const [activeTab, setActiveTab] = useState<'body' | 'headers'>('body')
     const [copied, setCopied] = useState<string | null>(null)
+    const [showCodeExport, setShowCodeExport] = useState(false)
 
     const isSuccess = response.status >= 200 && response.status < 300
     const isClientError = response.status >= 400 && response.status < 500
@@ -137,21 +140,38 @@ export default function PostmanResponseCard({ request, response, onRetry }: Post
                 </button>
 
                 <button
-                    onClick={() => copyToClipboard(exportToCurl(request), 'curl')}
-                    className={`${styles.respActionBtn} ${copied === 'curl' ? styles.respActionCopied : ''}`}
-                    data-testid="postman-copy-curl-btn"
+                    onClick={() => setShowCodeExport(true)}
+                    className={styles.respActionBtn}
+                    data-testid="postman-code-export-btn"
+                    title="Export this request as cURL, JS, Python, Go, or HTTPie"
                 >
-                    {copied === 'curl' ? (
+                    <svg width="14" height="14" viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="2">
+                        <polyline points="16 18 22 12 16 6" />
+                        <polyline points="8 6 2 12 8 18" />
+                    </svg>
+                    Code
+                </button>
+
+                <button
+                    onClick={() => copyToClipboard(buildShareUrl(request), 'share')}
+                    className={`${styles.respActionBtn} ${copied === 'share' ? styles.respActionCopied : ''}`}
+                    data-testid="postman-share-btn"
+                    title="Copies a permalink anyone can paste into Slack/PRs to reproduce this request. Auth headers are stripped."
+                >
+                    {copied === 'share' ? (
                         <svg width="14" height="14" viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="2">
                             <polyline points="20 6 9 17 4 12" />
                         </svg>
                     ) : (
                         <svg width="14" height="14" viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="2">
-                            <polyline points="16 18 22 12 16 6" />
-                            <polyline points="8 6 2 12 8 18" />
+                            <circle cx="18" cy="5" r="3" />
+                            <circle cx="6" cy="12" r="3" />
+                            <circle cx="18" cy="19" r="3" />
+                            <line x1="8.59" y1="13.51" x2="15.42" y2="17.49" />
+                            <line x1="15.41" y1="6.51" x2="8.59" y2="10.49" />
                         </svg>
                     )}
-                    {copied === 'curl' ? 'Copied' : 'Copy cURL'}
+                    {copied === 'share' ? 'Link Copied' : 'Share'}
                 </button>
 
                 {onRetry && (
@@ -168,6 +188,10 @@ export default function PostmanResponseCard({ request, response, onRetry }: Post
                     </button>
                 )}
             </div>
+
+            {showCodeExport && (
+                <CodeExportModal request={request} onClose={() => setShowCodeExport(false)} />
+            )}
         </div>
     )
 }

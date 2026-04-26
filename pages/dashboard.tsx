@@ -8,6 +8,8 @@ import ResultMessage from '../components/ResultMessage'
 import StaggeredMenu from '../components/StaggeredMenu/StaggeredMenu'
 import RequestBuilder from '../components/postman/RequestBuilder'
 import PostmanResponseCard from '../components/postman/PostmanResponseCard'
+import CommandPalette, { CommandItem } from '../components/CommandPalette'
+import { useRouter } from 'next/router'
 import ReactMarkdown from 'react-markdown'
 import remarkGfm from 'remark-gfm'
 import { encryptData, decryptData, isEncryptionAvailable } from '../utils/encryption'
@@ -85,6 +87,7 @@ export default function Dashboard() {
     const hasMessages = messages.length > 0
     const autoScrollRef = useRef(true)
     const PREF_KEY = 'oracle_ui_preferences_v1'
+    const router = useRouter()
 
     useEffect(() => {
         if (typeof window === 'undefined') return
@@ -143,6 +146,45 @@ export default function Dashboard() {
         window.addEventListener('keydown', onKey)
         return () => window.removeEventListener('keydown', onKey)
     }, [editorOpen])
+
+    // Load shared request from URL hash (#r=...) on mount
+    useEffect(() => {
+        if (typeof window === 'undefined') return
+        const hash = window.location.hash
+        if (!hash || !hash.includes('r=')) return
+        // Lazy import to avoid SSR issues
+        import('../lib/postman/Permalink').then(({ decodeRequestFromHash }) => {
+            const decoded = decodeRequestFromHash(hash)
+            if (!decoded || !decoded.url) return
+            setEditorConfig(prev => ({
+                ...prev,
+                method: decoded.method ?? prev.method,
+                url: decoded.url ?? prev.url,
+                headers: decoded.headers ?? [],
+                params: decoded.params ?? [],
+                body: decoded.body ?? { type: 'none' }
+            }))
+            setMode('postman')
+            setEditorOpen(true)
+            // Clear the hash so refreshes don't keep re-opening
+            try { history.replaceState(null, '', window.location.pathname) } catch { /* noop */ }
+        })
+    }, [])
+
+    // Cmd+K / Ctrl+K command palette
+    const [paletteOpen, setPaletteOpen] = useState(false)
+    useEffect(() => {
+        const onKey = (e: KeyboardEvent) => {
+            if ((e.metaKey || e.ctrlKey) && e.key.toLowerCase() === 'k') {
+                e.preventDefault()
+                setPaletteOpen(p => !p)
+            } else if (e.key === 'Escape' && paletteOpen) {
+                setPaletteOpen(false)
+            }
+        }
+        window.addEventListener('keydown', onKey)
+        return () => window.removeEventListener('keydown', onKey)
+    }, [paletteOpen])
 
 
     const executePostmanRequest = async (config: RequestConfig): Promise<ResponseData> => {
@@ -632,6 +674,28 @@ export default function Dashboard() {
                     </div>
                 </div>
             </div>
+
+            {/* Cmd+K Command Palette */}
+            <CommandPalette
+                open={paletteOpen}
+                onClose={() => setPaletteOpen(false)}
+                commands={[
+                    { id: 'mode-chat', group: 'Modes', label: 'Switch to Chat Mode', hint: 'Ask the AI assistant', shortcut: 'C', onSelect: () => setMode('chat') },
+                    { id: 'mode-check', group: 'Modes', label: 'Switch to Check Mode', hint: 'Validate API keys', shortcut: 'V', onSelect: () => setMode('check') },
+                    { id: 'mode-postman', group: 'Modes', label: 'Switch to Postman Mode', hint: 'Test HTTP requests', shortcut: 'P', onSelect: () => setMode('postman') },
+                    { id: 'open-editor', group: 'Actions', label: editorOpen ? 'Close Editor' : 'Open Postman Editor', hint: 'Floating request canvas', shortcut: 'E', onSelect: () => { setMode('postman'); setEditorOpen(o => !o) } },
+                    { id: 'clear-chat', group: 'Actions', label: 'Clear Conversation', hint: 'Wipes the current message list', onSelect: () => setMessages([]) },
+                    { id: 'focus-input', group: 'Actions', label: 'Focus Input', hint: 'Jump to the message field', shortcut: '/', onSelect: () => {
+                        const ta = document.querySelector<HTMLTextAreaElement>('textarea')
+                        ta?.focus()
+                    } },
+                    { id: 'toggle-model', group: 'Settings', label: modelPreference === 'fast' ? 'Switch to Quality Model' : 'Switch to Fast Model', hint: 'Toggle Gemini Flash / Pro', onSelect: () => setModelPreference(p => p === 'fast' ? 'quality' : 'fast') },
+                    { id: 'nav-home', group: 'Navigate', label: 'Home', hint: '/', onSelect: () => router.push('/') },
+                    { id: 'nav-docs', group: 'Navigate', label: 'Documentation', hint: '/docs', onSelect: () => router.push('/docs') },
+                    { id: 'nav-pricing', group: 'Navigate', label: 'Pricing', hint: '/pricing', onSelect: () => router.push('/pricing') },
+                    { id: 'nav-suggestions', group: 'Navigate', label: 'Suggestions', hint: '/suggestions', onSelect: () => router.push('/suggestions') }
+                ]}
+            />
 
         </div>
     )
