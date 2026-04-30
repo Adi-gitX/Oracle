@@ -7,6 +7,22 @@
     min-height: 100vh;
 }
 
+.kbd {
+    display: inline-flex;
+    align-items: center;
+    padding: 1px 7px;
+    margin: 0 2px;
+    background: #16161a;
+    border: 1px solid #26262d;
+    border-radius: 4px;
+    font-family: 'JetBrains Mono', 'SF Mono', monospace;
+    font-size: 0.7rem;
+    color: #e6e6e9;
+    letter-spacing: 0.02em;
+    font-weight: 600;
+    line-height: 1.5;
+}
+
 .sidebar {
     width: 250px;
     position: sticky;

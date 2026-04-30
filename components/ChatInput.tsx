@@ -1,5 +1,6 @@
 import { useState, useRef, useEffect } from 'react'
 import styles from '../styles/Dashboard.module.css'
+import menuStyles from '../styles/ChatInput.module.css'
 
 export type AppMode = 'check' | 'chat' | 'postman'
 export type ChatModelPreference = 'fast' | 'quality'
@@ -25,8 +26,10 @@ export default function ChatInput({
 }: ChatInputProps) {
     const [input, setInput] = useState('')
     const [showModeMenu, setShowModeMenu] = useState(false)
+    const [menuDirection, setMenuDirection] = useState<'down' | 'up'>('down')
     const textareaRef = useRef<HTMLTextAreaElement>(null)
     const menuRef = useRef<HTMLDivElement>(null)
+    const triggerRef = useRef<HTMLButtonElement>(null)
 
     const adjustHeight = () => {
         const textarea = textareaRef.current
@@ -50,6 +53,20 @@ export default function ChatInput({
         document.addEventListener('mousedown', handleClickOutside)
         return () => document.removeEventListener('mousedown', handleClickOutside)
     }, [])
+
+    // Flip dropdown direction if not enough space below
+    const openModeMenu = () => {
+        if (showModeMenu) {
+            setShowModeMenu(false)
+            return
+        }
+        if (triggerRef.current && typeof window !== 'undefined') {
+            const rect = triggerRef.current.getBoundingClientRect()
+            const spaceBelow = window.innerHeight - rect.bottom
+            setMenuDirection(spaceBelow < 320 ? 'up' : 'down')
+        }
+        setShowModeMenu(true)
+    }
 
     const handleKeyDown = (e: React.KeyboardEvent) => {
         if (e.key === 'Enter' && !e.shiftKey) {
@@ -164,38 +181,31 @@ export default function ChatInput({
                     </button>
 
                     {/* Mode Selector */}
-                    <div style={{ position: 'relative' }} ref={menuRef}>
+                    <div className={menuStyles.modeWrap} ref={menuRef}>
                         <button
-                            className={styles.actionBtn}
-                            onClick={() => setShowModeMenu(!showModeMenu)}
+                            ref={triggerRef}
+                            className={`${menuStyles.modeTrigger} ${showModeMenu ? menuStyles.modeTriggerOpen : ''}`}
+                            onClick={openModeMenu}
                             style={{
                                 color: modeStyle.color,
                                 background: modeStyle.bg,
                                 borderColor: mode !== 'check' ? `${modeStyle.color}33` : 'transparent'
                             }}
+                            data-testid="chat-mode-trigger"
                         >
                             {modes.find(m => m.key === mode)?.icon}
                             {getModeLabel()}
-                            <svg width="12" height="12" viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="2" style={{ marginLeft: '2px' }}>
+                            <svg className={menuStyles.modeChevron} width="12" height="12" viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="2">
                                 <polyline points="6 9 12 15 18 9" />
                             </svg>
                         </button>
 
                         {showModeMenu && (
-                            <div style={{
-                                position: 'absolute',
-                                top: 'calc(100% + 8px)',
-                                left: '0',
-                                background: 'rgba(18, 18, 18, 0.98)',
-                                backdropFilter: 'blur(20px)',
-                                WebkitBackdropFilter: 'blur(20px)',
-                                border: '1px solid rgba(255,255,255,0.12)',
-                                borderRadius: '14px',
-                                padding: '6px',
-                                minWidth: '220px',
-                                boxShadow: '0 8px 32px rgba(0,0,0,0.5), 0 0 0 1px rgba(255,255,255,0.05) inset',
-                                zIndex: 9999
-                            }}>
+                            <div
+                                className={`${menuStyles.modeMenu} ${menuDirection === 'up' ? menuStyles.modeMenuUp : ''}`}
+                                data-testid="chat-mode-menu"
+                                role="menu"
+                            >
                                 {modes.map(m => (
                                     <button
                                         key={m.key}
@@ -203,56 +213,27 @@ export default function ChatInput({
                                             onModeChange(m.key)
                                             setShowModeMenu(false)
                                         }}
-                                        style={{
-                                            width: '100%',
-                                            padding: '10px 12px',
-                                            background: mode === m.key ? `${m.color}18` : 'transparent',
-                                            border: mode === m.key ? `1px solid ${m.color}30` : '1px solid transparent',
-                                            borderRadius: '10px',
-                                            color: mode === m.key ? m.color : 'rgba(255,255,255,0.85)',
-                                            fontSize: '0.875rem',
-                                            cursor: 'pointer',
-                                            display: 'flex',
-                                            alignItems: 'center',
-                                            gap: '10px',
-                                            textAlign: 'left',
-                                            transition: 'all 0.15s ease',
-                                            marginBottom: '2px'
-                                        }}
-                                        onMouseEnter={(e) => {
-                                            if (mode !== m.key) {
-                                                e.currentTarget.style.background = 'rgba(255,255,255,0.06)'
-                                                e.currentTarget.style.borderColor = 'rgba(255,255,255,0.08)'
-                                            }
-                                        }}
-                                        onMouseLeave={(e) => {
-                                            if (mode !== m.key) {
-                                                e.currentTarget.style.background = 'transparent'
-                                                e.currentTarget.style.borderColor = 'transparent'
-                                            }
-                                        }}
+                                        className={menuStyles.modeItem}
+                                        style={mode === m.key ? {
+                                            background: `${m.color}18`,
+                                            borderColor: `${m.color}30`,
+                                            color: m.color
+                                        } : undefined}
+                                        data-testid={`chat-mode-option-${m.key}`}
+                                        role="menuitem"
                                     >
-                                        <span style={{
-                                            color: m.color,
-                                            display: 'flex',
-                                            alignItems: 'center',
-                                            justifyContent: 'center',
-                                            width: '34px',
-                                            height: '34px',
-                                            background: `${m.color}15`,
-                                            borderRadius: '8px',
-                                            flexShrink: 0
-                                        }}>
+                                        <span
+                                            className={menuStyles.modeItemIcon}
+                                            style={{ color: m.color, background: `${m.color}15` }}
+                                        >
                                             {m.icon}
                                         </span>
-                                        <div style={{ flex: 1, minWidth: 0 }}>
-                                            <div style={{ fontWeight: 600, fontSize: '0.9rem' }}>{m.label}</div>
-                                            <div style={{ fontSize: '0.72rem', color: 'rgba(255,255,255,0.45)', marginTop: '1px' }}>
-                                                {m.description}
-                                            </div>
-                                        </div>
+                                        <span className={menuStyles.modeItemText}>
+                                            <span className={menuStyles.modeItemLabel}>{m.label}</span>
+                                            <span className={menuStyles.modeItemDesc}>{m.description}</span>
+                                        </span>
                                         {mode === m.key && (
-                                            <svg width="16" height="16" viewBox="0 0 24 24" fill="none" stroke={m.color} strokeWidth="2.5" style={{ flexShrink: 0 }}>
+                                            <svg className={menuStyles.modeItemCheck} width="16" height="16" viewBox="0 0 24 24" fill="none" stroke={m.color} strokeWidth="2.5">
                                                 <polyline points="20 6 9 17 4 12" />
                                             </svg>
                                         )}

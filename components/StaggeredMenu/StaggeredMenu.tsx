@@ -4,6 +4,7 @@ import { gsap } from 'gsap';
 interface MenuItem {
     label: string;
     link: string;
+    onClick?: () => void;
 }
 
 interface SocialItem {
@@ -47,7 +48,7 @@ export const StaggeredMenu: React.FC<StaggeredMenuProps> = ({
     logoUrl,
     menuButtonColor = '#fff',
     openMenuButtonColor = '#fff',
-    accentColor = '#0070f3',
+    accentColor = '#FF6C37',
     changeMenuColorOnOpen = true,
     isFixed = false,
     closeOnClickAway = true,
@@ -245,8 +246,8 @@ export const StaggeredMenu: React.FC<StaggeredMenuProps> = ({
         const offscreen = position === 'left' ? -100 : 100;
         closeTweenRef.current = gsap.to(all, {
             xPercent: offscreen,
-            duration: 0.32,
-            ease: 'power3.in',
+            duration: 0.28,
+            ease: 'power2.in',
             overwrite: 'auto',
             onComplete: () => {
                 const itemEls = Array.from(panel.querySelectorAll('.sm-panel-itemLabel'));
@@ -451,11 +452,27 @@ export const StaggeredMenu: React.FC<StaggeredMenuProps> = ({
                         {items && items.length ? (
                             items.map((it, idx) => (
                                 <li className="sm-panel-itemWrap" key={it.label + idx}>
-                                    <Link href={it.link}>
-                                        <a className="sm-panel-item" aria-label={it.label} data-index={idx + 1}>
+                                    {it.onClick ? (
+                                        <a
+                                            className="sm-panel-item"
+                                            aria-label={it.label}
+                                            data-index={idx + 1}
+                                            href="#"
+                                            onClick={(e) => {
+                                                e.preventDefault();
+                                                if (openRef.current) toggleMenu();
+                                                it.onClick && it.onClick();
+                                            }}
+                                        >
                                             <span className="sm-panel-itemLabel">{it.label}</span>
                                         </a>
-                                    </Link>
+                                    ) : (
+                                        <Link href={it.link}>
+                                            <a className="sm-panel-item" aria-label={it.label} data-index={idx + 1}>
+                                                <span className="sm-panel-itemLabel">{it.label}</span>
+                                            </a>
+                                        </Link>
+                                    )}
                                 </li>
                             ))
                         ) : (

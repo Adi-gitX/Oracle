@@ -1,6 +1,9 @@
 import type { NextApiRequest, NextApiResponse } from 'next';
 import dns from 'dns';
 import net from 'net';
+import http from 'http';
+import https from 'https';
+import { URL as NodeURL } from 'url';
 
 interface ProxyRequest {
     method: string;
@@ -167,46 +170,104 @@ async function validateTarget(urlString: string, allowlist: string[]): Promise<U
     return parsed;
 }
 
+// Native http/https implementation — avoids Next.js 12 fetch polyfill issues
+interface NativeResponse {
+    status: number;
+    statusText: string;
+    headers: Record<string, string>;
+    body: string;
+    size: number;
+    truncated: boolean;
+    setCookies: string[];
+    location: string | null;
+}
+
+function nativeHttpRequest(
+    targetUrl: string,
+    method: string,
+    headers: Record<string, string>,
+    body: string | undefined,
+    timeoutMs: number,
+    maxBytes: number
+): Promise<NativeResponse> {
+    return new Promise((resolve, reject) => {
+        let parsed: NodeURL;
+        try { parsed = new NodeURL(targetUrl); } catch (e) { return reject(new Error('Invalid URL')); }
+
+        const lib = parsed.protocol === 'https:' ? https : http;
+        const options: http.RequestOptions = {
+            method,
+            protocol: parsed.protocol,
+            hostname: parsed.hostname,
+            port: parsed.port || (parsed.protocol === 'https:' ? 443 : 80),
+            path: parsed.pathname + parsed.search,
+            headers
+        };
+
+        const req = lib.request(options, (res) => {
+            const chunks: Buffer[] = [];
+            let total = 0;
+            let truncated = false;
+
+            res.on('data', (chunk: Buffer) => {
+                total += chunk.length;
+                if (total <= maxBytes) {
+                    chunks.push(chunk);
+                } else if (!truncated) {
+                    truncated = true;
+                    const overflow = total - maxBytes;
+                    const allowed = chunk.subarray(0, chunk.length - overflow);
+                    if (allowed.length > 0) chunks.push(allowed);
+                    res.destroy();
+                }
+            });
+
+            res.on('end', () => {
+                const outHeaders: Record<string, string> = {};
+                for (const [k, v] of Object.entries(res.headers)) {
+                    if (Array.isArray(v)) outHeaders[k] = v.join(', ');
+                    else if (typeof v === 'string') outHeaders[k] = v;
+                }
+                const setCookies = Array.isArray(res.headers['set-cookie']) ? res.headers['set-cookie'] as string[] : [];
+                const merged = Buffer.concat(chunks);
+                resolve({
+                    status: res.statusCode || 0,
+                    statusText: res.statusMessage || '',
+                    headers: outHeaders,
+                    body: merged.toString('utf-8'),
+                    size: merged.length,
+                    truncated,
+                    setCookies,
+                    location: (res.headers.location as string) || null
+                });
+            });
+
+            res.on('error', reject);
+        });
+
+        req.setTimeout(timeoutMs, () => {
+            req.destroy(new Error(`Request timed out after ${timeoutMs}ms`));
+        });
+        req.on('error', reject);
+
+        if (body && !['GET', 'HEAD'].includes(method)) {
+            req.write(body);
+        }
+        req.end();
+    });
+}
+
 async function readResponseWithLimit(response: Response, maxBytes: number): Promise<{ body: string; size: number; truncated: boolean }> {
     if (!response.body) {
         return { body: '', size: 0, truncated: false };
     }
-
-    const reader = response.body.getReader();
-    const chunks: Uint8Array[] = [];
-    let total = 0;
-    let truncated = false;
-
-    while (true) {
-        const { done, value } = await reader.read();
-        if (done) break;
-        if (!value) continue;
-
-        total += value.byteLength;
-
-        if (total <= maxBytes) {
-            chunks.push(value);
-            continue;
-        }
-
-        truncated = true;
-        const overflow = total - maxBytes;
-        const allowedChunk = value.subarray(0, value.byteLength - overflow);
-        if (allowedChunk.byteLength > 0) chunks.push(allowedChunk);
-        await reader.cancel();
-        break;
-    }
-
-    const merged = new Uint8Array(chunks.reduce((acc, c) => acc + c.byteLength, 0));
-    let offset = 0;
-    for (const chunk of chunks) {
-        merged.set(chunk, offset);
-        offset += chunk.byteLength;
-    }
-
+    const buf = await response.arrayBuffer();
+    const bytes = new Uint8Array(buf);
+    const truncated = bytes.byteLength > maxBytes;
+    const sliced = truncated ? bytes.subarray(0, maxBytes) : bytes;
     return {
-        body: new TextDecoder().decode(merged),
-        size: merged.byteLength,
+        body: new TextDecoder().decode(sliced),
+        size: sliced.byteLength,
         truncated
     };
 }
@@ -283,36 +344,24 @@ export default async function handler(req: NextApiRequest, res: NextApiResponse<
         while (true) {
             await validateTarget(currentUrl, allowlist);
 
-            const controller = new AbortController();
-            timeoutId = setTimeout(() => controller.abort(), timeout);
+            const response = await nativeHttpRequest(
+                currentUrl,
+                currentMethod,
+                cleanedHeaders,
+                currentBody,
+                timeout,
+                MAX_RESPONSE_BYTES
+            );
 
-            const fetchOptions: RequestInit = {
-                method: currentMethod,
-                headers: cleanedHeaders,
-                redirect: 'manual',
-                signal: controller.signal
-            };
-
-            if (currentBody && !['GET', 'HEAD'].includes(currentMethod)) {
-                fetchOptions.body = currentBody;
-            }
-
-            const response = await fetch(currentUrl, fetchOptions);
-            if (timeoutId) {
-                clearTimeout(timeoutId);
-                timeoutId = null;
-            }
-
-            const location = response.headers.get('location');
             const isRedirect = [301, 302, 303, 307, 308].includes(response.status);
 
-            if (isRedirect && location) {
+            if (isRedirect && response.location) {
                 redirectCount += 1;
                 if (redirectCount > MAX_REDIRECTS) {
                     throw new Error(`Too many redirects (max ${MAX_REDIRECTS})`);
                 }
 
-                const nextUrl = new URL(location, currentUrl);
+                const nextUrl = new NodeURL(response.location, currentUrl);
                 currentUrl = nextUrl.toString();
 
                 if (response.status === 303) {
@@ -323,23 +372,25 @@ export default async function handler(req: NextApiRequest, res: NextApiResponse<
                 continue;
             }
 
-            const responseHeaders: Record<string, string> = {};
-            response.headers.forEach((value, key) => {
-                responseHeaders[key] = value;
-            });
-
-            const responseBody = await readResponseWithLimit(response, MAX_RESPONSE_BYTES);
             const endTime = Date.now();
+
+            const cookies = response.setCookies
+                .map((raw) => raw.split(';')[0])
+                .map((pair) => {
+                    const [name, ...rest] = pair.split('=');
+                    return { name: name || '', value: rest.join('=') || '' };
+                })
+                .filter((c) => c.name);
 
             return res.status(200).json({
                 status: response.status,
                 statusText: response.statusText,
-                headers: responseHeaders,
-                body: responseBody.body,
+                headers: response.headers,
+                body: response.body,
                 time: endTime - startTime,
-                size: responseBody.size,
-                truncated: responseBody.truncated,
-                cookies: extractCookies(response.headers)
+                size: response.size,
+                truncated: response.truncated,
+                cookies
             });
         }
     } catch (error) {

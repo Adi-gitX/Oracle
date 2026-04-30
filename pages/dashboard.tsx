@@ -8,6 +8,11 @@ import ResultMessage from '../components/ResultMessage'
 import StaggeredMenu from '../components/StaggeredMenu/StaggeredMenu'
 import RequestBuilder from '../components/postman/RequestBuilder'
 import PostmanResponseCard from '../components/postman/PostmanResponseCard'
+import PostmanLoader from '../components/postman/PostmanLoader'
+import HistoryPanel from '../components/postman/HistoryPanel'
+import CommandPalette, { CommandItem } from '../components/CommandPalette'
+import BYOKSettingsModal from '../components/BYOKSettingsModal'
+import { useRouter } from 'next/router'
 import ReactMarkdown from 'react-markdown'
 import remarkGfm from 'remark-gfm'
 import { encryptData, decryptData, isEncryptionAvailable } from '../utils/encryption'
@@ -39,15 +44,8 @@ interface Message {
     postmanResult?: PostmanResult
     id: string
     modelUsed?: string
+    isError?: boolean
 }
-
-const menuItems = [
-    { label: 'Home', link: '/' },
-    { label: 'Dashboard', link: '/dashboard' },
-    { label: 'Pricing', link: '/pricing' },
-    { label: 'Docs', link: '/docs' },
-    { label: 'Suggestions', link: '/suggestions' },
-];
 
 const socialItems = [
     { label: 'LinkedIn', link: 'https://www.linkedin.com/in/kammatiaditya/' },
@@ -58,6 +56,7 @@ const socialItems = [
 export default function Dashboard() {
     const [messages, setMessages] = useState<Message[]>([])
     const [loading, setLoading] = useState(false)
+    const [lastPostmanInFlight, setLastPostmanInFlight] = useState<{ method: string; url: string } | null>(null)
     const [mode, setMode] = useState<AppMode>('check')
     const [modelPreference, setModelPreference] = useState<ChatModelPreference>('fast')
     const chatContainerRef = useRef<HTMLDivElement>(null)
@@ -84,6 +83,7 @@ export default function Dashboard() {
     const hasMessages = messages.length > 0
     const autoScrollRef = useRef(true)
     const PREF_KEY = 'oracle_ui_preferences_v1'
+    const router = useRouter()
 
     useEffect(() => {
         if (typeof window === 'undefined') return
@@ -135,6 +135,76 @@ export default function Dashboard() {
         }
     }, [mode, editorOpen])
 
+    // ESC to close floating editor
+    useEffect(() => {
+        if (!editorOpen) return
+        const onKey = (e: KeyboardEvent) => { if (e.key === 'Escape') setEditorOpen(false) }
+        window.addEventListener('keydown', onKey)
+        return () => window.removeEventListener('keydown', onKey)
+    }, [editorOpen])
+
+    // Load shared request from URL hash (#r=...) on mount
+    useEffect(() => {
+        if (typeof window === 'undefined') return
+        const hash = window.location.hash
+        if (!hash || !hash.includes('r=')) return
+        // Lazy import to avoid SSR issues
+        import('../lib/postman/Permalink').then(({ decodeRequestFromHash }) => {
+            const decoded = decodeRequestFromHash(hash)
+            if (!decoded || !decoded.url) return
+            setEditorConfig(prev => ({
+                ...prev,
+                method: decoded.method ?? prev.method,
+                url: decoded.url ?? prev.url,
+                headers: decoded.headers ?? [],
+                params: decoded.params ?? [],
+                body: decoded.body ?? { type: 'none' }
+            }))
+            setMode('postman')
+            setEditorOpen(true)
+            // Clear the hash so refreshes don't keep re-opening
+            try { history.replaceState(null, '', window.location.pathname) } catch { /* noop */ }
+        })
+    }, [])
+
+    // Cmd+K / Ctrl+K command palette
+    const [paletteOpen, setPaletteOpen] = useState(false)
+    const [byokOpen, setByokOpen] = useState(false)
+    const [historyOpen, setHistoryOpen] = useState(false)
+
+    // Menu items — declared inside so the API Key Settings entry can open the BYOK modal
+    const menuItems = [
+        { label: 'Home', link: '/' },
+        { label: 'Dashboard', link: '/dashboard' },
+        { label: 'Pricing', link: '/pricing' },
+        { label: 'Docs', link: '/docs' },
+        { label: 'Suggestions', link: '/suggestions' },
+        { label: 'API Key Settings', link: '#', onClick: () => setByokOpen(true) }
+    ]
+    useEffect(() => {
+        const onKey = (e: KeyboardEvent) => {
+            if ((e.metaKey || e.ctrlKey) && e.key.toLowerCase() === 'k') {
+                e.preventDefault()
+                setPaletteOpen(p => !p)
+            } else if (e.key === 'Escape' && paletteOpen) {
+                setPaletteOpen(false)
+            }
+        }
+        window.addEventListener('keydown', onKey)
+        return () => window.removeEventListener('keydown', onKey)
+    }, [paletteOpen])
+
+    // Auto-open BYOK modal when navigated with ?settings=byok (from sidebar on other pages)
+    useEffect(() => {
+        if (typeof window === 'undefined') return
+        const url = new URL(window.location.href)
+        if (url.searchParams.get('settings') === 'byok') {
+            setByokOpen(true)
+            url.searchParams.delete('settings')
+            try { history.replaceState(null, '', url.pathname + (url.search || '') + url.hash) } catch { /* noop */ }
+        }
+    }, [])
+
 
     const executePostmanRequest = async (config: RequestConfig): Promise<ResponseData> => {
         const headers: Record<string, string> = {}
@@ -176,14 +246,22 @@ export default function Dashboard() {
             body: JSON.stringify({ method: config.method, url, headers, body, timeout: 30000 })
         })
 
-        const data = await res.json()
+        const txt = await res.text()
+        let data: any = {}
+        try {
+            data = txt ? JSON.parse(txt) : {}
+        } catch {
+            throw new Error(`Server returned an invalid response (HTTP ${res.status}). Please try again.`)
+        }
         if (data.error) throw new Error(data.error)
+        if (!res.ok) throw new Error(data.message || res.statusText)
         return { status: data.status, statusText: data.statusText, headers: data.headers, body: data.body, time: data.time, size: data.size }
     }
 
 
     const handleEditorSend = async (config: RequestConfig) => {
         setLoading(true)
+        setLastPostmanInFlight({ method: config.method, url: config.url })
         autoScrollRef.current = true
         setEditorConfig(config)
         setMessages(prev => [...prev, { id: Date.now().toString(), role: 'user', content: `${config.method} ${config.url}` }])
@@ -193,9 +271,10 @@ export default function Dashboard() {
             addToHistory({ id: generateId(), timestamp: Date.now(), request: config, response })
             setMessages(prev => [...prev, { id: Date.now().toString(), role: 'assistant', content: '', postmanResult: { request: config, response } }])
         } catch (e) {
-            setMessages(prev => [...prev, { id: Date.now().toString(), role: 'assistant', content: `❌ **Request Failed**: ${e instanceof Error ? e.message : 'Unknown error'}` }])
+            setMessages(prev => [...prev, { id: Date.now().toString(), role: 'assistant', content: e instanceof Error ? e.message : 'Unknown error', isError: true }])
         } finally {
             setLoading(false)
+            setLastPostmanInFlight(null)
         }
     }
 
@@ -214,13 +293,15 @@ export default function Dashboard() {
             try {
                 const parsed = parseUserInput(inputText)
                 setEditorConfig(parsed.config)
+                setLastPostmanInFlight({ method: parsed.config.method, url: parsed.config.url })
                 const response = await executePostmanRequest(parsed.config)
                 addToHistory({ id: generateId(), timestamp: Date.now(), request: parsed.config, response })
                 setMessages(prev => [...prev, { id: Date.now().toString(), role: 'assistant', content: '', postmanResult: { request: parsed.config, response } }])
             } catch (e) {
-                setMessages(prev => [...prev, { id: Date.now().toString(), role: 'assistant', content: `❌ **Request Failed**\n\n${e instanceof Error ? e.message : 'Unknown error'}` }])
+                setMessages(prev => [...prev, { id: Date.now().toString(), role: 'assistant', content: e instanceof Error ? e.message : 'Unknown error', isError: true }])
             }
             setLoading(false)
+            setLastPostmanInFlight(null)
             processingRef.current = false
             return
         }
@@ -243,14 +324,30 @@ export default function Dashboard() {
                         isEncrypted: false
                     }
 
+                // BYOK: fetch user's encrypted Gemini key (decrypted in-browser only)
+                const { secureGet, BYOK_GEMINI_KEY_STORAGE } = await import('../lib/SecureStore')
+                const userKey = await secureGet(BYOK_GEMINI_KEY_STORAGE)
+                const headers: Record<string, string> = { 'Content-Type': 'application/json' }
+                if (userKey) headers['X-Oracle-LLM-Key'] = userKey
+
                 const res = await fetch('/api/chat', {
                     method: 'POST',
-                    headers: { 'Content-Type': 'application/json' },
+                    headers,
                     body: JSON.stringify(requestBody)
                 })
-                const rawData = await res.json()
+                const rawText = await res.text()
+                let rawData: any = {}
+                try {
+                    rawData = rawText ? JSON.parse(rawText) : {}
+                } catch {
+                    throw new Error(
+                        res.status === 503
+                            ? 'AI chat is unavailable here. Try Postman mode or Check mode.'
+                            : `Server returned an unexpected response (HTTP ${res.status}). Please try again later.`
+                    )
+                }
                 const data = rawData.isEncrypted ? JSON.parse(decryptData(rawData.payload)) : rawData
-                if (!res.ok) throw new Error(data.message || res.statusText)
+                if (!res.ok) throw new Error(data.message || data.error || res.statusText)
                 setMessages(prev => [...prev, {
                     id: Date.now().toString(),
                     role: 'assistant',
@@ -258,7 +355,7 @@ export default function Dashboard() {
                     modelUsed: data.modelUsed
                 }])
             } catch (e) {
-                setMessages(prev => [...prev, { id: Date.now().toString(), role: 'assistant', content: `Error: ${e instanceof Error ? e.message : 'Unknown error'}` }])
+                setMessages(prev => [...prev, { id: Date.now().toString(), role: 'assistant', content: `${e instanceof Error ? e.message : 'Unknown error'}` }])
             }
             setLoading(false)
             processingRef.current = false
@@ -327,7 +424,13 @@ export default function Dashboard() {
                     headers: { 'Content-Type': 'application/json' },
                     body: JSON.stringify(requestBody)
                 })
-                const rawData = await res.json()
+                const checkText = await res.text()
+                let rawData: any = {}
+                try {
+                    rawData = checkText ? JSON.parse(checkText) : {}
+                } catch {
+                    rawData = { valid: false, message: `Server returned an unexpected response (HTTP ${res.status}).` }
+                }
                 const data = rawData.isEncrypted ? JSON.parse(decryptData(rawData.payload)) : rawData
                 const verificationLevel = (data.verificationLevel || (data.valid ? 'verified' : 'unknown')) as 'verified' | 'format_only' | 'unknown'
                 const status: KeyResult['status'] = data.valid
@@ -386,41 +489,56 @@ export default function Dashboard() {
                 socialItems={socialItems}
                 logo={messages.length > 0 || mode === 'postman' ? (mode === 'postman' ? "Oracle API Tester" : "Oracle Intelligent Check") : null}
                 rightElement={
-                    (messages.length > 0 || mode === 'postman') ? (
-                        <div className={styles.menuRightActions}>
+                    <div className={styles.menuRightActions}>
+                        <button
+                            onClick={() => setPaletteOpen(true)}
+                            className={styles.cmdKBadge}
+                            title="Open command palette (⌘K)"
+                            aria-label="Open command palette"
+                            data-testid="cmdk-header-btn"
+                        >
+                            <svg width="13" height="13" viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="2">
+                                <circle cx="11" cy="11" r="8" />
+                                <line x1="21" y1="21" x2="16.65" y2="16.65" />
+                            </svg>
+                            <span>⌘K</span>
+                        </button>
 
-                            {mode === 'postman' && (
-                                <button
-                                    onClick={() => setEditorOpen(!editorOpen)}
-                                    className={`${styles.editorToggleBtn} ${editorOpen ? styles.editorToggleBtnActive : ''}`}
-                                >
-                                    <svg width="16" height="16" viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="2">
-                                        {editorOpen ? (
-                                            <>
-                                                <line x1="18" y1="6" x2="6" y2="18" />
-                                                <line x1="6" y1="6" x2="18" y2="18" />
-                                            </>
-                                        ) : (
-                                            <>
-                                                <path d="M11 4H4a2 2 0 0 0-2 2v14a2 2 0 0 0 2 2h14a2 2 0 0 0 2-2v-7" />
-                                                <path d="M18.5 2.5a2.121 2.121 0 0 1 3 3L12 15l-4 1 1-4 9.5-9.5z" />
-                                            </>
-                                        )}
-                                    </svg>
-                                    {editorOpen ? 'Close Editor' : 'Open Editor'}
-                                </button>
-                            )}
+                        {mode === 'postman' && (
+                            <button
+                                onClick={() => setEditorOpen(!editorOpen)}
+                                className={`${styles.editorToggleBtn} ${editorOpen ? styles.editorToggleBtnActive : ''}`}
+                            >
+                                <svg width="16" height="16" viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="2">
+                                    {editorOpen ? (
+                                        <>
+                                            <line x1="18" y1="6" x2="6" y2="18" />
+                                            <line x1="6" y1="6" x2="18" y2="18" />
+                                        </>
+                                    ) : (
+                                        <>
+                                            <path d="M11 4H4a2 2 0 0 0-2 2v14a2 2 0 0 0 2 2h14a2 2 0 0 0 2-2v-7" />
+                                            <path d="M18.5 2.5a2.121 2.121 0 0 1 3 3L12 15l-4 1 1-4 9.5-9.5z" />
+                                        </>
+                                    )}
+                                </svg>
+                                {editorOpen ? 'Close Editor' : 'Open Editor'}
+                            </button>
+                        )}
+                        {(messages.length > 0 || mode === 'postman') && (
                             <div
                                 onClick={() => { setMessages([]); setEditorOpen(false); }}
                                 className={styles.newSessionIconBtn}
+                                title="New session"
                             >
                                 <Image src="/assets/branding/oracle-iconLogo.png" alt="New Chat" width={35} height={35} className="hover:opacity-80 transition-opacity" />
                             </div>
-                        </div>
-                    ) : null
+                        )}
+                    </div>
                 }
                 position="left"
                 isFixed={true}
+                accentColor="#FF6C37"
             />
             <Head><title>{getPageTitle()}</title></Head>
 
@@ -466,11 +584,26 @@ export default function Dashboard() {
                                             <div className={styles.messageBubble}>
                                                 <div className={styles.senderName}>
                                                     {msg.role === 'user' ? 'You' : 'Oracle'}
-                                                    {msg.role === 'assistant' && msg.modelUsed && (
-                                                        <span className={styles.modelUsedTag}>{msg.modelUsed}</span>
-                                                    )}
                                                 </div>
-                                                {msg.content && <div className={styles.messageText}><ReactMarkdown remarkPlugins={[remarkGfm]}>{msg.content}</ReactMarkdown></div>}
+                                                {msg.content && (
+                                                    msg.isError ? (
+                                                        <div className={styles.errorCard} data-testid="chat-error-card">
+                                                            <span className={styles.errorIcon}>
+                                                                <svg width="14" height="14" viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="2.4">
+                                                                    <circle cx="12" cy="12" r="10" />
+                                                                    <line x1="12" y1="8" x2="12" y2="12" />
+                                                                    <line x1="12" y1="16" x2="12.01" y2="16" />
+                                                                </svg>
+                                                            </span>
+                                                            <div className={styles.errorBody}>
+                                                                <div className={styles.errorTitle}>Request Failed</div>
+                                                                <div className={styles.errorMessage}>{msg.content}</div>
+                                                            </div>
+                                                        </div>
+                                                    ) : (
+                                                        <div className={styles.messageText}><ReactMarkdown remarkPlugins={[remarkGfm]}>{msg.content}</ReactMarkdown></div>
+                                                    )
+                                                )}
                                                 {msg.results && <ResultMessage results={msg.results} />}
                                                 {msg.postmanResult && (
                                                     <div>
@@ -500,10 +633,14 @@ export default function Dashboard() {
                                         <div className={`${styles.messageRow} ${styles.assistant}`}>
                                             <div className={styles.messageBubble}>
                                                 <div className={styles.senderName}>Oracle</div>
-                                                <div className={`${styles.messageText} ${styles.loadingTextRow}`}>
-                                                    <span className={`${styles.loadingPulseDot} ${mode === 'postman' ? styles.loadingPulseDotPostman : ''}`} />
-                                                    {getLoadingText()}
-                                                </div>
+                                                {mode === 'postman' && lastPostmanInFlight ? (
+                                                    <PostmanLoader method={lastPostmanInFlight.method} url={lastPostmanInFlight.url} />
+                                                ) : (
+                                                    <div className={`${styles.messageText} ${styles.loadingTextRow}`}>
+                                                        <span className={`${styles.loadingPulseDot} ${mode === 'postman' ? styles.loadingPulseDotPostman : ''}`} />
+                                                        {getLoadingText()}
+                                                    </div>
+                                                )}
                                             </div>
                                         </div>
                                     )}
@@ -521,7 +658,9 @@ export default function Dashboard() {
                                     />
                                 </div>
                                 <div className={styles.floatingInputHint}>
-                                    {mode === 'postman' ? 'Tip: Click "Open Editor" for full control →' : <>By using Oracle, you agree to our <Link href="/docs#legal"><a className={styles.floatingInputHintLink}>Terms</a></Link>.</>}
+                                    {mode === 'postman'
+                                        ? <>Tip: Click <span className={styles.kbd}>Open Editor</span> for full control · Press <span className={styles.kbd}>⌘K</span> for commands</>
+                                        : <>Press <span className={styles.kbd}>⌘K</span> for commands · By using Oracle, you agree to our <Link href="/docs#legal"><a className={styles.floatingInputHintLink}>Terms</a></Link></>}
                                 </div>
                             </div>
                         </div>
@@ -529,28 +668,35 @@ export default function Dashboard() {
                 </div>
 
 
-                <div className={`${styles.editorCanvas} ${editorOpen ? styles.editorCanvasOpen : ''}`}>
+                <div
+                    className={`${styles.editorCanvasBackdrop} ${editorOpen ? styles.editorCanvasBackdropOpen : ''}`}
+                    onClick={() => setEditorOpen(false)}
+                    aria-hidden="true"
+                />
+
+                <div className={`${styles.editorCanvas} ${editorOpen ? styles.editorCanvasOpen : ''}`} role="dialog" aria-modal="true">
 
                     <div className={styles.editorCanvasGlow} />
 
 
                     <div className={styles.editorCanvasHeader}>
                         <div className={styles.editorCanvasHeaderLeft}>
-                            <div className={styles.editorCanvasIconBox}>
-                                <svg width="18" height="18" viewBox="0 0 24 24" fill="none" stroke="#FF6C37" strokeWidth="2.5">
-                                    <polygon points="22 2 15 22 11 13 2 9 22 2" />
-                                </svg>
+                            <div className={styles.editorCanvasDots}>
+                                <span className={`${styles.editorCanvasDot} ${styles.editorCanvasDotRed}`} />
+                                <span className={`${styles.editorCanvasDot} ${styles.editorCanvasDotYellow}`} />
+                                <span className={`${styles.editorCanvasDot} ${styles.editorCanvasDotGreen}`} />
                             </div>
-                            <div>
-                                <span className={styles.editorCanvasTitle}>Request Editor</span>
-                                <span className={styles.editorCanvasSubtitle}>Canvas Mode</span>
-                            </div>
+                            <span className={styles.editorCanvasTitle}>
+                                request_editor.tsx
+                            </span>
+                            <span className={styles.editorCanvasSubtitle}>CANVAS</span>
                         </div>
                         <button
                             onClick={() => setEditorOpen(false)}
                             className={styles.editorCanvasCloseBtn}
+                            aria-label="Close editor"
                         >
-                            <svg width="18" height="18" viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="2">
+                            <svg width="13" height="13" viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="2.2">
                                 <line x1="18" y1="6" x2="6" y2="18" />
                                 <line x1="6" y1="6" x2="18" y2="18" />
                             </svg>
@@ -569,7 +715,12 @@ export default function Dashboard() {
 
                     <div className={styles.editorCanvasFooter}>
                         <span className={styles.editorCanvasFooterHint}>
-                            Press <kbd className={styles.editorCanvasKbd}>⌘</kbd> + <kbd className={styles.editorCanvasKbd}>Enter</kbd> to send
+                            <kbd className={styles.editorCanvasKbd}>⌘</kbd>
+                            <kbd className={styles.editorCanvasKbd}>↵</kbd>
+                            <span style={{ marginLeft: 6 }}>send</span>
+                            <span style={{ margin: '0 10px', opacity: 0.4 }}>·</span>
+                            <kbd className={styles.editorCanvasKbd}>esc</kbd>
+                            <span style={{ marginLeft: 6 }}>close</span>
                         </span>
                         <span className={styles.editorCanvasFooterBrand}>
                             Powered by Oracle
@@ -577,6 +728,40 @@ export default function Dashboard() {
                     </div>
                 </div>
             </div>
+
+            <CommandPalette
+                open={paletteOpen}
+                onClose={() => setPaletteOpen(false)}
+                commands={[
+                    { id: 'mode-chat', group: 'Modes', label: 'Switch to Chat Mode', hint: 'Ask the AI assistant', shortcut: 'C', onSelect: () => setMode('chat') },
+                    { id: 'mode-check', group: 'Modes', label: 'Switch to Check Mode', hint: 'Validate API keys', shortcut: 'V', onSelect: () => setMode('check') },
+                    { id: 'mode-postman', group: 'Modes', label: 'Switch to Postman Mode', hint: 'Test HTTP requests', shortcut: 'P', onSelect: () => setMode('postman') },
+                    { id: 'open-editor', group: 'Actions', label: editorOpen ? 'Close Editor' : 'Open Postman Editor', hint: 'Floating request canvas', shortcut: 'E', onSelect: () => { setMode('postman'); setEditorOpen(o => !o) } },
+                    { id: 'clear-chat', group: 'Actions', label: 'Clear Conversation', hint: 'Wipes the current message list', onSelect: () => setMessages([]) },
+                    { id: 'focus-input', group: 'Actions', label: 'Focus Input', hint: 'Jump to the message field', shortcut: '/', onSelect: () => {
+                        const ta = document.querySelector<HTMLTextAreaElement>('textarea')
+                        ta?.focus()
+                    } },
+                    { id: 'toggle-model', group: 'Settings', label: modelPreference === 'fast' ? 'Switch to Quality Model' : 'Switch to Fast Model', hint: 'Toggle Gemini Flash / Pro', onSelect: () => setModelPreference(p => p === 'fast' ? 'quality' : 'fast') },
+                    { id: 'byok-settings', group: 'Settings', label: 'API Key Settings (BYOK)', hint: 'Use your own Gemini key — encrypted locally', shortcut: 'S', onSelect: () => setByokOpen(true) },
+                    { id: 'history', group: 'Actions', label: 'Open Request History', hint: 'See and replay your last 100 requests', shortcut: 'H', onSelect: () => { setMode('postman'); setHistoryOpen(true) } },
+                    { id: 'nav-home', group: 'Navigate', label: 'Home', hint: '/', onSelect: () => router.push('/') },
+                    { id: 'nav-docs', group: 'Navigate', label: 'Documentation', hint: '/docs', onSelect: () => router.push('/docs') },
+                    { id: 'nav-pricing', group: 'Navigate', label: 'Pricing', hint: '/pricing', onSelect: () => router.push('/pricing') },
+                    { id: 'nav-suggestions', group: 'Navigate', label: 'Suggestions', hint: '/suggestions', onSelect: () => router.push('/suggestions') }
+                ]}
+            />
+
+            <BYOKSettingsModal open={byokOpen} onClose={() => setByokOpen(false)} />
+            <HistoryPanel
+                open={historyOpen}
+                onClose={() => setHistoryOpen(false)}
+                onLoad={(cfg) => {
+                    setEditorConfig(cfg)
+                    setMode('postman')
+                    setEditorOpen(true)
+                }}
+            />
 
         </div>
     )
